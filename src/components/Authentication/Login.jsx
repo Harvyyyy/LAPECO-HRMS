@@ -1,43 +1,36 @@
 import React, { useState } from 'react';
 import './Login.css';
 
+// --- Sample User Credentials for Demo ---
+const sampleUsers = {
+    'hr_user': { id: 'EMP005', password: 'password123' },
+    'leader_carol': { id: 'EMP003', password: 'password123' },
+    'leader_bob': { id: 'EMP002', password: 'password123' },
+    'employee_alice': { id: 'EMP001', password: 'password123' },
+};
+
 const Login = ({ onLoginSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedRole, setSelectedRole] = useState('HR_PERSONNEL');
   const [error, setError] = useState('');
 
-  const availableRoles = [
-    { value: 'HR_PERSONNEL', label: 'HR Personnel / Manager' },
-    { value: 'TEAM_LEADER', label: 'Team Leader' },
-    { value: 'REGULAR_EMPLOYEE', label: 'Regular Employee' },
-  ];
-
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
-  const handleUsernameChange = (event) => { setUsername(event.target.value); setError(''); };
-  const handlePasswordChange = (event) => { setPassword(event.target.value); setError(''); };
-  const handleRoleChange = (event) => setSelectedRole(event.target.value);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     setError('');
-    if (!username || !password) {
-      setError('Please enter both username and password.');
-      return;
-    }
-    if (!selectedRole) {
-      setError('Please select a role.');
-      return;
-    }
-    console.log('Login attempt with:', { username, password, role: selectedRole });
-    setTimeout(() => {
+
+    const user = sampleUsers[username];
+
+    if (user && user.password === password) {
+      console.log('Login successful for user ID:', user.id);
       if (onLoginSuccess) {
-        onLoginSuccess(selectedRole);
-      } else {
-        console.warn("onLoginSuccess prop not provided");
+        onLoginSuccess(user.id);
       }
-    }, 500);
+    } else {
+      setError('Invalid username or password.');
+    }
   };
 
   return (
@@ -66,10 +59,11 @@ const Login = ({ onLoginSuccess }) => {
                   type="text"
                   className="form-control login-input"
                   id="username"
-                  placeholder="Enter your username"
+                  placeholder="e.g., leader_carol"
                   value={username}
-                  onChange={handleUsernameChange}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
+                  autoComplete="username"
                 />
               </div>
               <div className="mb-3">
@@ -79,30 +73,16 @@ const Login = ({ onLoginSuccess }) => {
                     type={showPassword ? 'text' : 'password'}
                     className="form-control login-input"
                     id="password"
-                    placeholder="Enter your password"
+                    placeholder="password123"
                     value={password}
-                    onChange={handlePasswordChange}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete="current-password"
                   />
                   <span className="input-group-text login-input-group-text" onClick={togglePasswordVisibility} style={{ cursor: 'pointer' }}>
                     <i className={showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'}></i>
                   </span>
                 </div>
-              </div>
-              <div className="mb-3">
-                <label htmlFor="role" className="form-label login-label">Login as:</label>
-                <select
-                  id="role"
-                  className="form-select login-input"
-                  value={selectedRole}
-                  onChange={handleRoleChange}
-                >
-                  {availableRoles.map(role => (
-                    <option key={role.value} value={role.value}>
-                      {role.label}
-                    </option>
-                  ))}
-                </select>
               </div>
               <div className="d-flex justify-content-end mb-4">
                 <a href="#" className="text-success text-decoration-none login-forgot-password" onClick={(e) => e.preventDefault()}>
@@ -113,6 +93,17 @@ const Login = ({ onLoginSuccess }) => {
                 Login
               </button>
             </form>
+            
+            <div className="mt-4 text-center text-muted small">
+                <p className="mb-1"><strong>Sample Users:</strong></p>
+                <ul className="list-unstyled mb-0">
+                    <li>hr_user (HR)</li>
+                    <li>leader_carol (Team Leader)</li>
+                    <li>leader_bob (Team Leader)</li>
+                    <li>employee_alice (Regular)</li>
+                </ul>
+                <p className="mt-1">Password for all is: <strong>password123</strong></p>
+            </div>
           </div>
         </div>
       </div>

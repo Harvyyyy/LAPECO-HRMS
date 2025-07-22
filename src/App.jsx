@@ -1,11 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  useNavigate
-} from 'react-router-dom';
+// src/App.jsx
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
 
 import Login from './components/Authentication/Login';
@@ -15,10 +11,8 @@ import Layout from './components/layout/Layout';
 import Dashboard from './components/pages/Dashboard/Dashboard';
 import EmployeeDataPage from './components/pages/Employee-Data/EmployeeDataPage';
 import PositionsPage from './components/pages/Positions/PositionsPage';
-import AttendancePage from './components/pages/Attendance-Management/AttendancePage';
 import LeaveManagementPage from './components/pages/Leave-Management/LeaveManagementPage';
-import MyLeavePage from './components/pages/Leave-Management/MyLeavePage';
-import PayrollPage from './components/pages/Payroll-Management/PayrollPage';
+import MyLeavePage from './components/pages/My-Leave/MyLeavePage';
 import ScheduleManagementPage from './components/pages/Schedule-Management/ScheduleManagementPage';
 import ScheduleBuilderPage from './components/pages/Schedule-Management/ScheduleBuilderPage';
 import HolidayManagementPage from './components/pages/Holiday-Management/HolidayManagementPage';
@@ -28,15 +22,21 @@ import RecruitmentPage from './components/pages/Recruitment/RecruitmentPage';
 import ReportsPage from './components/pages/Reports/ReportsPage';
 import PerformanceManagementPage from './components/pages/Performance-Management/PerformanceManagementPage';
 import EvaluationFormPage from './components/pages/Performance-Management/EvaluationFormPage';
+import MyTeamPage from './components/pages/My-Team/MyTeamPage';
+import MyAttendancePage from './components/pages/My-Attendance/MyAttendancePage';
+import AttendancePage, { initialAttendanceLogs } from './components/pages/Attendance-Management/AttendancePage';
+import PayrollPage from './components/pages/Payroll-Management/PayrollPage';
+import PayrollGenerationPage from './components/pages/Payroll-Management/PayrollGenerationPage';
+import PayrollHistoryPage from './components/pages/Payroll-Management/PayrollHistoryPage';
+import MyPayrollLayout from './components/pages/My-Payroll/MyPayrollLayout';
+import MyPayrollProjectionPage from './components/pages/My-Payroll/MyPayrollProjectionPage';
+import MyPayrollHistoryPage from './components/pages/My-Payroll/MyPayrollHistoryPage';
+import EvaluateTeamPage from './components/pages/Performance-Management/EvaluateTeamPage';
+import EvaluateLeaderPage from './components/pages/Performance-Management/EvaluateLeaderPage';
+import CaseManagementPage from './components/pages/Case-Management/CaseManagementPage';
 
 
 // Placeholder Components
-const CaseManagementPage = () => <div className="container-fluid p-4"><h1 className="page-main-title">Case Management</h1><p>Content coming soon...</p></div>;
-const MyAttendancePage = () => <div className="container-fluid p-4"><h1 className="page-main-title">My Attendance</h1><p>Content coming soon...</p></div>;
-const MyPayrollPage = () => <div className="container-fluid p-4"><h1 className="page-main-title">My Payroll</h1><p>Content coming soon...</p></div>;
-const MyTeamPage = () => <div className="container-fluid p-4"><h1 className="page-main-title">My Team</h1><p>Content coming soon...</p></div>;
-const EvaluateTeamPage = () => <div className="container-fluid p-4"><h1 className="page-main-title">Evaluate Team</h1><p>Content coming soon...</p></div>;
-const MyEvaluationsPage = () => <div className="container-fluid p-4"><h1 className="page-main-title">My Evaluations</h1><p>Content coming soon...</p></div>;
 const ContributionsManagementPage = () => <div className="container-fluid p-4"><h1 className="page-main-title">Contributions Management</h1><p>Content coming soon...</p></div>;
 
 // Constants & Assets
@@ -53,17 +53,23 @@ const initialPositionsData = [
 ];
 
 const initialEmployeesData = [
-    { id: 'EMP001', name: 'Alice Johnson', positionId: 2, isTeamLeader: false, email: 'alice.j@example.com', joiningDate: '2022-03-15', gender: 'Female', birthday: '1993-02-18' },
-    { id: 'EMP002', name: 'Bob Smith', positionId: 3, isTeamLeader: true, email: 'bob.s@example.com', joiningDate: '2021-07-01', gender: 'Male', birthday: '1989-08-25' },
-    { id: 'EMP003', name: 'Carol White', positionId: 4, isTeamLeader: true, email: 'carol.w@example.com', joiningDate: '2023-01-10', gender: 'Female', birthday: '1996-12-01' },
-    { id: 'EMP004', name: 'David Green', positionId: 5, isTeamLeader: false, email: 'david.g@example.com', joiningDate: '2023-05-20', gender: 'Male', birthday: '1999-04-30' },
-    { id: 'EMP005', name: 'Grace Field', positionId: 1, isTeamLeader: false, email: 'grace.f@example.com', joiningDate: '2020-11-20', gender: 'Female', birthday: '1995-07-19' },
-    { id: 'EMP009', name: 'Ivy Lee', positionId: null, isTeamLeader: false, email: 'ivy.l@example.com', joiningDate: '2023-08-12', gender: 'Female', birthday: '2000-10-10' },
+  { id: 'EMP003', name: 'Carol White', positionId: 2, isTeamLeader: true, email: 'carol.w@example.com', joiningDate: '2023-01-10', gender: 'Female', birthday: '1996-12-01' },
+  { id: 'EMP001', name: 'Alice Johnson', positionId: 2, isTeamLeader: false, email: 'alice.j@example.com', joiningDate: '2022-03-15', gender: 'Female', birthday: '1993-02-18' },
+  { id: 'EMP009', name: 'Ivy Lee', positionId: 2, isTeamLeader: false, email: 'ivy.l@example.com', joiningDate: '2023-08-12', gender: 'Female', birthday: '2000-10-10' },
+  { id: 'EMP002', name: 'Bob Smith', positionId: 3, isTeamLeader: true, email: 'bob.s@example.com', joiningDate: '2021-07-01', gender: 'Male', birthday: '1989-08-25' },
+  { id: 'EMP004', name: 'David Green', positionId: 3, isTeamLeader: false, email: 'david.g@example.com', joiningDate: '2023-05-20', gender: 'Male', birthday: '1999-04-30' },
+  { id: 'EMP005', name: 'Grace Field', positionId: 1, isTeamLeader: false, email: 'grace.f@example.com', joiningDate: '2020-11-20', gender: 'Female', birthday: '1995-07-19' },
+  { id: 'EMP010', name: 'Frank Black', positionId: null, isTeamLeader: false, email: 'frank.b@example.com', joiningDate: '2023-09-01', gender: 'Male', birthday: '1998-05-15' },
 ];
 
 const initialSchedulesData = [
-  { scheduleId: 1, empId: 'EMP001', date: new Date().toISOString().split('T')[0], shift: '08:00 - 17:00', name: `Daily Schedule` },
-  { scheduleId: 2, empId: 'EMP002', date: new Date().toISOString().split('T')[0], shift: '08:00 - 17:00', name: `Daily Schedule` },
+  { scheduleId: 1, empId: 'EMP001', date: '2025-07-16', shift: '08:00 - 17:00' },
+  { scheduleId: 2, empId: 'EMP001', date: '2025-07-15', shift: '08:00 - 17:00' },
+  { scheduleId: 3, empId: 'EMP001', date: '2025-07-14', shift: '08:00 - 17:00' },
+  { scheduleId: 4, empId: 'EMP001', date: '2025-07-11', shift: '08:00 - 17:00' },
+  { scheduleId: 5, empId: 'EMP001', date: '2025-07-10', shift: '08:00 - 17:00' },
+  { scheduleId: 6, empId: 'EMP002', date: '2025-07-16', shift: '08:00 - 17:00' },
+  { scheduleId: 7, empId: 'EMP002', date: '2025-07-15', shift: '08:00 - 17:00' },
 ];
 
 const initialTemplatesData = [
@@ -209,10 +215,89 @@ const initialNotificationsData = [
   { id: 5, type: 'training', message: 'You have been enrolled in "Workplace Safety & First Aid".', timestamp: new Date(Date.now() - 604800000).toISOString(), read: true },
 ];
 
+const initialPayrollsData = [
+    {
+        runId: 'RUN-2023-10-31',
+        cutOff: '2023-10-16 to 2023-10-31',
+        records: [
+            { 
+                payrollId: 'PAY003', empId: 'EMP001', employeeName: 'Alice Johnson',
+                earnings: { basePay: 9000.00, overtimePay: 0, holidayPay: 0 },
+                grossPay: 9000.00,
+                deductions: { tax: 250, sss: 405, philhealth: 200, hdmf: 100 },
+                adjustments: { allowances: 0, bonuses: 0, otherEarnings: 0, loanRepayments: 0, cashAdvances: 0 },
+                netPay: 8045.00, status: 'Paid' 
+            },
+            { 
+                payrollId: 'PAY004', empId: 'EMP003', employeeName: 'Carol White',
+                earnings: { basePay: 9000.00, overtimePay: 511.36, holidayPay: 0 },
+                grossPay: 9511.36,
+                deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 },
+                adjustments: { allowances: 0, bonuses: 0, otherEarnings: 0, loanRepayments: 0, cashAdvances: 0 },
+                netPay: 8455.00, status: 'Pending'
+            },
+        ]
+    },
+    {
+        runId: 'RUN-2023-10-15',
+        cutOff: '2023-10-01 to 2023-10-15',
+        records: [
+            { 
+                payrollId: 'PAY001', empId: 'EMP001', employeeName: 'Alice Johnson',
+                earnings: { basePay: 9000.00, overtimePay: 1022.73, holidayPay: 0 },
+                grossPay: 10022.73,
+                deductions: { tax: 452.27, sss: 405, philhealth: 200, hdmf: 100 },
+                adjustments: { allowances: 0, bonuses: 0, otherEarnings: 0, loanRepayments: 0, cashAdvances: 0 },
+                netPay: 8865.46, status: 'Paid' 
+            },
+            { 
+                payrollId: 'PAY002', empId: 'EMP002', employeeName: 'Bob Smith',
+                earnings: { basePay: 11000.00, overtimePay: 0, holidayPay: 0 },
+                grossPay: 11000.00,
+                deductions: { tax: 650, sss: 495, philhealth: 275, hdmf: 100 },
+                adjustments: { allowances: 0, bonuses: 0, otherEarnings: 0, loanRepayments: 0, cashAdvances: 0 },
+                netPay: 9480.00, status: 'Paid' 
+            },
+        ]
+    }
+];
+
+const initialCasesData = [
+  {
+    caseId: 'CASE001',
+    employeeId: 'EMP004',
+    issueDate: '2025-06-15',
+    actionType: 'Verbal Warning',
+    reason: 'Tardiness',
+    description: 'Employee was 25 minutes late on 2025-06-14 without prior notification.',
+    status: 'Ongoing',
+    attachments: [],
+    nextSteps: 'Monitor attendance for the next 30 days.',
+    actionLog: [
+      { date: '2025-06-15', action: 'Case Created. Verbal warning issued by HR Manager Grace Field.' },
+      { date: '2025-06-16', action: 'Follow-up discussion held with employee and their team leader, Carol White.' }
+    ]
+  },
+  {
+    caseId: 'CASE002',
+    employeeId: 'EMP009',
+    issueDate: '2025-05-20',
+    actionType: 'Written Warning',
+    reason: 'Safety Violation',
+    description: 'Observed operating machinery without required safety goggles, despite previous verbal reminders.',
+    status: 'Closed',
+    attachments: ['safety_report_q2.pdf'],
+    nextSteps: 'Additional safety training completed on 2025-05-28.',
+    actionLog: [
+      { date: '2025-05-20', action: 'Case Created. Written warning issued and signed by employee.' },
+      { date: '2025-05-28', action: 'Safety training course completed. Certificate attached.' },
+      { date: '2025-06-20', action: 'Case reviewed and closed by HR Manager.' }
+    ]
+  },
+];
 
 function AppContent() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('isLoggedIn') === 'true');
-  const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || null);
+  const [currentUserId, setCurrentUserId] = useState(() => localStorage.getItem('currentUserId') || null);
   const navigate = useNavigate();
 
   const [employees, setEmployees] = useState(initialEmployeesData);
@@ -230,7 +315,9 @@ function AppContent() {
   const [evaluationFactors, setEvaluationFactors] = useState(initialEvaluationFactors);
   const [evaluations, setEvaluations] = useState(initialEvaluationsData);
   const [notifications, setNotifications] = useState(initialNotificationsData);
-
+  const [attendanceLogs, setAttendanceLogs] = useState(initialAttendanceLogs);
+  const [payrolls, setPayrolls] = useState(initialPayrollsData);
+  const [disciplinaryCases, setDisciplinaryCases] = useState(initialCasesData);
 
   const appLevelHandlers = {
     saveEmployee: (formData, existingEmployeeId) => {
@@ -403,26 +490,88 @@ function AppContent() {
     clearAllNotifications: () => {
       setNotifications([]);
     },
+    generatePayrollRun: (payrollRunData) => {
+        const newRun = {
+            runId: `RUN-${Date.now()}`,
+            cutOff: payrollRunData.cutOff,
+            records: payrollRunData.records.map(r => {
+                const totalEarnings = Object.values(r.earnings).reduce((sum, val) => sum + val, 0);
+                const totalDeductions = Object.values(r.deductions).reduce((sum, val) => sum + val, 0);
+                return { 
+                    ...r,
+                    payrollId: `PAY-${Date.now()}-${r.empId}`,
+                    grossPay: totalEarnings,
+                    netPay: totalEarnings - totalDeductions,
+                };
+            })
+        };
+        setPayrolls(prev => [newRun, ...prev]);
+    },
+    updatePayrollRecord: (payrollId, updatedData) => {
+        setPayrolls(prev => prev.map(run => ({
+            ...run,
+            records: run.records.map(rec => 
+                rec.payrollId === payrollId ? { ...rec, ...updatedData } : rec
+            )
+        })));
+    },
+    saveCase: (formData, caseId) => {
+      if (caseId) {
+        setDisciplinaryCases(prev => prev.map(c => c.caseId === caseId ? { ...c, ...formData } : c));
+      } else {
+        const newCase = {
+          caseId: `CASE${String(Date.now()).slice(-4)}`,
+          status: 'Ongoing',
+          attachments: [],
+          actionLog: [{ date: new Date().toISOString().split('T')[0], action: 'Case Created.' }],
+          ...formData
+        };
+        setDisciplinaryCases(prev => [newCase, ...prev]);
+      }
+    },
+    addCaseLogEntry: (caseId, newEntry) => {
+        setDisciplinaryCases(prev => prev.map(c => 
+            c.caseId === caseId 
+                ? { ...c, actionLog: [newEntry, ...c.actionLog] } 
+                : c
+        ));
+    },
+    deleteCase: (caseId) => {
+      setDisciplinaryCases(prev => prev.filter(c => c.caseId !== caseId));
+    },
   };
 
-  const handleLoginSuccess = (role) => {
-    setIsLoggedIn(true);
-    setUserRole(role);
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('userRole', role);
+  const handleLoginSuccess = (userId) => {
+    setCurrentUserId(userId);
+    localStorage.setItem('currentUserId', userId);
     navigate('/dashboard');
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserRole(null);
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userRole');
+    setCurrentUserId(null);
+    localStorage.removeItem('currentUserId');
     navigate('/login');
   };
   
+  const { currentUser, userRole } = useMemo(() => {
+    if (!currentUserId) {
+        return { currentUser: null, userRole: null };
+    }
+    const user = employees.find(e => e.id === currentUserId);
+    if (!user) {
+        return { currentUser: null, userRole: null };
+    }
+    let role = USER_ROLES.REGULAR_EMPLOYEE;
+    if (user.positionId === 1) {
+        role = USER_ROLES.HR_PERSONNEL;
+    } else if (user.isTeamLeader) {
+        role = USER_ROLES.TEAM_LEADER;
+    }
+    return { currentUser: { ...user, role }, userRole: role };
+  }, [currentUserId, employees]);
+
   useEffect(() => {
-    if (isLoggedIn && userRole) {
+    if (currentUser && userRole) {
       if (window.location.pathname === '/login' || window.location.pathname === '/') {
         navigate('/dashboard', { replace: true });
       }
@@ -431,22 +580,15 @@ function AppContent() {
         navigate('/login', { replace: true });
       }
     }
-  }, [isLoggedIn, userRole, navigate]);
-
-  const currentUser = {
-    name: 'Harvy P. Estor',
-    employeeId: 'EMP005',
-    role: userRole,
-    avatarUrl: null
-  };
+  }, [currentUser, userRole, navigate]);
 
   return (
     <Routes>
-      <Route path="/login" element={isLoggedIn && userRole ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} />
+      <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} />
       <Route 
         path="/dashboard/*" 
         element={
-          isLoggedIn && userRole ? (
+          currentUser && userRole ? (
             <Layout 
               onLogout={handleLogout} 
               userRole={userRole} 
@@ -470,58 +612,132 @@ function AppContent() {
             jobOpenings={jobOpenings}
             holidays={holidays}
             schedules={schedules}
+            evaluations={evaluations}
+            attendanceLogs={attendanceLogs}
           />} 
         />
         {userRole === USER_ROLES.HR_PERSONNEL && (
           <>
             <Route path="employee-data" element={<EmployeeDataPage employees={employees} positions={positions} handlers={appLevelHandlers} />} />
             <Route path="positions" element={<PositionsPage employees={employees} positions={positions} handlers={appLevelHandlers} />} />
-            <Route path="attendance-management" element={<AttendancePage allSchedules={schedules} employees={employees} positions={positions} />} />
+            <Route path="attendance-management" element={<AttendancePage allSchedules={schedules} employees={employees} positions={positions} attendanceLogs={attendanceLogs} setAttendanceLogs={setAttendanceLogs} />} />
             <Route path="schedule-management">
               <Route index element={<ScheduleManagementPage employees={employees} positions={positions} schedules={schedules} templates={templates} handlers={appLevelHandlers} />} />
               <Route path="create" element={<ScheduleBuilderPage employees={employees} positions={positions} handlers={appLevelHandlers} />} />
             </Route>
             <Route path="leave-management" element={<LeaveManagementPage leaveRequests={leaveRequests} handlers={appLevelHandlers} />} />
-            <Route path="payroll" element={<PayrollPage />} />
+            
+            <Route path="payroll" element={<PayrollPage />}>
+                <Route index element={<Navigate to="history" replace />} />
+                <Route path="history" element={<PayrollHistoryPage payrolls={payrolls} onUpdateRecord={appLevelHandlers.updatePayrollRecord} />} />
+                <Route path="generate" element={
+                    <PayrollGenerationPage 
+                        employees={employees}
+                        positions={positions}
+                        schedules={schedules}
+                        attendanceLogs={attendanceLogs}
+                        holidays={holidays}
+                        onGenerate={appLevelHandlers.generatePayrollRun}
+                    />
+                } />
+            </Route>
+            
             <Route path="holiday-management" element={<HolidayManagementPage holidays={holidays} leaveRequests={leaveRequests} handlers={appLevelHandlers} />} />
             <Route path="contributions-management" element={<ContributionsManagementPage />} />
             <Route path="performance" element={<PerformanceManagementPage kras={kras} kpis={kpis} positions={positions} employees={employees} evaluations={evaluations} handlers={appLevelHandlers} />} />
-            <Route path="performance/evaluate" element={<EvaluationFormPage employees={employees} positions={positions} kras={kras} kpis={kpis} evaluationFactors={evaluationFactors} handlers={appLevelHandlers} />} />
+            <Route path="performance/evaluate" element={
+              <EvaluationFormPage 
+                currentUser={currentUser} 
+                employees={employees} 
+                positions={positions} 
+                kras={kras} 
+                kpis={kpis} 
+                evaluationFactors={evaluationFactors} 
+                handlers={appLevelHandlers} 
+              />
+            } />
             <Route path="training">
               <Route index element={<TrainingPage trainingPrograms={trainingPrograms} enrollments={enrollments} handlers={appLevelHandlers} />} />
               <Route path=":programId" element={<ProgramDetailPage employees={employees} trainingPrograms={trainingPrograms} enrollments={enrollments} handlers={appLevelHandlers} />} />
             </Route>
-            <Route path="case-management" element={<CaseManagementPage />} />
+            <Route path="case-management" element={<CaseManagementPage cases={disciplinaryCases} employees={employees} handlers={appLevelHandlers} />} />
             <Route path="recruitment" element={<RecruitmentPage jobOpenings={jobOpenings} applicants={applicants} positions={positions} handlers={appLevelHandlers} />} />
             <Route path="reports" element={<ReportsPage employees={employees} positions={positions} />} />
           </>
         )}
         {userRole === USER_ROLES.TEAM_LEADER && (
           <>
-            <Route path="my-attendance" element={<MyAttendancePage />} />
-            <Route path="my-payroll" element={<MyPayrollPage />} />
-            <Route path="team-employees" element={<MyTeamPage />} />
-            <Route path="evaluate-team" element={<EvaluateTeamPage />} />
-            <Route path="my-leave" element={<MyLeavePage leaveRequests={leaveRequests} createLeaveRequest={appLevelHandlers.createLeaveRequest} />} />
+            <Route path="my-attendance" element={<MyAttendancePage currentUser={currentUser} allSchedules={schedules} attendanceLogs={attendanceLogs} />} />
+            <Route path="my-payroll" element={<MyPayrollLayout />}>
+              <Route index element={<Navigate to="projection" replace />} />
+              <Route path="projection" element={<MyPayrollProjectionPage currentUser={currentUser} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} holidays={holidays} />} />
+              <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />
+            </Route>
+            <Route path="team-employees" element={<MyTeamPage currentUser={currentUser} employees={employees} positions={positions} />} />
+            <Route path="evaluate-team" element={
+              <EvaluateTeamPage 
+                currentUser={currentUser}
+                employees={employees}
+                positions={positions}
+                evaluations={evaluations}
+                kras={kras}
+                kpis={kpis}
+              />
+            } />
+            <Route path="performance/evaluate" element={
+              <EvaluationFormPage 
+                currentUser={currentUser} 
+                employees={employees} 
+                positions={positions} 
+                kras={kras} 
+                kpis={kpis} 
+                evaluationFactors={evaluationFactors} 
+                handlers={appLevelHandlers} 
+              />
+            } />
+            <Route path="my-leave" element={<MyLeavePage leaveRequests={leaveRequests.filter(r => r.empId === currentUser.id)} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} />} />
           </>
         )}
         {userRole === USER_ROLES.REGULAR_EMPLOYEE && (
           <>
-            <Route path="my-attendance" element={<MyAttendancePage />} />
-            <Route path="my-payroll" element={<MyPayrollPage />} />
-            <Route path="evaluate-self" element={<MyEvaluationsPage />} />
-            <Route path="my-leave" element={<MyLeavePage leaveRequests={leaveRequests} createLeaveRequest={appLevelHandlers.createLeaveRequest} />} />
+            <Route path="my-attendance" element={<MyAttendancePage currentUser={currentUser} allSchedules={schedules} attendanceLogs={attendanceLogs} />} />
+            <Route path="my-payroll" element={<MyPayrollLayout />}>
+                <Route index element={<Navigate to="projection" replace />} />
+                <Route path="projection" element={<MyPayrollProjectionPage currentUser={currentUser} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} holidays={holidays} />} />
+                <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />
+            </Route>
+            <Route path="team-employees" element={<MyTeamPage currentUser={currentUser} employees={employees} positions={positions} />} />
+            <Route path="evaluate-leader" element={
+              <EvaluateLeaderPage
+                currentUser={currentUser}
+                employees={employees}
+                positions={positions}
+              />
+            } />
+            <Route path="performance/evaluate" element={
+              <EvaluationFormPage 
+                currentUser={currentUser} 
+                employees={employees} 
+                positions={positions} 
+                kras={kras} 
+                kpis={kpis} 
+                evaluationFactors={evaluationFactors} 
+                handlers={appLevelHandlers} 
+              />
+            } />
+            <Route path="my-leave" element={<MyLeavePage leaveRequests={leaveRequests.filter(r => r.empId === currentUser.id)} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} />} />
           </>
         )}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
-      <Route path="/" element={isLoggedIn && userRole ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
+      <Route path="/" element={currentUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
       <Route path="*" element={ <div style={{ textAlign: 'center', marginTop: '50px' }}><h2>404 - Page Not Found</h2></div> } />
     </Routes>
   );
 }
 
-function App() {
-  return ( <Router><AppContent /></Router> );
-}
+const App = () => (
+  <AppContent />
+);
+
 export default App;

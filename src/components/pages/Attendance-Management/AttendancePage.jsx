@@ -7,10 +7,11 @@ import './AttendancePage.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import EditAttendanceModal from '../../modals/EditAttendanceModal';
+import logo from '../../../assets/logo.png';
 
 const createPastDate = (daysAgo) => new Date(Date.now() - (86400000 * daysAgo)).toISOString().split('T')[0];
 
-const initialAttendanceLogs = [
+export const initialAttendanceLogs = [
   { empId: 'EMP001', date: createPastDate(0), signIn: '09:02', breakOut: '12:05', breakIn: '13:01', signOut: null },
   { empId: 'EMP002', date: createPastDate(0), signIn: '08:58', breakOut: null, breakIn: null, signOut: null },
   { empId: 'EMP001', date: createPastDate(1), signIn: '09:00', breakOut: '12:00', breakIn: '13:00', signOut: '18:00' },
@@ -26,10 +27,9 @@ const initialAttendanceLogs = [
   { empId: 'EMP004', date: createPastDate(4), signIn: '09:10', breakOut: '12:15', breakIn: '13:10', signOut: '18:15' },
 ];
 
-const AttendancePage = ({ allSchedules, employees, positions }) => {
+const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, setAttendanceLogs }) => {
   const [activeView, setActiveView] = useState('daily');
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
-  const [attendanceLogs, setAttendanceLogs] = useState(initialAttendanceLogs);
 
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
   const [positionFilter, setPositionFilter] = useState('');
@@ -48,7 +48,7 @@ const AttendancePage = ({ allSchedules, employees, positions }) => {
     if (schedulesForDate.length === 0) return [];
     const employeeMap = new Map(employees.map(emp => [emp.id, emp]));
     const positionMap = new Map(positions.map(pos => [pos.id, pos.title]));
-    const logMap = new Map(attendanceLogs.filter(att => att.date === currentDate).map(att => [att.empId, att]));
+    const logMap = new Map((attendanceLogs || []).filter(att => att.date === currentDate).map(att => [att.empId, att]));
     return schedulesForDate.map(schedule => {
       const employeeDetails = employeeMap.get(schedule.empId);
       if (!employeeDetails) return null;
@@ -95,7 +95,7 @@ const AttendancePage = ({ allSchedules, employees, positions }) => {
         history[s.date].scheduled++;
       }
     });
-    attendanceLogs.forEach(log => {
+    (attendanceLogs || []).forEach(log => {
       if (history[log.date]) {
         const scheduleKey = `${log.date}-${log.empId}`;
         const schedule = schedulesMap.get(scheduleKey);
@@ -118,11 +118,7 @@ const AttendancePage = ({ allSchedules, employees, positions }) => {
   }, [attendanceLogs, allSchedules]);
 
   const handleStatusFilterClick = (newStatus) => {
-    if (statusFilter === newStatus) {
-      setStatusFilter('');
-    } else {
-      setStatusFilter(newStatus);
-    }
+    setStatusFilter(prevStatus => prevStatus === newStatus ? '' : newStatus);
   };
 
   const handleRequestSort = (key) => {
@@ -165,47 +161,28 @@ const AttendancePage = ({ allSchedules, employees, positions }) => {
     const reportDate = new Date(currentDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+    doc.addImage(logo, 'PNG', 40, 20, 80, 26);
     doc.setFontSize(18); doc.setFont(undefined, 'bold');
-    doc.text('Daily Attendance Report', pageWidth / 2, 40, { align: 'center' });
+    doc.text('Daily Attendance Report', pageWidth - 40, 40, { align: 'right' });
     doc.setFontSize(11); doc.setFont(undefined, 'normal');
-    doc.text(`Date: ${reportDate}`, pageWidth / 2, 55, { align: 'center' });
+    doc.text(`Date: ${reportDate}`, pageWidth - 40, 55, { align: 'right' });
+    
     const totalScheduled = dailyAttendanceList.length;
-    const presentEmployees = dailyAttendanceList.filter(e => e.status === 'Present');
-    const lateEmployees = dailyAttendanceList.filter(e => e.status === 'Late');
-    const absentEmployees = dailyAttendanceList.filter(e => e.status === 'Absent');
+    const presentCount = dailyAttendanceList.filter(e => e.status === 'Present').length;
+    const lateCount = dailyAttendanceList.filter(e => e.status === 'Late').length;
+    const absentCount = dailyAttendanceList.filter(e => e.status === 'Absent').length;
+    
     let summaryY = 80;
     doc.setFontSize(12); doc.setFont(undefined, 'bold');
     doc.text('Summary', 40, summaryY);
     summaryY += 18;
     doc.setFontSize(10); doc.setFont(undefined, 'normal');
     doc.text(`- Total Scheduled: ${totalScheduled}`, 50, summaryY);
-    doc.text(`- Present: ${presentEmployees.length}`, 200, summaryY);
-    doc.text(`- Late: ${lateEmployees.length}`, 350, summaryY);
-    doc.text(`- Absent: ${absentEmployees.length}`, 500, summaryY);
-    summaryY += 15;
+    doc.text(`- Present: ${presentCount}`, 200, summaryY);
+    doc.text(`- Late: ${lateCount}`, 350, summaryY);
+    doc.text(`- Absent: ${absentCount}`, 500, summaryY);
+    summaryY += 25;
     
-    const drawEmployeeList = (title, employees, startY) => {
-      if (employees.length === 0) return startY;
-      let y = startY;
-      if (y > pageHeight - 60) { doc.addPage(); y = 40; }
-      y += 15;
-      doc.setFont(undefined, 'bold');
-      doc.text(title, 40, y);
-      y += 15;
-      doc.setFont(undefined, 'normal');
-      employees.forEach(emp => {
-        if (y > pageHeight - 40) { doc.addPage(); y = 40; }
-        doc.text(`- ${emp.name} (${emp.id})`, 50, y);
-        y += 12;
-      });
-      return y + 10;
-    };
-
-    summaryY = drawEmployeeList('Present Employees', presentEmployees, summaryY);
-    summaryY = drawEmployeeList('Late Employees', lateEmployees, summaryY);
-    summaryY = drawEmployeeList('Absent Employees', absentEmployees, summaryY);
-    
-    if (summaryY > pageHeight - 100) { doc.addPage(); summaryY = 40; }
     const tableColumns = ["ID", "Name", "Position", "Shift", "Sign In", "Break Out", "Break In", "Sign Out", "Status"];
     const tableRows = sortedAndFilteredList.map(emp => [
       emp.id, emp.name, emp.position, emp.shift || '---', emp.signIn || '---',
@@ -219,7 +196,13 @@ const AttendancePage = ({ allSchedules, employees, positions }) => {
         doc.text('Page ' + doc.internal.getNumberOfPages(), data.settings.margin.left, pageHeight - 10);
       }
     });
-    setPdfDataUri(doc.output('datauristring'));
+
+    // --- THIS IS THE FIX ---
+    const pdfBlob = doc.output('blob');
+    const url = URL.createObjectURL(pdfBlob);
+    setPdfDataUri(url);
+    // --- END OF FIX ---
+
     setShowReportModal(true);
   };
   
@@ -365,7 +348,7 @@ const AttendancePage = ({ allSchedules, employees, positions }) => {
         </div>
       </header>
       
-      <div className="attendance-page-content">
+      <div className="attendance-page-content p-3">
         {(activeView === 'daily' || activeView === 'historyDetail') && (
           <>
             <div className="daily-view-header-bar">

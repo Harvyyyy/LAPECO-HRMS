@@ -213,7 +213,7 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
                                   </tr>
                               ))}
                           </tbody>
-                      </table>
+                      </table>   
                   </div>
               </>
           )}
@@ -353,7 +353,6 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
     }
   };
 
-  // --- Main Component Return ---
   return (
     <div className="container-fluid page-module-container p-lg-4 p-md-3 p-2">
       {previewData ? renderPreviewScreen() : (
@@ -379,7 +378,6 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
         </>
       )}
 
-      {/* --- MODALS --- */}
       {showCreateTemplateModal && ( <CreateTemplateModal show={showCreateTemplateModal} onClose={handleCloseCreateTemplateModal} onSave={handleSaveAndCloseTemplateModal} positions={positions} templateData={editingTemplate} /> )}
       {showEditScheduleModal && editingScheduleDate && ( <EditScheduleModal show={showEditScheduleModal} onClose={handleCloseEditScheduleModal} onSave={handleSaveAndCloseEditModal} scheduleDate={editingScheduleDate} initialScheduleEntries={schedules.filter(s => s.date === editingScheduleDate)} allEmployees={employees} positions={positions} /> )}
       {showSelectDateModal && ( <SelectDateForScheduleModal show={showSelectDateModal} onClose={() => setShowSelectDateModal(false)} onProceed={handleProceedToBuilder} existingScheduleDates={existingScheduleDatesSet} />)}
