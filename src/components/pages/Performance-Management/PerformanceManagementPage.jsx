@@ -8,7 +8,7 @@ import KraAccordionItem from './KraAccordionItem';
 import StartEvaluationModal from '../../modals/StartEvaluationModal';
 import ViewEvaluationModal from '../../modals/ViewEvaluationModal';
 import ScoreIndicator from './ScoreIndicator';
-import PerformanceReportModal from './PerformanceReportModal';
+import PerformanceReportModal from '../../modals/PerformanceReportModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import PerformanceInsightsCard from './PerformanceInsightsCard';
 import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
