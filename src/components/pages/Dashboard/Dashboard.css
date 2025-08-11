@@ -1,4 +1,3 @@
-/* --- Main Dashboard Layout --- */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -9,17 +8,23 @@
 .dashboard-grid-span-2 { grid-column: span 2; }
 .dashboard-grid-span-1 { grid-column: span 1; }
 
-/* --- Welcome Header --- */
 .welcome-header {
     background: linear-gradient(135deg, var(--app-success-color) 0%, #126b41 100%);
-    color: #fff;
+    color: var(--white-color);
     padding: 1.5rem 2rem;
     border-radius: var(--border-radius);
+    transition: background-color 0.3s ease;
+}
+.dark-theme .welcome-header {
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 .welcome-header h2 { font-weight: 600; font-size: 1.75rem; }
 .welcome-header p { font-size: 1rem; opacity: 0.9; margin: 0; }
+.dark-theme .welcome-header p {
+    color: var(--text-secondary);
+}
 
-/* --- Stat Cards (for HR/TL) --- */
 .dashboard-stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -28,7 +33,7 @@
 .dashboard-stat-card {
     display: flex;
     align-items: center;
-    background-color: #fff;
+    background-color: var(--bg-primary);
     padding: 1.25rem;
     border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
@@ -48,11 +53,11 @@
 .stat-icon.icon-on-leave { background-color: #fd7e14; }
 .stat-icon.icon-pending { background-color: #ffc107; }
 .stat-icon.icon-open-positions { background-color: #6f42c1; }
-.dashboard-stat-card .stat-info .stat-value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
-.dashboard-stat-card .stat-info .stat-label { font-size: 0.9rem; color: var(--secondary-color); }
+.dashboard-stat-card .stat-info .stat-value { font-size: 2rem; font-weight: 700; line-height: 1.2; color: var(--text-primary); }
+.dashboard-stat-card .stat-info .stat-label { font-size: 0.9rem; color: var(--text-secondary); }
 
 .dashboard-card {
-    background-color: #fff;
+    background-color: var(--bg-primary);
     border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
     box-shadow: var(--card-shadow);
@@ -60,16 +65,16 @@
     flex-direction: column;
     height: 100%;
 }
-.dashboard-card .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); }
-.dashboard-card .card-header h6 { font-weight: 600; font-size: 1rem; margin: 0; }
+.dashboard-card .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); background-color: var(--bg-secondary); }
+.dashboard-card .card-header h6 { font-weight: 600; font-size: 1rem; margin: 0; color: var(--text-primary); }
 .dashboard-card .card-body { padding: 1.25rem; flex-grow: 1; }
-.dashboard-card .card-footer { background-color: var(--light-gray); padding: 0.75rem 1.25rem; text-align: right; }
+.dashboard-card .card-footer { background-color: var(--bg-secondary); padding: 0.75rem 1.25rem; text-align: right; border-top: 1px solid var(--border-color); }
 .dashboard-card .card-footer a { font-weight: 500; font-size: 0.9rem; }
 
 .dashboard-list-group { list-style: none; padding: 0; margin: 0; }
 .dashboard-list-group li { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
 .dashboard-list-group li:last-child { border-bottom: none; }
-.dashboard-list-group li .text-muted { font-size: 0.85rem; }
+.dashboard-list-group li span { color: var(--text-primary); }
 
 .employee-dashboard-grid-top {
     display: grid;
@@ -89,13 +94,20 @@
 .my-status-card-revised .status-icon.bi-calendar-check { color: var(--app-success-color); }
 .my-status-card-revised.day-off {
     background: linear-gradient(135deg, #6c757d, #343a40);
-    color: #fff;
+    color: var(--white-color);
+}
+.dark-theme .my-status-card-revised.day-off {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 .my-status-card-revised.day-off .status-icon.bi-calendar-x { color: rgba(255,255,255,0.8); }
-.my-status-card-revised.day-off .status-text { color: #fff; }
+.dark-theme .my-status-card-revised.day-off .status-icon.bi-calendar-x { color: var(--text-secondary); }
+.my-status-card-revised .status-text { font-weight: 600; font-size: 1.1rem; color: var(--text-primary); }
+.my-status-card-revised.day-off .status-text { color: var(--white-color); }
+.dark-theme .my-status-card-revised.day-off .status-text { color: var(--text-primary); }
+.my-status-card-revised .status-detail { font-size: 0.9rem; color: var(--text-secondary); font-weight: 500; }
 .my-status-card-revised.day-off .status-detail { color: rgba(255,255,255,0.7); }
-.my-status-card-revised .status-text { font-weight: 600; font-size: 1.1rem; }
-.my-status-card-revised .status-detail { font-size: 0.9rem; color: var(--secondary-color); font-weight: 500; }
+.dark-theme .my-status-card-revised.day-off .status-detail { color: var(--text-secondary); }
 
 .action-hub-card .card-body { padding: 0; }
 .action-hub-list { list-style: none; padding: 0; margin: 0; }
@@ -106,17 +118,16 @@
     padding: 1rem 1.25rem;
     border-bottom: 1px solid var(--border-color);
     text-decoration: none;
-    color: var(--dark-gray);
+    color: var(--text-primary);
     transition: background-color 0.2s ease;
 }
 .action-hub-item:last-child a { border-bottom: none; }
-.action-hub-item a:hover { background-color: var(--light-gray); }
-.action-hub-item .action-icon { font-size: 1.25rem; color: var(--secondary-color); width: 24px; text-align: center; transition: color 0.2s ease; }
+.action-hub-item a:hover { background-color: var(--bg-tertiary); }
+.action-hub-item .action-icon { font-size: 1.25rem; color: var(--text-secondary); width: 24px; text-align: center; transition: color 0.2s ease; }
 .action-hub-item a:hover .action-icon { color: var(--app-success-color); }
 .action-hub-item .action-label { font-weight: 500; flex-grow: 1; }
-.action-hub-item .action-value { font-weight: 600; font-size: 1.1rem; }
-.action-hub-item .action-unit { font-size: 0.8rem; color: var(--secondary-color); margin-left: 0.25rem; }
-.action-hub-item .btn { font-size: 0.9rem; }
+.action-hub-item .action-value { font-weight: 600; font-size: 1.1rem; color: var(--text-primary); }
+.action-hub-item .action-unit { font-size: 0.8rem; color: var(--text-secondary); margin-left: 0.25rem; }
 
 .my-team-card .card-body, .upcoming-holidays-card .card-body {
     padding: 0.75rem 1rem;
@@ -132,22 +143,17 @@
     padding: 0.4rem 0;
 }
 .roster-item .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-.roster-item .name { font-weight: 500; }
+.roster-item .name { font-weight: 500; color: var(--text-primary); }
 .holiday-item i { color: var(--danger-color); }
+.holiday-item span { color: var(--text-primary); }
 
 .recent-activity-card .card-body { padding: 0.5rem 1.25rem; max-height: 280px; overflow-y: auto; }
 .activity-list { list-style: none; padding: 0; margin: 0; }
 .activity-item { display: flex; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border-color); }
 .activity-item:last-child { border-bottom: none; }
-.activity-item .date { width: 60px; flex-shrink: 0; font-weight: 500; color: var(--secondary-color); font-size: 0.85rem; }
-.activity-item .info { flex-grow: 1; }
-.activity-item .info .status { font-weight: 500; font-size: 0.9rem; }
-.activity-item .info .details { font-size: 0.8rem; display: block; color: var(--secondary-color); }
-.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.status-dot.status-present { background-color: var(--app-success-color); }
-.status-dot.status-late { background-color: var(--warning-color); }
-.status-dot.status-absent { background-color: var(--danger-color); }
-.status-dot.status-scheduled { background-color: var(--secondary-color); }
+.activity-item .date { width: 60px; flex-shrink: 0; font-weight: 500; color: var(--text-secondary); font-size: 0.85rem; }
+.activity-item .info .status { font-weight: 500; font-size: 0.9rem; color: var(--text-primary); }
+.activity-item .info .details { font-size: 0.8rem; display: block; color: var(--text-secondary); }
 
 .team-attendance-card .card-body,
 .whos-out-card .card-body {
@@ -163,58 +169,21 @@
     border-bottom: 1px solid var(--border-color);
 }
 .attendance-item:last-child, .leave-item:last-child { border-bottom: none; }
-.attendance-item img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 0.75rem; }
-.attendance-item .info, .leave-item .info { flex-grow: 1; }
-.attendance-item .info .name, .leave-item .info .name { font-weight: 500; font-size: 0.9rem; }
-.attendance-item .info .status-text, .leave-item .info .leave-type { font-size: 0.8rem; display: block; color: var(--secondary-color); }
-.status-text.status-present { color: var(--app-success-color); }
-.status-text.status-late { color: var(--warning-color); }
-.status-text.status-absent { color: var(--danger-color); }
-.status-dot.status-off { background-color: var(--secondary-color); }
+.attendance-item .info .name, .leave-item .info .name { font-weight: 500; font-size: 0.9rem; color: var(--text-primary); }
 .leave-item .date-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--light-gray);
-    border-radius: var(--border-radius);
-    width: 50px;
-    height: 50px;
-    flex-shrink: 0;
-    margin-right: 0.75rem;
+    background-color: var(--bg-tertiary);
 }
-.leave-item .date-box .month { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: var(--secondary-color); }
-.leave-item .date-box .day { font-size: 1.4rem; font-weight: 700; line-height: 1.1; color: var(--dark-gray); }
-.manager-hub-card .card-body { padding: 0; }
+.leave-item .date-box .day { color: var(--text-primary); }
+
 .manager-hub-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); align-items: stretch; }
 .team-roster-snapshot { padding: 1.25rem; border-right: 1px solid var(--border-color); }
-.team-roster-snapshot h6 { font-weight: 600; }
-.roster-list { list-style: none; padding: 0; margin-top: 1rem; max-height: 180px; overflow-y: auto; }
-.roster-item { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
-.roster-item .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-.roster-item .name { font-weight: 500; font-size: 0.9rem; }
+.dark-theme .team-roster-snapshot { border-right-color: var(--border-color); }
 .actionable-reminders { padding: 1.25rem; }
-.actionable-reminders h6 { font-weight: 600; }
-.action-list { list-style: none; padding: 0; margin-top: 1rem; }
-.action-item a {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem;
-    border-radius: var(--border-radius);
-    text-decoration: none;
-    color: var(--dark-gray);
-    transition: background-color 0.2s ease;
-}
-.action-item a:hover { background-color: var(--light-gray); color: var(--app-success-color); }
-.action-item .action-icon { font-size: 1.25rem; width: 40px; text-align: center; margin-right: 0.5rem; color: var(--secondary-color); }
-.action-item a:hover .action-icon { color: var(--app-success-color); }
-.action-item .action-label { font-weight: 500; }
-.action-item .action-badge { margin-left: auto; }
+.action-item a:hover { background-color: var(--bg-tertiary); }
+.action-item a:hover .action-icon, .action-item a:hover .action-label { color: var(--app-success-color); }
 
 @media (max-width: 1200px) {
-    .employee-dashboard-grid-top {
-        grid-template-columns: repeat(2, 1fr);
-    }
+    .employee-dashboard-grid-top { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 992px) {
     .dashboard-grid, .employee-dashboard-grid-top { grid-template-columns: repeat(2, 1fr); }
@@ -223,6 +192,7 @@
 @media (max-width: 768px) {
     .manager-hub-grid { grid-template-columns: 1fr; }
     .team-roster-snapshot { border-right: none; border-bottom: 1px solid var(--border-color); }
+    .dark-theme .team-roster-snapshot { border-bottom-color: var(--border-color); }
 }
 @media (max-width: 576px) {
     .dashboard-grid, .employee-dashboard-grid-top { grid-template-columns: 1fr; }

@@ -15,6 +15,7 @@ import ViewApplicantDetailsModal from '../../modals/ViewApplicantDetailsModal';
 import ScheduleInterviewModal from '../../modals/ScheduleInterviewModal';
 import HireApplicantModal from '../../modals/HireApplicantModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
+import AccountGeneratedModal from '../../modals/AccountGeneratedModal';
 
 const PIPELINE_STAGES = ['New Applicant', 'Screening', 'Interview', 'Offer', 'Hired', 'Rejected'];
 
@@ -50,6 +51,7 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'applicationDate', direction: 'descending' });
+  const [newlyGeneratedAccount, setNewlyGeneratedAccount] = useState(null);
 
   const jobOpeningsMap = useMemo(() => new Map(jobOpenings.map(job => [job.id, job.title])), [jobOpenings]);
 
@@ -108,11 +110,30 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (!over) return;
+
     const applicantId = parseInt(active.id, 10);
-    const originalStatus = active.data.current?.applicant?.status;
+    const applicantData = active.data.current?.applicant;
+    const originalStatus = applicantData?.status;
     const newStatus = over.id;
+
     if (originalStatus && newStatus && originalStatus !== newStatus && PIPELINE_STAGES.includes(newStatus)) {
-      handlers.updateApplicantStatus(applicantId, newStatus);
+      if (newStatus === 'Hired') {
+        setSelectedApplicant(applicantData);
+        setShowHireModal(true);
+      } else {
+        handlers.updateApplicantStatus(applicantId, newStatus);
+      }
+    }
+  };
+
+  const handleHireApplicant = (applicantId, hiringDetails) => {
+    const newAccount = handlers.hireApplicant(applicantId, hiringDetails);
+    if (newAccount) {
+        setShowHireModal(false);
+        setSelectedApplicant(null);
+        setNewlyGeneratedAccount(newAccount);
+    } else {
+        alert("An error occurred while hiring the applicant.");
     }
   };
 
@@ -322,7 +343,13 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
       <AddApplicantModal show={showApplicantModal} onClose={() => setShowApplicantModal(false)} onSave={handlers.saveApplicant} jobOpenings={jobOpenings}/>
       {selectedApplicant && <ViewApplicantDetailsModal show={showViewModal} onClose={() => setShowViewModal(false)} applicant={selectedApplicant} jobTitle={jobOpeningsMap.get(selectedApplicant?.jobOpeningId)}/>}
       {selectedApplicant && <ScheduleInterviewModal show={showInterviewModal} onClose={() => setShowInterviewModal(false)} onSave={handlers.scheduleInterview} applicant={selectedApplicant}/>}
-      {selectedApplicant && <HireApplicantModal show={showHireModal} onClose={() => setShowHireModal(false)} onHire={handlers.hireApplicant} applicant={selectedApplicant} positions={positions}/>}
+      {selectedApplicant && <HireApplicantModal show={showHireModal} onClose={() => setShowHireModal(false)} onHire={handleHireApplicant} applicant={selectedApplicant} positions={positions}/>}
+      
+      <AccountGeneratedModal 
+        show={!!newlyGeneratedAccount}
+        onClose={() => setNewlyGeneratedAccount(null)}
+        accountDetails={newlyGeneratedAccount}
+      />
     </div>
   );
 };

@@ -1,4 +1,3 @@
-// src/components/modals/PayrollAdjustmentModal.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -36,15 +35,29 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, payrollData }) => {
   }, [payrollData]);
 
   const totals = useMemo(() => {
-    if (!payrollData) return { grossPay: 0, totalDeductions: 0, netPay: 0 };
-    const grossPay = payrollData.grossPay + adjustments.allowances + adjustments.bonuses + adjustments.otherEarnings;
-    const totalDeductions = Object.values(payrollData.deductions).reduce((sum, val) => sum + val, 0) + adjustments.loanRepayments + adjustments.cashAdvances;
-    const netPay = grossPay - totalDeductions;
-    return { grossPay, totalDeductions, netPay };
+    if (!payrollData) return { baseGrossPay: 0, totalGrossPay: 0, totalDeductions: 0, netPay: 0 };
+    
+    const baseGrossPay = payrollData.grossPay;
+    const totalEarningsAdjustments = (adjustments.allowances || 0) + (adjustments.bonuses || 0) + (adjustments.otherEarnings || 0);
+    const totalGrossPay = baseGrossPay + totalEarningsAdjustments;
+
+    const baseDeductions = Object.values(payrollData.deductions).reduce((sum, val) => sum + val, 0);
+    const totalDeductionAdjustments = (adjustments.loanRepayments || 0) + (adjustments.cashAdvances || 0);
+    const totalDeductions = baseDeductions + totalDeductionAdjustments;
+
+    const netPay = totalGrossPay - totalDeductions;
+    
+    return { baseGrossPay, totalGrossPay, totalDeductions, netPay };
   }, [payrollData, adjustments]);
 
+  const handleAdjustmentChange = (field, value) => {
+    setAdjustments(prev => ({
+      ...prev,
+      [field]: Number(value) || 0
+    }));
+  };
+
   const handleSave = () => {
-    // Pass the calculated netPay along with adjustments and status
     onSave(payrollData.payrollId, { status, adjustments, netPay: totals.netPay });
     onClose();
   };
@@ -53,14 +66,12 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, payrollData }) => {
     const doc = new jsPDF();
     const pageW = doc.internal.pageSize.getWidth();
     
-    // Header
     doc.addImage(logo, 'PNG', 15, 12, 40, 13);
     doc.setFontSize(22); doc.setFont(undefined, 'bold');
     doc.text('PAYSLIP', pageW - 15, 25, { align: 'right' });
     doc.setDrawColor('#198754'); doc.setLineWidth(0.5);
     doc.line(15, 32, pageW - 15, 32);
 
-    // Info Section
     doc.setFontSize(10);
     doc.text(`Employee:`, 15, 45);
     doc.text(`Pay Period:`, pageW / 2, 45);
@@ -69,7 +80,7 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, payrollData }) => {
     doc.text(payrollData.cutOff, pageW / 2 + 30, 45);
     
     const financialBody = [
-        ['Calculated Gross Pay', formatCurrency(payrollData.grossPay), ''],
+        ['Calculated Gross Pay', formatCurrency(totals.baseGrossPay), ''],
         ['Allowances', formatCurrency(adjustments.allowances), ''],
         ['Bonuses / Commission', formatCurrency(adjustments.bonuses), ''],
         ['Other Earnings', formatCurrency(adjustments.otherEarnings), ''],
@@ -79,7 +90,7 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, payrollData }) => {
         ['Pag-IBIG', '', formatCurrency(payrollData.deductions.hdmf)],
         ['Loan Repayments', '', formatCurrency(adjustments.loanRepayments)],
         ['Cash Advances', '', formatCurrency(adjustments.cashAdvances)],
-        [{ content: 'Total Gross Pay', styles: { fontStyle: 'bold' } }, { content: formatCurrency(totals.grossPay), styles: { fontStyle: 'bold' } }, ''],
+        [{ content: 'Total Gross Pay', styles: { fontStyle: 'bold' } }, { content: formatCurrency(totals.totalGrossPay), styles: { fontStyle: 'bold' } }, ''],
         [{ content: 'Total Deductions', styles: { fontStyle: 'bold' } }, '', { content: `(${formatCurrency(totals.totalDeductions)})`, styles: { fontStyle: 'bold' } }],
     ];
 
@@ -92,7 +103,6 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, payrollData }) => {
         columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } },
     });
 
-    // Net Pay Summary
     const finalY = doc.lastAutoTable.finalY + 20;
     doc.setFontSize(14); doc.setFont(undefined, 'bold');
     doc.text('NET PAY:', pageW - 70, finalY, { align: 'right' });
@@ -129,10 +139,12 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, payrollData }) => {
               </ul>
               <div className="tab-content">
                 {activeTab === 'earnings' && <div className="form-grid">
-                  <ReadOnlyField label="Calculated Gross Pay" value={payrollData.grossPay} />
+                  <ReadOnlyField label="Calculated Base + Holiday/OT" value={totals.baseGrossPay} />
                   <AdjustmentField label="Allowances" field="allowances" />
                   <AdjustmentField label="Bonuses / Commission" field="bonuses" />
                   <AdjustmentField label="Other Earnings" field="otherEarnings" />
+                  {/* --- NEW: Added Gross Pay for clarity --- */}
+                  <ReadOnlyField label="Total Gross Pay" value={totals.totalGrossPay} />
                 </div>}
                 {activeTab === 'deductions' && <div className="form-grid">
                   <ReadOnlyField label="Withholding Tax" value={payrollData.deductions.tax} />
@@ -143,7 +155,7 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, payrollData }) => {
                   <AdjustmentField label="Cash Advances" field="cashAdvances" />
                 </div>}
                 {activeTab === 'summary' && <div className="summary-section">
-                  <div className="summary-row"><span className="label">Total Gross Earnings</span><span className="value">₱{formatCurrency(totals.grossPay)}</span></div>
+                  <div className="summary-row"><span className="label">Total Gross Earnings</span><span className="value">₱{formatCurrency(totals.totalGrossPay)}</span></div>
                   <div className="summary-row total-deductions"><span className="label">Total Deductions</span><span className="value">- ₱{formatCurrency(totals.totalDeductions)}</span></div>
                   <div className="summary-row net-pay"><span className="label">Net Pay</span><span className="value">₱{formatCurrency(totals.netPay)}</span></div>
                 </div>}

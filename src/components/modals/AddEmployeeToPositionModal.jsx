@@ -95,6 +95,8 @@ const AddEmployeeToPositionModal = ({ show, onClose, onSave, currentPosition, al
                   isClearable
                   isOptionDisabled={(option) => option.isDisabled}
                   formatOptionLabel={customFormatOptionLabel}
+                  className="react-select-container"
+                  classNamePrefix="react-select"
                 />
                 {error && <div className="invalid-feedback d-block mt-2">{error}</div>}
               </div>

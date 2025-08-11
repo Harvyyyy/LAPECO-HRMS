@@ -1,14 +1,13 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
 import placeholderAvatar from '../../assets/placeholder-profile.jpg';
 import NotificationDropdown from './NotificationDropdown';
+import ThemeToggle from './ThemeToggle'; 
 
-const Header = ({ onLogout, currentUser, notifications, appLevelHandlers }) => {
+const Header = ({ onLogout, currentUser, notifications, appLevelHandlers, theme }) => {
   const user = currentUser || { 
-    name: 'JOYCE K. LORD',
-    employeeId: '2201538',
-    avatarUrl: null,
-    role: 'TEAM_LEADER'
+    name: 'GUEST', employeeId: '0000000', avatarUrl: null, role: 'REGULAR_EMPLOYEE'
   };
 
   const positionMap = {
@@ -23,6 +22,8 @@ const Header = ({ onLogout, currentUser, notifications, appLevelHandlers }) => {
     <header className="app-header">
       <div className="header-left"></div>
       <div className="header-right">
+        <ThemeToggle theme={theme} onToggle={appLevelHandlers.toggleTheme} />
+        
         <NotificationDropdown notifications={notifications} handlers={appLevelHandlers} />
         <div className="dropdown user-profile-menu">
           <div 
@@ -48,8 +49,8 @@ const Header = ({ onLogout, currentUser, notifications, appLevelHandlers }) => {
               <div className="text-muted small">ID: {user.employeeId}</div>
             </li>
             <li><hr className="dropdown-divider" /></li>
-            <li><a className="dropdown-item" href="#"><i className="bi bi-person-fill"></i> My Profile</a></li>
-            <li><a className="dropdown-item" href="#"><i className="bi bi-gear-fill"></i> Account Settings</a></li>
+            <li><Link className="dropdown-item" to="/dashboard/my-profile"><i className="bi bi-person-fill"></i> My Profile</Link></li>
+            <li><Link className="dropdown-item" to="/dashboard/account-settings"><i className="bi bi-gear-fill"></i> Settings</Link></li>
             <li><hr className="dropdown-divider" /></li>
             <li>
               <button className="dropdown-item text-danger" onClick={onLogout}>

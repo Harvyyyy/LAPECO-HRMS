@@ -1,3 +1,8 @@
 .holiday-form-modal .form-label {
     font-weight: 500;
 }
+
+.dark-theme .holiday-form-modal .form-text {
+    color: var(--text-secondary);
+    opacity: 0.9;
+}

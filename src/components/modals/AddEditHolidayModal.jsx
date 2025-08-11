@@ -47,6 +47,7 @@ const AddEditHolidayModal = ({ show, onClose, onSave, holidayData }) => {
     e.preventDefault(); 
     if (validate()) {
       onSave(formData, holidayData?.id);
+      onClose();
     }
   };
 

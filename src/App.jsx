@@ -1,5 +1,3 @@
-// src/App.jsx
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
@@ -24,7 +22,7 @@ import PerformanceManagementPage from './components/pages/Performance-Management
 import EvaluationFormPage from './components/pages/Performance-Management/EvaluationFormPage';
 import MyTeamPage from './components/pages/My-Team/MyTeamPage';
 import MyAttendancePage from './components/pages/My-Attendance/MyAttendancePage';
-import AttendancePage, { initialAttendanceLogs } from './components/pages/Attendance-Management/AttendancePage';
+import AttendancePage from './components/pages/Attendance-Management/AttendancePage';
 import PayrollPage from './components/pages/Payroll-Management/PayrollPage';
 import PayrollGenerationPage from './components/pages/Payroll-Management/PayrollGenerationPage';
 import PayrollHistoryPage from './components/pages/Payroll-Management/PayrollHistoryPage';
@@ -34,7 +32,9 @@ import MyPayrollHistoryPage from './components/pages/My-Payroll/MyPayrollHistory
 import EvaluateTeamPage from './components/pages/Performance-Management/EvaluateTeamPage';
 import EvaluateLeaderPage from './components/pages/Performance-Management/EvaluateLeaderPage';
 import CaseManagementPage from './components/pages/Case-Management/CaseManagementPage';
-
+import AccountsPage from './components/pages/Accounts/AccountsPage';
+import MyProfilePage from './components/pages/My-Profile/MyProfilePage';
+import AccountSettingsPage from './components/pages/Account-Settings/AccountSettingsPage';
 
 // Placeholder Components
 const ContributionsManagementPage = () => <div className="container-fluid p-4"><h1 className="page-main-title">Contributions Management</h1><p>Content coming soon...</p></div>;
@@ -42,6 +42,7 @@ const ContributionsManagementPage = () => <div className="container-fluid p-4"><
 // Constants & Assets
 import { USER_ROLES } from './constants/roles';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { initialAttendanceLogs } from './data/attendanceData'; 
 
 // --- INITIAL MOCK DATA ---
 const initialPositionsData = [
@@ -53,13 +54,13 @@ const initialPositionsData = [
 ];
 
 const initialEmployeesData = [
-  { id: 'EMP003', name: 'Carol White', positionId: 2, isTeamLeader: true, email: 'carol.w@example.com', joiningDate: '2023-01-10', gender: 'Female', birthday: '1996-12-01' },
-  { id: 'EMP001', name: 'Alice Johnson', positionId: 2, isTeamLeader: false, email: 'alice.j@example.com', joiningDate: '2022-03-15', gender: 'Female', birthday: '1993-02-18' },
-  { id: 'EMP009', name: 'Ivy Lee', positionId: 2, isTeamLeader: false, email: 'ivy.l@example.com', joiningDate: '2023-08-12', gender: 'Female', birthday: '2000-10-10' },
-  { id: 'EMP002', name: 'Bob Smith', positionId: 3, isTeamLeader: true, email: 'bob.s@example.com', joiningDate: '2021-07-01', gender: 'Male', birthday: '1989-08-25' },
-  { id: 'EMP004', name: 'David Green', positionId: 3, isTeamLeader: false, email: 'david.g@example.com', joiningDate: '2023-05-20', gender: 'Male', birthday: '1999-04-30' },
-  { id: 'EMP005', name: 'Grace Field', positionId: 1, isTeamLeader: false, email: 'grace.f@example.com', joiningDate: '2020-11-20', gender: 'Female', birthday: '1995-07-19' },
-  { id: 'EMP010', name: 'Frank Black', positionId: null, isTeamLeader: false, email: 'frank.b@example.com', joiningDate: '2023-09-01', gender: 'Male', birthday: '1998-05-15' },
+  { id: 'EMP003', name: 'Carol White', positionId: 2, isTeamLeader: true, email: 'carol.w@example.com', joiningDate: '2023-01-10', gender: 'Female', birthday: '1996-12-01', sssNo: '34-123', tinNo: '123-456', pagIbigNo: '5678', philhealthNo: '9012', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP001', name: 'Alice Johnson', positionId: 2, isTeamLeader: false, email: 'alice.j@example.com', joiningDate: '2022-03-15', gender: 'Female', birthday: '1993-02-18', sssNo: '34-456', tinNo: '321-654', pagIbigNo: '8765', philhealthNo: '4321', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP009', name: 'Ivy Lee', positionId: 2, isTeamLeader: false, email: 'ivy.l@example.com', joiningDate: '2023-08-12', gender: 'Female', birthday: '2000-10-10', sssNo: null, tinNo: '111-222', pagIbigNo: '3333', philhealthNo: '4444', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP002', name: 'Bob Smith', positionId: 3, isTeamLeader: true, email: 'bob.s@example.com', joiningDate: '2021-07-01', gender: 'Male', birthday: '1989-08-25', sssNo: '34-789', tinNo: '987-654', pagIbigNo: '4321', philhealthNo: '8765', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP004', name: 'David Green', positionId: 3, isTeamLeader: false, email: 'david.g@example.com', joiningDate: '2023-05-20', gender: 'Male', birthday: '1999-04-30', sssNo: '34-101', tinNo: null, pagIbigNo: null, philhealthNo: '5555', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP005', name: 'Grace Field', positionId: 1, isTeamLeader: false, email: 'grace.f@example.com', joiningDate: '2020-11-20', gender: 'Female', birthday: '1995-07-19', sssNo: '34-202', tinNo: '222-333', pagIbigNo: '6666', philhealthNo: '7777', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP010', name: 'Frank Black', positionId: null, isTeamLeader: false, email: 'frank.b@example.com', joiningDate: '2023-09-01', gender: 'Male', birthday: '1998-05-15', sssNo: '34-303', tinNo: '444-555', pagIbigNo: '8888', philhealthNo: '9999', status: 'Inactive', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
 ];
 
 const initialSchedulesData = [
@@ -296,6 +297,14 @@ const initialCasesData = [
   },
 ];
 
+const initialUserAccounts = [
+    { employeeId: 'EMP005', username: 'hr_user', password: 'password123', status: 'Active' },
+    { employeeId: 'EMP003', username: 'leader_carol', password: 'password123', status: 'Active' },
+    { employeeId: 'EMP002', username: 'leader_bob', password: 'password123', status: 'Active' },
+    { employeeId: 'EMP001', username: 'employee_alice', password: 'password123', status: 'Active' },
+    { employeeId: 'EMP010', username: 'frank_black', password: 'disabledpassword', status: 'Deactivated' },
+];
+
 function AppContent() {
   const [currentUserId, setCurrentUserId] = useState(() => localStorage.getItem('currentUserId') || null);
   const navigate = useNavigate();
@@ -318,13 +327,15 @@ function AppContent() {
   const [attendanceLogs, setAttendanceLogs] = useState(initialAttendanceLogs);
   const [payrolls, setPayrolls] = useState(initialPayrollsData);
   const [disciplinaryCases, setDisciplinaryCases] = useState(initialCasesData);
+  const [userAccounts, setUserAccounts] = useState(initialUserAccounts);
+  const [theme, setTheme] = useState('light');
 
   const appLevelHandlers = {
     saveEmployee: (formData, existingEmployeeId) => {
       if (existingEmployeeId) {
         setEmployees(prev => prev.map(emp => emp.id === existingEmployeeId ? { ...emp, ...formData } : emp));
       } else {
-        const newEmployee = { id: `EMP${Date.now().toString().slice(-4)}`, isTeamLeader: false, ...formData };
+        const newEmployee = { id: `EMP${Date.now().toString().slice(-4)}`, isTeamLeader: false, status: 'Active', ...formData };
         setEmployees(prev => [newEmployee, ...prev]);
       }
     },
@@ -433,17 +444,84 @@ function AppContent() {
     },
     hireApplicant: (applicantId, hiringDetails) => {
         const applicantToHire = applicants.find(app => app.id === applicantId);
-        if (!applicantToHire) return;
+        if (!applicantToHire) return null;
+
         appLevelHandlers.updateApplicantStatus(applicantId, 'Hired');
+
         const newEmployee = {
-            id: hiringDetails.employeeId, name: applicantToHire.name, email: applicantToHire.email,
-            contactNumber: applicantToHire.phone, birthday: applicantToHire.birthday, gender: applicantToHire.gender,
-            address: '', sssNo: applicantToHire.sssNo, tinNo: applicantToHire.tinNo, pagIbigNo: applicantToHire.pagIbigNo,
-            philhealthNo: applicantToHire.philhealthNo, positionId: parseInt(hiringDetails.positionId, 10),
-            joiningDate: hiringDetails.joiningDate, isTeamLeader: false, imageUrl: null,
+            id: hiringDetails.employeeId,
+            name: applicantToHire.name,
+            email: applicantToHire.email,
+            contactNumber: applicantToHire.phone,
+            birthday: applicantToHire.birthday,
+            gender: applicantToHire.gender,
+            address: '',
+            sssNo: applicantToHire.sssNo,
+            tinNo: applicantToHire.tinNo,
+            pagIbigNo: applicantToHire.pagIbigNo,
+            philhealthNo: applicantToHire.philhealthNo,
+            positionId: parseInt(hiringDetails.positionId, 10),
+            joiningDate: hiringDetails.joiningDate,
+            isTeamLeader: false,
+            imageUrl: null,
+            status: 'Active',
         };
         setEmployees(prev => [newEmployee, ...prev]);
-        alert(`${newEmployee.name} has been successfully hired and added to the employee list!`);
+
+        const username = `${applicantToHire.name.split(' ')[0].toLowerCase()}_${hiringDetails.employeeId.slice(-4)}`;
+        const password = Math.random().toString(36).slice(-8); 
+        
+        const newAccount = {
+            employeeId: newEmployee.id,
+            username,
+            password,
+            status: 'Active',
+        };
+        setUserAccounts(prev => [...prev, newAccount]);
+        
+        return newAccount;
+    },
+    resetPassword: (employeeId) => {
+        const newPassword = Math.random().toString(36).slice(-8);
+        setUserAccounts(prev => prev.map(acc => 
+            acc.employeeId === employeeId ? { ...acc, password: newPassword } : acc
+        ));
+        alert(`Password for ${employeeId} has been reset to: ${newPassword}`);
+    },
+    toggleAccountStatus: (employeeId) => {
+        setUserAccounts(prev => prev.map(acc => {
+            if (acc.employeeId === employeeId) {
+                const newStatus = acc.status === 'Active' ? 'Deactivated' : 'Active';
+                return { ...acc, status: newStatus };
+            }
+            return acc;
+        }));
+    },
+    updateMyProfile: (employeeId, updatedData) => {
+        setEmployees(prev => prev.map(emp => 
+            emp.id === employeeId ? { ...emp, ...updatedData } : emp
+        ));
+    },
+    changeMyPassword: (employeeId, currentPassword, newPassword) => {
+        const account = userAccounts.find(acc => acc.employeeId === employeeId);
+        if (account && account.password === currentPassword) {
+            setUserAccounts(prev => prev.map(acc => 
+                acc.employeeId === employeeId ? { ...acc, password: newPassword } : acc
+            ));
+            return true;
+        }
+        return false;
+    },
+    updateMyResume: (employeeId, resumeFile) => {
+        if (!resumeFile) return;
+        const resumeUrl = URL.createObjectURL(resumeFile);
+        setEmployees(prev => prev.map(emp =>
+            emp.id === employeeId ? { ...emp, resumeUrl } : emp
+        ));
+        alert("Resume updated successfully!");
+    },
+    toggleTheme: () => {
+      setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
     },
     saveKraAndKpis: (kraData, kpiList) => {
       let savedKraId = kraData.id;
@@ -595,6 +673,7 @@ function AppContent() {
               currentUser={currentUser} 
               notifications={notifications}
               appLevelHandlers={appLevelHandlers}
+              theme={theme}
             />
           ) : (
             <Navigate to="/login" replace />
@@ -616,6 +695,9 @@ function AppContent() {
             attendanceLogs={attendanceLogs}
           />} 
         />
+        <Route path="my-profile" element={<MyProfilePage currentUser={currentUser} userRole={userRole} positions={positions} employees={employees} handlers={appLevelHandlers} />} />
+        <Route path="account-settings" element={<AccountSettingsPage currentUser={currentUser} userRole={userRole} handlers={appLevelHandlers} theme={theme} />} />
+        
         {userRole === USER_ROLES.HR_PERSONNEL && (
           <>
             <Route path="employee-data" element={<EmployeeDataPage employees={employees} positions={positions} handlers={appLevelHandlers} />} />
@@ -642,9 +724,10 @@ function AppContent() {
                 } />
             </Route>
             
-            <Route path="holiday-management" element={<HolidayManagementPage holidays={holidays} leaveRequests={leaveRequests} handlers={appLevelHandlers} />} />
+            <Route path="holiday-management" element={<HolidayManagementPage holidays={holidays} handlers={appLevelHandlers} />} />
             <Route path="contributions-management" element={<ContributionsManagementPage />} />
-            <Route path="performance" element={<PerformanceManagementPage kras={kras} kpis={kpis} positions={positions} employees={employees} evaluations={evaluations} handlers={appLevelHandlers} />} />
+            {/* --- MODIFIED: Pass evaluationFactors prop --- */}
+            <Route path="performance" element={<PerformanceManagementPage kras={kras} kpis={kpis} positions={positions} employees={employees} evaluations={evaluations} handlers={appLevelHandlers} evaluationFactors={evaluationFactors} theme={theme} />} />
             <Route path="performance/evaluate" element={
               <EvaluationFormPage 
                 currentUser={currentUser} 
@@ -662,6 +745,7 @@ function AppContent() {
             </Route>
             <Route path="case-management" element={<CaseManagementPage cases={disciplinaryCases} employees={employees} handlers={appLevelHandlers} />} />
             <Route path="recruitment" element={<RecruitmentPage jobOpenings={jobOpenings} applicants={applicants} positions={positions} handlers={appLevelHandlers} />} />
+            <Route path="accounts" element={<AccountsPage userAccounts={userAccounts} employees={employees} handlers={appLevelHandlers} />} />
             <Route path="reports" element={<ReportsPage employees={employees} positions={positions} />} />
           </>
         )}
@@ -674,6 +758,7 @@ function AppContent() {
               <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />
             </Route>
             <Route path="team-employees" element={<MyTeamPage currentUser={currentUser} employees={employees} positions={positions} />} />
+            {/* --- MODIFIED: Pass evaluationFactors prop --- */}
             <Route path="evaluate-team" element={
               <EvaluateTeamPage 
                 currentUser={currentUser}
@@ -682,6 +767,7 @@ function AppContent() {
                 evaluations={evaluations}
                 kras={kras}
                 kpis={kpis}
+                evaluationFactors={evaluationFactors}
               />
             } />
             <Route path="performance/evaluate" element={

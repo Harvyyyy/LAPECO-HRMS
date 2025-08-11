@@ -28,10 +28,12 @@
 .selector-name {
     font-weight: 600;
     margin-bottom: 0.25rem;
+    color: var(--text-primary);
 }
 
 .selector-position {
     font-size: 0.9rem;
+    color: var(--text-secondary);
 }
 
 .status-summary-bar {
@@ -41,7 +43,7 @@
     margin-bottom: 1.5rem;
 }
 .summary-card {
-    background-color: #fff;
+    background-color: var(--bg-primary);
     border: 1px solid var(--border-color);
     padding: 1rem;
     border-radius: var(--border-radius);
@@ -55,21 +57,22 @@
     border-radius: 50%;
     color: #fff;
 }
-.summary-card .summary-icon.icon-team { background-color: var(--dark-gray); }
-.summary-card .summary-icon.icon-due { background-color: var(--warning-color); }
+.summary-card .summary-icon.icon-team { background-color: var(--text-secondary); }
+.summary-card .summary-icon.icon-due { background-color: var(--warning-color); color: var(--text-primary); }
 .summary-card .summary-icon.icon-completed { background-color: var(--app-success-color); }
 .summary-card .summary-info .summary-value {
     font-size: 2rem;
     font-weight: 700;
     line-height: 1.1;
+    color: var(--text-primary);
 }
 .summary-card .summary-info .summary-label {
     font-size: 0.85rem;
-    color: var(--secondary-color);
+    color: var(--text-secondary);
 }
 
 .evaluation-selector-card-revised {
-    background-color: #fff;
+    background-color: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     display: grid;
@@ -92,7 +95,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    background-color: var(--light-gray);
+    background-color: var(--bg-secondary);
     padding: 0.75rem 1rem;
     border-radius: var(--border-radius);
 }
@@ -102,12 +105,13 @@
 }
 .status-item .status-label {
     font-size: 0.75rem;
-    color: var(--secondary-color);
+    color: var(--text-secondary);
     margin-bottom: 0.1rem;
 }
 .status-item .status-value {
     font-weight: 600;
     font-size: 0.9rem;
+    color: var(--text-primary);
 }
 .status-badge-revised {
     font-size: 0.7rem;
@@ -120,10 +124,11 @@
 }
 .status-badge-revised.status-due {
     background-color: var(--warning-color);
-    color: var(--dark-gray);
+    color: var(--text-primary);
 }
 .status-badge-revised.status-completed {
     background-color: var(--app-success-color);
+    color: var(--text-on-success);
 }
 .card-action-button {
     margin-left: auto;
@@ -135,4 +140,4 @@
     .evaluation-selector-card-revised {
         grid-template-columns: 1fr;
     }
-}
+}   

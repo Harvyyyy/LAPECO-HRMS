@@ -2,18 +2,15 @@
 .performance-nav-tabs .nav-link {
     font-size: 1rem;
     font-weight: 500;
-    color: var(--secondary-color);
 }
 .performance-nav-tabs .nav-link.active {
-    color: var(--app-success-color);
-    border-color: var(--border-color) var(--border-color) #fff;
     font-weight: 600;
 }
 
 /* --- KRA & KPI Setup View --- */
 .kra-accordion-item {
     border: 1px solid var(--border-color);
-    background-color: #fff;
+    background-color: var(--bg-primary);
     border-radius: var(--border-radius) !important;
     overflow: hidden;
 }
@@ -21,18 +18,23 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    background-color: var(--bg-primary);
+    transition: background-color 0.15s ease-in-out;
 }
 .kra-accordion-item .accordion-button {
     font-weight: 600;
     font-size: 1.1rem;
-    color: var(--dark-gray);
-    background-color: #fff;
+    color: var(--text-primary);
+    background-color: transparent;
     flex-grow: 1;
     width: auto;
 }
 .kra-accordion-item .accordion-button:not(.collapsed) {
-    background-color: var(--light-gray);
+    background-color: var(--bg-secondary);
     box-shadow: none;
+}
+.kra-accordion-item .accordion-button:not(.collapsed) + .kra-accordion-actions {
+    background-color: var(--bg-secondary);
 }
 .kra-accordion-item .accordion-button::after {
     margin-left: auto;
@@ -53,10 +55,7 @@
     display: flex;
     gap: 0.5rem;
     flex-shrink: 0;
-    background-color: #fff;
-}
-.kra-accordion-item .accordion-button:not(.collapsed) + .kra-accordion-actions {
-    background-color: var(--light-gray);
+    background-color: transparent;
 }
 
 /* --- KRA/KPI Modal --- */
@@ -64,7 +63,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    background-color: var(--light-gray);
+    background-color: var(--bg-secondary);
     padding: 1rem;
     border-radius: var(--border-radius);
 }
@@ -77,12 +76,14 @@
 .kpi-modal-fields { display: flex; flex-direction: column; gap: 0.5rem; }
 .kpi-modal-weight { align-self: start; }
 .kpi-modal-actions { align-self: start; }
-.react-select-sm .react-select__control { min-height: 31px; }
+.react-select-sm .react-select__control { min-height: 31px; background-color: var(--input-bg); border-color: var(--border-color); }
 .react-select-sm .react-select__indicators { height: 31px; }
+.dark-theme .react-select-sm .react-select__multi-value { background-color: var(--bg-tertiary); }
+.dark-theme .react-select-sm .react-select__multi-value__label { color: var(--text-primary); }
 
 /* --- Evaluation Form Page Layout --- */
 .evaluation-form-page {
-    background-color: var(--light-gray);
+    background-color: var(--bg-secondary);
     padding-bottom: 100px; 
     height: 100%;
     display: flex;
@@ -101,7 +102,7 @@
 .evaluation-header h1 {
     font-weight: 700;
     font-size: 2.2rem;
-    color: var(--dark-gray);
+    color: var(--text-primary);
 }
 .evaluation-body {
     flex-grow: 1;
@@ -114,7 +115,7 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(var(--bg-primary-rgb), 0.9);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border-top: 1px solid var(--border-color);
@@ -129,6 +130,7 @@
 .overall-score {
     font-size: 1.2rem;
     font-weight: 500;
+    color: var(--text-primary);
 }
 .overall-score span {
     font-size: 1.8rem;
@@ -155,7 +157,7 @@
     flex: 1;
     font-size: 0.9rem;
     font-weight: 500;
-    color: var(--secondary-color);
+    color: var(--text-secondary);
 }
 .step-item .step-circle {
     width: 32px;
@@ -166,22 +168,22 @@
     align-items: center;
     justify-content: center;
     margin-right: 0.75rem;
-    background-color: #fff;
+    background-color: var(--bg-primary);
     transition: all 0.3s ease;
 }
 .step-item.active .step-circle {
     border-color: var(--app-success-color);
     background-color: var(--app-success-color);
-    color: #fff;
+    color: var(--text-on-success);
 }
 .step-item.completed .step-circle {
     border-color: var(--app-success-color);
-    background-color: #fff;
+    background-color: var(--bg-primary);
     color: var(--app-success-color);
 }
 .step-item.active .step-label {
     font-weight: 600;
-    color: var(--dark-gray);
+    color: var(--text-primary);
 }
 .step-connector {
     flex: 1;
@@ -195,23 +197,25 @@
 
 /* --- Rating Scale Guide --- */
 .rating-scale-guide {
-    background-color: #fff;
+    background-color: var(--bg-primary);
     border: 1px solid var(--border-color);
 }
 .rating-scale-guide .card-title {
     font-size: 1rem;
     font-weight: 600;
+    color: var(--text-primary);
 }
 .guide-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 0.5rem;
     font-size: 0.85rem;
+    color: var(--text-primary);
 }
 .guide-grid div {
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
-    background-color: var(--light-gray);
+    background-color: var(--bg-secondary);
 }
 .guide-grid strong {
     color: var(--app-success-color);
@@ -239,15 +243,16 @@
 .competency-name, .kpi-title {
     font-weight: 600;
     margin-bottom: 0.1rem;
+    color: var(--text-primary);
 }
 .kpi-weight-display {
     font-weight: 500;
-    color: var(--secondary-color);
+    color: var(--text-secondary);
     font-size: 0.9em;
 }
 .competency-description, .kpi-description {
     font-size: 0.85rem;
-    color: var(--secondary-color);
+    color: var(--text-secondary);
     margin-bottom: 0;
 }
 
@@ -259,7 +264,7 @@
 }
 .star-rating i {
     font-size: 1.5rem;
-    color: #e0e0e0;
+    color: var(--bg-tertiary);
     cursor: pointer;
     transition: transform 0.1s ease-out, color 0.2s ease;
 }
@@ -267,7 +272,7 @@
     color: var(--warning-color);
 }
 .star-rating i:hover ~ i {
-    color: #e0e0e0;
+    color: var(--bg-tertiary);
 }
 .star-rating i.bi-star-fill {
     color: var(--warning-color);
@@ -286,7 +291,7 @@
     gap: 1.5rem;
 }
 .stat-card-revised {
-    background-color: #fff;
+    background-color: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 1.25rem;
@@ -305,10 +310,11 @@
     font-size: 2.25rem;
     font-weight: 700;
     line-height: 1.1;
+    color: var(--text-primary);
 }
 .stat-card-revised .stat-info .stat-label {
     font-size: 0.9rem;
-    color: var(--secondary-color);
+    color: var(--text-secondary);
 }
 
 /* Analysis Grid (Chart & Insights) */
@@ -318,11 +324,15 @@
     gap: 1.5rem;
     align-items: flex-start;
 }
+.analysis-grid .card-body {
+    color: var(--text-primary);
+}
 
 /* Strategic Insights Card */
 .insight-card .card-title {
     font-size: 1rem;
     font-weight: 600;
+    color: var(--text-primary);
 }
 .insight-avatar-list {
     display: flex;
@@ -334,7 +344,7 @@
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #fff;
+    border: 2px solid var(--bg-primary);
     margin-left: -12px;
     transition: transform 0.2s ease;
     cursor: pointer;
@@ -350,23 +360,29 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background-color: var(--medium-gray);
-    color: var(--secondary-color);
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
     font-size: 0.8rem;
     font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-left: -12px;
-    border: 2px solid #fff;
+    border: 2px solid var(--bg-primary);
 }
 .insight-card.high-potentials {
-    background: linear-gradient(135deg, #f0f9f4, #fff);
+    background: linear-gradient(135deg, #f0f9f4, var(--bg-primary));
     border-color: var(--app-success-color);
 }
 .insight-card.turnover-risks {
-    background: linear-gradient(135deg, #fdf3f4, #fff);
+    background: linear-gradient(135deg, #fdf3f4, var(--bg-primary));
     border-color: var(--danger-color);
+}
+.dark-theme .insight-card.high-potentials {
+    background: rgba(var(--app-success-rgb), 0.1);
+}
+.dark-theme .insight-card.turnover-risks {
+    background: rgba(var(--danger-rgb), 0.1);
 }
 
 /* History Table Section */
@@ -375,12 +391,13 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1rem;
-    background-color: var(--light-gray);
+    background-color: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
 }
 .history-table-controls h6 {
     margin-bottom: 0;
     font-size: 1rem;
+    color: var(--text-primary);
 }
 .history-table-controls .input-group {
     max-width: 350px;
@@ -399,7 +416,7 @@
 .score-bar-container {
     flex-grow: 1;
     height: 8px;
-    background-color: var(--medium-gray);
+    background-color: var(--bg-tertiary);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -415,6 +432,18 @@
     font-size: 0.9rem;
     min-width: 55px;
     text-align: right;
+    color: var(--text-primary);
+}
+
+.status-badge-completed {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.3em 0.6em;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--app-success-color);
+    background-color: rgba(var(--app-success-rgb), 0.1);
 }
 
 @media (max-width: 992px) {

@@ -1,53 +1,127 @@
-/* --- Main Tab Navigation --- */
 .payroll-nav-tabs {
     margin-bottom: -1px;
 }
 .payroll-nav-tabs .nav-link {
     font-weight: 500;
-    color: var(--secondary-color);
+    color: var(--text-secondary);
     padding: 0.75rem 1.25rem;
     font-size: 1rem;
     border-radius: 0.5rem 0.5rem 0 0 !important;
+    border: 1px solid transparent !important;
     border-bottom: 1px solid var(--border-color) !important;
 }
 .payroll-nav-tabs .nav-link.active {
     color: var(--app-success-color);
-    border-color: var(--border-color) var(--border-color) #f8f9fa;
-    background-color: #f8f9fa;
+    border-color: var(--border-color) var(--border-color) var(--bg-secondary) !important;
+    background-color: var(--bg-secondary);
     font-weight: 600;
 }
 .payroll-tab-content {
-    background-color: #f8f9fa;
+    background-color: var(--bg-secondary);
     padding: 1.5rem;
     border: 1px solid var(--border-color);
     border-radius: 0 0 var(--border-radius) var(--border-radius);
 }
 
-/* --- Payroll Generation Page --- */
-.payroll-generation-summary { background-color: var(--white-color); border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 1.25rem; }
-.summary-item { text-align: center; }
-.summary-item .summary-label { font-size: 0.8rem; text-transform: uppercase; font-weight: 500; color: var(--secondary-color); margin-bottom: 0.25rem; }
-.summary-item .summary-value { font-size: 1.75rem; font-weight: 700; line-height: 1.1; }
+.payroll-generation-summary { 
+    background-color: var(--bg-primary); 
+    border: 1px solid var(--border-color); 
+    border-radius: var(--border-radius); 
+    padding: 1.25rem; 
+}
+.summary-item { 
+    text-align: center; 
+}
+.summary-item .summary-label { 
+    font-size: 0.8rem; 
+    text-transform: uppercase; 
+    font-weight: 500; 
+    color: var(--text-secondary); 
+    margin-bottom: 0.25rem; 
+}
+.summary-item .summary-value { 
+    font-size: 1.75rem; 
+    font-weight: 700; 
+    line-height: 1.1; 
+    color: var(--text-primary);
+}
 
-/* --- Payroll History Page --- */
-.payroll-history-controls { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem; background-color: var(--white-color); border-radius: var(--border-radius); border: 1px solid var(--border-color); }
-.payroll-history-controls .input-group { max-width: 400px; }
-.payroll-history-controls .btn-group .btn { font-weight: 500; }
-.payroll-history-accordion .accordion-item { background-color: var(--white-color); border: 1px solid var(--border-color); border-radius: var(--border-radius) !important; overflow: hidden; }
-.payroll-history-accordion .accordion-button { padding: 0 !important; background: none !important; }
-.payroll-history-accordion .accordion-button:focus { box-shadow: none; }
-.payroll-history-accordion .accordion-button:not(.collapsed) { background-color: var(--light-gray) !important; }
-.accordion-header-grid { display: grid; grid-template-columns: 1fr auto; align-items: center; width: 100%; padding: 1rem 1.25rem; cursor: pointer; }
-.accordion-header-grid .header-main-info .period-title { font-size: 1.1rem; font-weight: 600; }
-.accordion-header-grid .header-main-info .period-meta { font-size: 0.85rem; color: var(--secondary-color); font-weight: 400; }
-.accordion-header-grid .header-stats { display: flex; gap: 1.5rem; }
-.accordion-header-grid .accordion-stat { text-align: right; }
-.accordion-header-grid .accordion-stat .stat-label { font-size: 0.75rem; color: var(--secondary-color); }
-.accordion-header-grid .accordion-stat .stat-value { font-size: 1rem; font-weight: 600; }
-.payroll-history-accordion .accordion-body { padding: 0; }
-.accordion-body-footer { padding: 0.75rem 1.25rem; background-color: var(--light-gray); border-top: 1px solid var(--border-color); }
+.payroll-history-controls { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    gap: 1rem; 
+    padding: 1rem; 
+    background-color: var(--bg-primary); 
+    border-radius: var(--border-radius); 
+    border: 1px solid var(--border-color); 
+}
+.payroll-history-controls .input-group { 
+    max-width: 400px; 
+}
+.payroll-history-controls .btn-group .btn { 
+    font-weight: 500; 
+}
 
-/* Table Column Widths & Alignment */
+.payroll-history-accordion .accordion-item { 
+    background-color: var(--bg-primary); 
+    border: 1px solid var(--border-color); 
+    border-radius: var(--border-radius) !important; 
+    overflow: hidden; 
+}
+.payroll-history-accordion .accordion-button { 
+    padding: 0 !important; 
+    background: none !important; 
+}
+.payroll-history-accordion .accordion-button:focus { 
+    box-shadow: none; 
+}
+.payroll-history-accordion .accordion-button:not(.collapsed) { 
+    background-color: var(--bg-secondary) !important; 
+}
+.accordion-header-grid { 
+    display: grid; 
+    grid-template-columns: 1fr auto; 
+    align-items: center; 
+    width: 100%; 
+    padding: 1rem 1.25rem; 
+    cursor: pointer; 
+}
+.accordion-header-grid .header-main-info .period-title { 
+    font-size: 1.1rem; 
+    font-weight: 600; 
+    color: var(--text-primary); 
+}
+.accordion-header-grid .header-main-info .period-meta { 
+    font-size: 0.85rem; 
+    color: var(--text-secondary); 
+    font-weight: 400; 
+}
+.accordion-header-grid .header-stats { 
+    display: flex; 
+    gap: 1.5rem; 
+}
+.accordion-header-grid .accordion-stat { 
+    text-align: right; 
+}
+.accordion-header-grid .accordion-stat .stat-label { 
+    font-size: 0.75rem; 
+    color: var(--text-secondary); 
+}
+.accordion-header-grid .accordion-stat .stat-value { 
+    font-size: 1rem; 
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.payroll-history-accordion .accordion-body { 
+    padding: 0; 
+}
+.accordion-body-footer { 
+    padding: 0.75rem 1.25rem; 
+    background-color: var(--bg-secondary); 
+    border-top: 1px solid var(--border-color); 
+}
+
 .table .col-id { width: 12%; }
 .table .col-name { width: 30%; }
 .table .col-amount { width: 17%; text-align: right; }
@@ -56,7 +130,22 @@
 .table th, .table td { vertical-align: middle; padding: 0.9rem 1rem; }
 .text-right { text-align: right; }
 
-/* Status Badge Styles */
-.status-badge { color: #fff; padding: 0.3em 0.6em; font-size: 0.75rem; font-weight: 500; border-radius: var(--border-radius); text-transform: uppercase; }
-.status-paid { background-color: var(--app-success-color); }
-.status-pending { background-color: var(--warning-color); color: var(--warning-text-color) !important; }
+.status-badge { 
+    color: var(--white-color); 
+    padding: 0.3em 0.6em; 
+    font-size: 0.75rem; 
+    font-weight: 500; 
+    border-radius: var(--border-radius); 
+    text-transform: uppercase; 
+}
+.status-paid { 
+    background-color: var(--app-success-color); 
+}
+.status-pending { 
+    background-color: var(--warning-color); 
+    color: var(--text-primary) !important; 
+}
+
+.dark-theme .payroll-generation-container .card-title {
+    color: var(--text-primary);
+}

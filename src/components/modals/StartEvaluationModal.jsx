@@ -10,12 +10,17 @@ const StartEvaluationModal = ({ show, onClose, onStart, employees }) => {
   const employeeOptions = employees.map(e => ({ value: e.id, label: `${e.name} (${e.id})` }));
 
   useEffect(() => {
-    if (employees && employees.length === 1) {
-      setSelectedEmployee(employeeOptions[0]);
-    } else {
-      setSelectedEmployee(null);
+    if (show) {
+      if (employees && employees.length === 1) {
+        setSelectedEmployee(employeeOptions[0]);
+      } else {
+        setSelectedEmployee(null);
+      }
+      setPeriodStart('');
+      setPeriodEnd('');
+      setError('');
     }
-  }, [employees]);
+  }, [show, employees]);
 
   const handleStart = () => {
     if (!selectedEmployee || !periodStart || !periodEnd) {
@@ -30,10 +35,6 @@ const StartEvaluationModal = ({ show, onClose, onStart, employees }) => {
   };
 
   const handleClose = () => {
-    setSelectedEmployee(null);
-    setPeriodStart('');
-    setPeriodEnd('');
-    setError('');
     onClose();
   };
 
@@ -59,7 +60,9 @@ const StartEvaluationModal = ({ show, onClose, onStart, employees }) => {
                 onChange={setSelectedEmployee}
                 placeholder="Select an employee..."
                 isClearable={employees.length > 1} 
-                isDisabled={employees.length === 1} 
+                isDisabled={employees.length === 1}
+                className="react-select-container"
+                classNamePrefix="react-select"
               />
             </div>
             <div className="row g-3">

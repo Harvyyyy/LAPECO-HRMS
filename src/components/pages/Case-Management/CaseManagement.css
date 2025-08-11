@@ -2,9 +2,11 @@
 .case-management-tabs .nav-link {
     font-weight: 500;
     font-size: 1rem;
+    color: var(--text-secondary);
 }
 .case-management-tabs .nav-link.active {
     font-weight: 600;
+    color: var(--app-success-color);
 }
 
 /* --- Case Dashboard --- */
@@ -15,7 +17,7 @@
     margin-bottom: 2rem;
 }
 .stat-card-revised {
-    background-color: #fff;
+    background-color: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 1rem 1.25rem;
@@ -31,19 +33,20 @@
     color: #fff;
     flex-shrink: 0;
 }
-.stat-card-revised .stat-icon.icon-total { background-color: var(--dark-gray); }
-.stat-card-revised .stat-icon.icon-ongoing { background-color: var(--warning-color); }
-.stat-card-revised .stat-icon.icon-closed { background-color: var(--secondary-color); }
+.stat-card-revised .stat-icon.icon-total { background-color: var(--text-secondary); }
+.stat-card-revised .stat-icon.icon-ongoing { background-color: var(--warning-color); color: var(--text-primary); }
+.stat-card-revised .stat-icon.icon-closed { background-color: var(--text-secondary); }
 
 .stat-card-revised .stat-info .stat-value {
     font-size: 2rem;
     font-weight: 700;
     line-height: 1.1;
+    color: var(--text-primary);
 }
 .stat-card-revised .stat-info .stat-label {
     font-size: 0.85rem;
     font-weight: 500;
-    color: var(--secondary-color);
+    color: var(--text-secondary);
 }
 .dashboard-grid-main {
     display: grid;
@@ -53,6 +56,7 @@
 .dashboard-grid-main .card-header h6 {
     font-size: 1rem;
     font-weight: 600;
+    color: var(--text-primary);
 }
 
 .case-card-grid {
@@ -62,7 +66,7 @@
     justify-content: start;
 }
 .case-card-revised {
-    background-color: #fff;
+    background-color: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
@@ -100,10 +104,11 @@
 .case-card-revised-header .name {
     font-weight: 600;
     font-size: 1.05rem;
+    color: var(--text-primary);
 }
 .case-card-revised-header .id {
     font-size: 0.8rem;
-    color: var(--secondary-color);
+    color: var(--text-secondary);
 }
 .case-card-revised-body {
     display: flex;
@@ -118,25 +123,17 @@
     gap: 0.5rem;
 }
 .case-card-revised-body .detail-row i {
-    color: var(--secondary-color);
+    color: var(--text-secondary);
     width: 16px;
     text-align: center;
 }
 .case-card-revised-body .detail-row .label {
     font-weight: 500;
-}
-.case-card-revised-footer {
-    padding-top: 0.75rem;
-    margin-top: auto;
-    border-top: 1px solid var(--border-color);
-    text-align: right;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--secondary-color);
+    color: var(--text-primary);
 }
 
 .case-detail-header-revised {
-    background-color: #fff;
+    background-color: var(--bg-primary);
     border-radius: var(--border-radius);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
@@ -155,10 +152,11 @@
 .case-detail-header-main .title-section .case-reason {
     font-size: 1.75rem;
     font-weight: 600;
+    color: var(--text-primary);
 }
 .case-detail-header-main .title-section .employee-name {
     font-size: 1.1rem;
-    color: var(--secondary-color);
+    color: var(--text-secondary);
 }
 .case-detail-header-main .actions {
     margin-left: auto;
@@ -173,8 +171,8 @@
 .meta-item {
     text-align: center;
 }
-.meta-item .meta-label { font-size: 0.8rem; color: var(--secondary-color); }
-.meta-item .meta-value { font-weight: 600; font-size: 1rem; }
+.meta-item .meta-label { font-size: 0.8rem; color: var(--text-secondary); }
+.meta-item .meta-value { font-weight: 600; font-size: 1rem; color: var(--text-primary); }
 
 .case-detail-layout {
     display: grid;
@@ -182,16 +180,6 @@
     gap: 1.5rem;
     align-items: flex-start;
 }
-.case-detail-main { grid-column: 1 / 2; }
-.case-detail-sidebar { grid-column: 2 / 3; }
-
-.case-detail-main .card, .case-detail-sidebar .card {
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-}
-.detail-section h5 { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
-.detail-section dt { font-size: 0.8rem; color: var(--secondary-color); font-weight: 500; }
-.detail-section dd { font-size: 0.95rem; margin-left: 0; }
 
 /* Action Log / Timeline */
 .action-log-timeline {
@@ -207,7 +195,7 @@
     left: 10px;
     bottom: 5px;
     width: 2px;
-    background-color: var(--medium-gray);
+    background-color: var(--border-color);
 }
 .log-item {
     position: relative;
@@ -224,36 +212,54 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--secondary-color);
-    color: #fff;
+    background-color: var(--text-secondary);
+    color: var(--bg-primary);
     font-size: 0.8rem;
 }
-.log-item .log-date { font-size: 0.8rem; font-weight: 600; color: var(--secondary-color); }
-.log-item .log-action { font-size: 0.9rem; }
+.log-item .log-date { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
+.log-item .log-action { font-size: 0.9rem; color: var(--text-primary); }
 
 /* Attachments */
 .attachment-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 .attachment-item a { text-decoration: none; }
-.attachment-item .file-info { display: flex; align-items: center; gap: 0.5rem; }
+.attachment-item .file-info { display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); }
 
 /* Modal Styles */
 .case-modal .modal-lg {
     max-width: 700px;
 }
-.case-modal .form-label {
-    font-weight: 500;
-}
+
 .case-modal .react-select-container .react-select__control {
     padding: 0.25rem;
 }
+.dark-theme .case-modal .react-select-container .react-select__control {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+}
+.dark-theme .case-modal .react-select-container .react-select__single-value {
+    color: var(--text-primary);
+}
+.dark-theme .case-modal .react-select-container .react-select__menu {
+    background-color: var(--bg-primary);
+}
+.dark-theme .case-modal .react-select-container .react-select__option--is-focused {
+    background-color: var(--bg-tertiary);
+}
 
 /* Badge Styles */
+.status-badge {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.3em 0.8em;
+    border-radius: 20px;
+    color: var(--text-on-success);
+}
 .status-badge.status-ongoing {
     background-color: var(--warning-color);
-    color: var(--dark-gray);
+    color: var(--text-primary);
 }
 .status-badge.status-closed {
-    background-color: var(--secondary-color);
+    background-color: var(--text-secondary);
 }
 
 @media (max-width: 992px) {
