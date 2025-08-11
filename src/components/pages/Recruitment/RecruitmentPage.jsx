@@ -283,7 +283,7 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
   return (
     <div className="container-fluid p-0 page-module-container">
       <header className="page-header d-flex justify-content-between align-items-center mb-4">
-        <h1 className="page-main-title">Recruitment Pipeline</h1>
+        <h1 className="page-main-title">Recruitment</h1>
         <div className="header-actions d-flex align-items-center gap-2">
             <button className="btn btn-outline-secondary" onClick={handleGenerateReport}><i className="bi bi-file-earmark-pdf-fill me-2"></i>Generate Report</button>
             <button className="btn btn-success" onClick={() => setShowApplicantModal(true)}><i className="bi bi-person-plus-fill me-2"></i>New Applicant</button>
