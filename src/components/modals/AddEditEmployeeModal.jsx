@@ -5,7 +5,8 @@ import placeholderImage from '../../assets/placeholder-profile.jpg';
 
 const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, viewOnly = false, onSwitchToEdit }) => {
   const initialFormState = {
-    name: '', email: '', positionId: '',
+    firstName: '', middleName: '', lastName: '',
+    email: '', positionId: '',
     joiningDate: new Date().toISOString().split('T')[0],
     birthday: '', gender: '', address: '', contactNumber: '',
     imageUrl: null, imagePreviewUrl: placeholderImage,
@@ -28,7 +29,9 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
       setIsViewMode(viewOnly);
       if (isEditMode && employeeData) {
         setFormData({
-          name: employeeData.name || '',
+          firstName: employeeData.firstName || '',
+          middleName: employeeData.middleName || '',
+          lastName: employeeData.lastName || '',
           email: employeeData.email || '',
           positionId: employeeData.positionId || '',
           joiningDate: employeeData.joiningDate || new Date().toISOString().split('T')[0],
@@ -75,7 +78,8 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
 
   const validateForm = () => {
     const errors = {};
-    if (!formData.name.trim()) errors.name = 'Name is required.';
+    if (!formData.firstName.trim()) errors.firstName = 'First Name is required.';
+    if (!formData.lastName.trim()) errors.lastName = 'Last Name is required.';
     if (!formData.email.trim()) { errors.email = 'Email is required.'; } 
     else if (!/\S+@\S+\.\S+/.test(formData.email)) { errors.email = 'Email address is invalid.';}
     if (!formData.positionId) errors.positionId = 'Position is required.';
@@ -99,6 +103,10 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
   }
 
   const modalTitle = isViewMode ? 'View Employee Details' : (isEditMode ? 'Edit Employee Details' : 'Add New Employee');
+  
+  const displayName = isViewMode || isEditMode 
+    ? [employeeData?.firstName, employeeData?.middleName, employeeData?.lastName].filter(Boolean).join(' ')
+    : 'New Employee';
 
   return (
     <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
@@ -117,12 +125,9 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
                     {!isViewMode && <div className="employee-profile-img-overlay"><i className="bi bi-camera-fill"></i></div>}
                   </div>
                   <input type="file" ref={fileInputRef} name="imageUrl" accept="image/*" onChange={handleChange} className="d-none" disabled={isViewMode} />
+                  
+                  <h5 className="mt-3 mb-3 text-center">{displayName}</h5>
 
-                  <div className="form-group">
-                    <label htmlFor="name" className="form-label">Full Name*</label>
-                    <input type="text" className={`form-control ${formErrors.name ? 'is-invalid' : ''}`} id="name" name="name" value={formData.name} onChange={handleChange} required disabled={isViewMode} />
-                    {formErrors.name && <div className="invalid-feedback">{formErrors.name}</div>}
-                  </div>
                   <div className="form-group">
                     <label htmlFor="positionId" className="form-label">Position*</label>
                     <select className={`form-select ${formErrors.positionId ? 'is-invalid' : ''}`} id="positionId" name="positionId" value={formData.positionId} onChange={handleChange} required disabled={isViewMode}>
@@ -160,6 +165,22 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
                   <div className="tab-content">
                     {activeTab === 'personal' && (
                       <div>
+                        <div className="row g-3 mb-3">
+                            <div className="col-md-5">
+                                <label htmlFor="firstName" className="form-label">First Name*</label>
+                                <input type="text" className={`form-control ${formErrors.firstName ? 'is-invalid' : ''}`} id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required disabled={isViewMode} />
+                                {formErrors.firstName && <div className="invalid-feedback">{formErrors.firstName}</div>}
+                            </div>
+                             <div className="col-md-2">
+                                <label htmlFor="middleName" className="form-label">Middle Name</label>
+                                <input type="text" className="form-control" id="middleName" name="middleName" value={formData.middleName} onChange={handleChange} disabled={isViewMode} />
+                            </div>
+                            <div className="col-md-5">
+                                <label htmlFor="lastName" className="form-label">Last Name*</label>
+                                <input type="text" className={`form-control ${formErrors.lastName ? 'is-invalid' : ''}`} id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} required disabled={isViewMode} />
+                                {formErrors.lastName && <div className="invalid-feedback">{formErrors.lastName}</div>}
+                            </div>
+                        </div>
                         <div className="row g-3">
                           <div className="col-md-6">
                             <label htmlFor="email" className="form-label">Email Address*</label>
@@ -210,7 +231,7 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
                           <div className="resume-viewer">
                             <iframe
                                 src={formData.resumeUrl}
-                                title={`${formData.name}'s Resume`}
+                                title={`${displayName}'s Resume`}
                                 width="100%"
                                 height="100%"
                             />
@@ -241,7 +262,7 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
                     <button 
                         type="button" 
                         className="btn btn-outline-secondary" 
-                        onClick={() => viewOnly ? onSwitchToEdit() : onClose()}
+                        onClick={onClose}
                     >
                         Cancel
                     </button>

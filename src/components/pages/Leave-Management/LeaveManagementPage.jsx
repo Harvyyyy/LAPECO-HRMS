@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import './LeaveManagementPage.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import ViewReasonModal from '../../modals/ViewReasonModal';
+import ReportConfigurationModal from '../../modals/ReportConfigurationModal';
+import useReportGenerator from '../../../hooks/useReportGenerator';
+import { reportsConfig } from '../../../config/reports.config'; 
 
 const LeaveManagementPage = ({ leaveRequests, handlers }) => {
   const [filteredRequests, setFilteredRequests] = useState([]);
@@ -16,9 +17,10 @@ const LeaveManagementPage = ({ leaveRequests, handlers }) => {
   const [editingLeaveId, setEditingLeaveId] = useState(null);
   const [tempStatus, setTempStatus] = useState('');
 
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [pdfDataUri, setPdfDataUri] = useState('');
-  const [reportTitle, setReportTitle] = useState('');
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showReportPreview, setShowReportPreview] = useState(false);
+  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
+
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [viewingRequest, setViewingRequest] = useState(null);
 
@@ -109,98 +111,44 @@ const LeaveManagementPage = ({ leaveRequests, handlers }) => {
     return sortConfig.direction === 'ascending' ? <i className="bi bi-sort-up-alt sort-icon active-sort-icon ms-1"></i> : <i className="bi bi-sort-down-alt sort-icon active-sort-icon ms-1"></i>;
   };
 
-  const handleGenerateReport = () => {
-    if (!filteredRequests || filteredRequests.length === 0) {
-      alert("No data to generate a report for the current filter.");
-      return;
-    }
-    
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-    const pageTitle = "Leave Requests Report";
-    const generationDate = new Date().toLocaleDateString();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 40;
-
-    doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
-    doc.text(pageTitle, pageWidth / 2, 40, { align: 'center' });
-    
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Generated on: ${generationDate}`, pageWidth / 2, 55, { align: 'center' });
-
-    let summaryY = 80;
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'bold');
-    doc.text('Report Summary', margin, summaryY);
-    summaryY += 18;
-    
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    doc.text(`- Total Requests in Report: ${filteredRequests.length}`, margin + 10, summaryY);
-    summaryY += 15;
-    doc.text(`- Status Filter: ${statusFilter || 'All'}`, margin + 10, summaryY);
-    summaryY += 15;
-    doc.text(`- Leave Type Filter: ${leaveTypeFilter || 'All'}`, margin + 10, summaryY);
-    summaryY += 25;
-
-    const tableColumns = ["ID", "Name", "Position", "Leave Type", "Date Range", "Days", "Status"];
-    const tableRows = filteredRequests.map(req => [
-        req.empId,
-        req.name,
-        req.position,
-        req.leaveType,
-        `${req.dateFrom} to ${req.dateTo}`,
-        req.days,
-        req.status
-    ]);
-    
-    autoTable(doc, {
-      head: [tableColumns],
-      body: tableRows,
-      startY: summaryY,
-      theme: 'grid',
-      headStyles: { fillColor: [25, 135, 84], fontSize: 9 },
-      bodyStyles: { fontSize: 8 },
-    });
-
-    const finalTitle = `Leave_Requests_${generationDate.replace(/\//g, '-')}`;
-    setReportTitle(finalTitle);
-    setPdfDataUri(doc.output('datauristring'));
-    setShowReportModal(true);
+  const handleRunReport = (reportId, params) => {
+    generateReport(reportId, params, { leaveRequests });
+    setShowConfigModal(false);
+    setShowReportPreview(true);
   };
+
+  const handleClosePreview = () => {
+    setShowReportPreview(false);
+    if(pdfDataUri) URL.revokeObjectURL(pdfDataUri);
+    setPdfDataUri('');
+  };
+
+  const leaveReportConfig = reportsConfig.find(r => r.id === 'leave_requests_report');
 
   return (
     <div className="container-fluid p-0 page-module-container">
       <header className="page-header d-flex justify-content-between align-items-center mb-4">
         <h1 className="page-main-title">Leave Management</h1>
-        {/* CHANGED: Standardized the report button style */}
-        <button className="btn btn-outline-secondary" onClick={handleGenerateReport} disabled={filteredRequests.length === 0}>
+        <button 
+          className="btn btn-outline-secondary" 
+          onClick={() => setShowConfigModal(true)} 
+          disabled={leaveRequests.length === 0}
+        >
             <i className="bi bi-file-earmark-text-fill me-2"></i>Generate Report
         </button>
       </header>
       
       <div className="leave-status-bar">
-        <div className={`status-filter-card filter-all ${!statusFilter || statusFilter === 'All' ? 'active' : ''}`} onClick={() => setStatusFilter('All')}>
-            <span className="stat-value">{leaveStats.All}</span>
-            <span className="stat-label">Total Requests</span>
-        </div>
-        <div className={`status-filter-card filter-pending ${statusFilter === 'Pending' ? 'active' : ''}`} onClick={() => setStatusFilter('Pending')}>
-            <span className="stat-value">{leaveStats.Pending}</span>
-            <span className="stat-label">Pending</span>
-        </div>
-        <div className={`status-filter-card filter-approved ${statusFilter === 'Approved' ? 'active' : ''}`} onClick={() => setStatusFilter('Approved')}>
-            <span className="stat-value">{leaveStats.Approved}</span>
-            <span className="stat-label">Approved</span>
-        </div>
-        <div className={`status-filter-card filter-declined ${statusFilter === 'Declined' ? 'active' : ''}`} onClick={() => setStatusFilter('Declined')}>
-            <span className="stat-value">{leaveStats.Declined}</span>
-            <span className="stat-label">Declined</span>
-        </div>
-        <div className={`status-filter-card filter-canceled ${statusFilter === 'Canceled' ? 'active' : ''}`} onClick={() => setStatusFilter('Canceled')}>
-            <span className="stat-value">{leaveStats.Canceled}</span>
-            <span className="stat-label">Canceled</span>
-        </div>
+        {Object.entries(leaveStats).map(([status, count]) => (
+            <div 
+                key={status}
+                className={`status-filter-card filter-${status.toLowerCase()} ${statusFilter === status ? 'active' : ''}`} 
+                onClick={() => setStatusFilter(status)}
+            >
+                <span className="stat-value">{count}</span>
+                <span className="stat-label">{status === 'All' ? 'Total Requests' : status}</span>
+            </div>
+        ))}
       </div>
       
       <div className="controls-bar leave-controls-bar mb-4">
@@ -246,65 +194,48 @@ const LeaveManagementPage = ({ leaveRequests, handlers }) => {
                   const isEditing = editingLeaveId === req.leaveId;
                   return (
                     <tr key={req.leaveId}>
-                      <td>{req.empId}</td>
-                      <td>{req.name}</td>
-                      <td>{req.position}</td>
-                      <td>{req.leaveType}</td>
-                      <td>{req.dateFrom} to {req.dateTo}</td>
-                      <td className="text-center">{req.days}</td>
+                      <td>{req.empId}</td><td>{req.name}</td><td>{req.position}</td><td>{req.leaveType}</td>
+                      <td>{req.dateFrom} to {req.dateTo}</td><td className="text-center">{req.days}</td>
                       <td className="status-col">
                         {isEditing ? (
-                          <select 
-                            className={`form-select form-select-sm status-select status-${tempStatus.toLowerCase()}`}
-                            value={tempStatus}
-                            onChange={(e) => setTempStatus(e.target.value)}
-                          >
-                            <option value="Pending">Pending</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Declined">Declined</option>
-                            <option value="Canceled">Canceled</option>
+                          <select className={`form-select form-select-sm status-select status-${tempStatus.toLowerCase()}`} value={tempStatus} onChange={(e) => setTempStatus(e.target.value)}>
+                            <option value="Pending">Pending</option><option value="Approved">Approved</option><option value="Declined">Declined</option><option value="Canceled">Canceled</option>
                           </select>
-                        ) : (
-                          <span className={`status-badge status-${req.status?.toLowerCase()}`}>{req.status}</span>
-                        )}
+                        ) : (<span className={`status-badge status-${req.status?.toLowerCase()}`}>{req.status}</span>)}
                       </td>
                       <td className="action-col">
                         <div className="d-flex gap-2">
-                            <button className="btn btn-sm btn-outline-secondary" title="View Reason" onClick={() => handleViewReason(req)}>
-                                <i className="bi bi-info-circle"></i>
-                            </button>
+                            <button className="btn btn-sm btn-outline-secondary" title="View Reason" onClick={() => handleViewReason(req)}><i className="bi bi-info-circle"></i></button>
                             {isEditing ? (
-                                <>
-                                    <button className="btn btn-sm btn-success" onClick={() => handleSaveStatus(req.leaveId)}>Save</button>
-                                    <button className="btn btn-sm btn-light" onClick={handleCancelEdit}>Cancel</button>
-                                </>
-                            ) : (
-                                <button className="btn btn-sm btn-primary" title="Edit Status" onClick={() => handleEditClick(req)}>
-                                    <i className="bi bi-pencil-fill"></i>
-                                </button>
-                            )}
+                                <><button className="btn btn-sm btn-success" onClick={() => handleSaveStatus(req.leaveId)}>Save</button><button className="btn btn-sm btn-light" onClick={handleCancelEdit}>Cancel</button></>
+                            ) : (<button className="btn btn-sm btn-primary" title="Edit Status" onClick={() => handleEditClick(req)}><i className="bi bi-pencil-fill"></i></button>)}
                         </div>
                       </td>
                     </tr>
                   )
                 })
-              ) : (
-                <tr><td colSpan="8" className="text-center p-5">No leave requests found for the selected filters.</td></tr>
-              )}
+              ) : (<tr><td colSpan="8" className="text-center p-5">No leave requests found for the selected filters.</td></tr>)}
             </tbody>
           </table>
       </div>
-      <ReportPreviewModal
-        show={showReportModal}
-        onClose={() => setShowReportModal(false)}
-        pdfDataUri={pdfDataUri}
-        reportTitle={reportTitle}
+
+      <ReportConfigurationModal
+        show={showConfigModal}
+        onClose={() => setShowConfigModal(false)}
+        reportConfig={leaveReportConfig}
+        onRunReport={handleRunReport}
       />
-      <ViewReasonModal
-        show={showReasonModal}
-        onClose={() => setShowReasonModal(false)}
-        request={viewingRequest}
-      />
+
+      {(isLoading || pdfDataUri) && (
+        <ReportPreviewModal
+            show={showReportPreview}
+            onClose={handleClosePreview}
+            pdfDataUri={pdfDataUri}
+            reportTitle="Leave Requests Report"
+        />
+      )}
+
+      <ViewReasonModal show={showReasonModal} onClose={() => setShowReasonModal(false)} request={viewingRequest}/>
     </div>
   );
 };

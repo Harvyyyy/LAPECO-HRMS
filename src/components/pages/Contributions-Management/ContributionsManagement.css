@@ -1,0 +1,141 @@
+.contribution-report-title {
+    color: var(--text-primary); 
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.contributions-nav-tabs-container {
+    padding: 0;
+}
+.contributions-nav-tabs {
+    border-bottom: 1px solid var(--border-color);
+}
+.contributions-nav-tabs .nav-link {
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    color: var(--text-secondary);
+    border: none;
+    border-bottom: 3px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+.contributions-nav-tabs .nav-link.active {
+    color: var(--app-success-color);
+    background-color: transparent;
+    border-bottom-color: var(--app-success-color);
+}
+.dark-theme .contributions-nav-tabs .nav-link.active {
+    background-color: transparent; 
+}
+
+.contribution-table-container {
+    max-height: 60vh;
+    overflow: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.editable-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.editable-table th,
+.editable-table td {
+    border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+}
+
+.editable-table thead th {
+    background-color: var(--bg-secondary);
+}
+
+.editable-table th:last-child,
+.editable-table td:last-child {
+    border-right: none;
+}
+
+.editable-table td {
+    padding: 0.25rem !important;
+    vertical-align: middle;
+}
+
+.editable-table .form-control {
+    border: 1px solid transparent;
+    background-color: transparent;
+    padding: 0.375rem 0.5rem;
+    height: auto;
+    border-radius: 4px;
+    width: 100%;
+    transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+    color: var(--text-primary);
+}
+.editable-table .form-control:focus {
+    border-color: var(--app-success-color);
+    background-color: var(--bg-primary);
+    box-shadow: none;
+}
+.editable-table .form-control:read-only {
+    color: var(--text-secondary);
+    font-weight: 500;
+    background-color: var(--bg-secondary);
+}
+.dark-theme .editable-table .form-control:read-only {
+    background-color: var(--bg-tertiary);
+}
+
+.editable-table th {
+    position: relative;
+}
+
+.editable-table .header-label {
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    display: inline-block;
+    min-width: 80px;
+    color: var(--text-primary);
+}
+
+.editable-table .header-label:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.editable-table .header-input {
+    border: 1px solid var(--app-success-color);
+    padding: 4px;
+    border-radius: 4px;
+    font-weight: 600;
+    width: 100%;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+}
+
+.editable-table .th-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.editable-table th:hover .th-actions {
+    opacity: 1;
+}
+
+.editable-table .th-actions .btn {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+.editable-table .th-actions .btn:hover {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.delete-row-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

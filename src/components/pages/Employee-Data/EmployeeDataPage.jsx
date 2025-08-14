@@ -1,13 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import './EmployeeDataPage.css';
 import AddEditEmployeeModal from '../../modals/AddEditEmployeeModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import RequirementsChecklist from './RequirementsChecklist';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import placeholderImage from '../../../assets/placeholder-profile.jpg';
-import logo from '../../../assets/logo.png';
+import useReportGenerator from '../../../hooks/useReportGenerator';
 
 const EmployeeDataPage = ({ employees, positions, handlers }) => {
   const [activeTab, setActiveTab] = useState('all');
@@ -21,9 +19,8 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [isViewOnlyMode, setIsViewOnlyMode] = useState(false);
   
-  const [showReportPreviewModal, setShowReportPreviewModal] = useState(false);
-  const [pdfDataUri, setPdfDataUri] = useState('');
-  const [reportTitle, setReportTitle] = useState('');
+  const [showReportPreview, setShowReportPreview] = useState(false);
+  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
 
   const positionMap = useMemo(() => new Map(positions.map(p => [p.id, p.title])), [positions]);
   const uniquePositions = useMemo(() => ['All Positions', ...new Set(positions.map(p => p.title).sort())], [positions]);
@@ -102,48 +99,26 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
   };
   
   const handleCloseReportPreview = () => { 
-    setShowReportPreviewModal(false); 
-    setPdfDataUri(''); 
+    setShowReportPreview(false); 
+    if (pdfDataUri) { URL.revokeObjectURL(pdfDataUri); }
+    setPdfDataUri('');
   };
 
   const handleSwitchToEditMode = () => {
     setIsViewOnlyMode(false);
   };
   
-  const generateEmployeeReportPdf = () => {
+  const handleGenerateReport = () => {
     if (!filteredAndSortedEmployees || filteredAndSortedEmployees.length === 0) {
         alert("No employee data to generate a report for the current filter.");
         return;
     }
-
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-    const pageTitle = "Employee Data Report";
-    const generationDate = new Date().toLocaleDateString();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 40;
-    
-    doc.addImage(logo, 'PNG', margin, 20, 80, 26);
-    doc.setFontSize(18); doc.setFont(undefined, 'bold');
-    doc.text(pageTitle, pageWidth - margin, 40, { align: 'right' });
-    doc.setFontSize(10); doc.setFont(undefined, 'normal');
-    doc.text(`Generated on: ${generationDate}`, pageWidth - margin, 55, { align: 'right' });
-    doc.setLineWidth(1);
-    doc.line(margin, 70, pageWidth - margin, 70);
-
-    const tableColumns = ['ID', 'Name', 'Position', 'Email', 'Status', 'Joining Date'];
-    const tableRows = filteredAndSortedEmployees.map(emp => [
-        emp.id, emp.name, emp.positionTitle, emp.email, emp.status, emp.joiningDate,
-    ]);
-
-    autoTable(doc, {
-      head: [tableColumns], body: tableRows, startY: 95, theme: 'striped',
-      headStyles: { fillColor: [25, 135, 84] },
-    });
-
-    setReportTitle(pageTitle);
-    const pdfBlob = doc.output('blob');
-    setPdfDataUri(URL.createObjectURL(pdfBlob));
-    setShowReportPreviewModal(true);
+    generateReport(
+        'employee_masterlist', 
+        {}, 
+        { employees: filteredAndSortedEmployees, positions }
+    );
+    setShowReportPreview(true);
   };
   
   const renderCardView = () => (
@@ -238,7 +213,7 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
       <header className="page-header d-flex justify-content-between align-items-center mb-4">
         <h1 className="page-main-title">Employee Data</h1>
         <div className="header-actions d-flex align-items-center gap-2">
-            <button className="btn btn-outline-secondary" onClick={generateEmployeeReportPdf}><i className="bi bi-file-earmark-text-fill"></i> Generate Report</button>
+            <button className="btn btn-outline-secondary" onClick={handleGenerateReport}><i className="bi bi-file-earmark-text-fill"></i> Generate Report</button>
             <button className="btn btn-success" onClick={handleOpenAddModal}><i className="bi bi-person-plus-fill"></i> Add New Employee</button>
         </div>
       </header>
@@ -294,7 +269,14 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
         /> 
       )}
 
-      {showReportPreviewModal && ( <ReportPreviewModal show={showReportPreviewModal} onClose={handleCloseReportPreview} pdfDataUri={pdfDataUri} reportTitle={reportTitle} /> )}
+      {(isLoading || pdfDataUri) && (
+        <ReportPreviewModal
+          show={showReportPreview}
+          onClose={handleCloseReportPreview}
+          pdfDataUri={pdfDataUri}
+          reportTitle="Employee Masterlist"
+        />
+      )}
     </div>
   );
 };

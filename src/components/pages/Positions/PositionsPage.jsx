@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import './PositionsPage.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import AddEditPositionModal from '../../modals/AddEditPositionModal';
 import AddEmployeeToPositionModal from '../../modals/AddEmployeeToPositionModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
+import useReportGenerator from '../../../hooks/useReportGenerator';
 
 const PositionsPage = ({ employees, positions, handlers }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,9 +15,11 @@ const PositionsPage = ({ employees, positions, handlers }) => {
   const [showAddEditPositionModal, setShowAddEditPositionModal] = useState(false);
   const [editingPosition, setEditingPosition] = useState(null);
   const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [pdfDataUri, setPdfDataUri] = useState('');
-  const [reportTitle, setReportTitle] = useState('');
+  
+  // Report States using our hook
+  const [showReportPreview, setShowReportPreview] = useState(false);
+  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
+
 
   const employeeCounts = useMemo(() => {
     return positions.reduce((acc, pos) => {
@@ -78,58 +79,22 @@ const PositionsPage = ({ employees, positions, handlers }) => {
   const handleOpenAddEmployeeModal = () => setShowAddEmployeeModal(true);
   const handleCloseAddEmployeeModal = () => setShowAddEmployeeModal(false);
 
-  const generatePositionsReportPdf = () => {
+  const handleGenerateReport = () => {
     if (!positions || positions.length === 0) {
       alert("No positions available to generate a report.");
       return;
     }
-
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-    const pageTitle = "Company Positions Report";
-    const generationDate = new Date().toLocaleDateString();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 40;
-
-    doc.setFontSize(18); doc.setFont(undefined, 'bold');
-    doc.text(pageTitle, pageWidth / 2, 40, { align: 'center' });
-    doc.setFontSize(11); doc.setFont(undefined, 'normal');
-    doc.text(`Generated on: ${generationDate}`, pageWidth / 2, 55, { align: 'center' });
-
-    const totalPositions = positions.length;
-    const totalAssignedEmployees = Object.values(employeeCounts).reduce((sum, count) => sum + count, 0);
-
-    let summaryY = 80;
-    doc.setFontSize(12); doc.setFont(undefined, 'bold');
-    doc.text('Report Summary', margin, summaryY);
-    summaryY += 18;
-    doc.setFontSize(10); doc.setFont(undefined, 'normal');
-    doc.text(`- Total Defined Positions: ${totalPositions}`, margin + 10, summaryY);
-    summaryY += 15;
-    doc.text(`- Total Employees with Positions: ${totalAssignedEmployees}`, margin + 10, summaryY);
-    summaryY += 25;
-
-    const tableColumns = ['Position Title', 'Description', 'Employee Count', 'Monthly Salary (₱)'];
-    const tableRows = positions.map(pos => [
-      pos.title,
-      pos.description,
-      employeeCounts[pos.id] || 0,
-      pos.monthlySalary.toLocaleString()
-    ]);
-
-    autoTable(doc, {
-      head: [tableColumns],
-      body: tableRows,
-      startY: summaryY,
-      theme: 'grid',
-      headStyles: { fillColor: [25, 135, 84] },
-    });
-
-    setReportTitle(pageTitle);
-    setPdfDataUri(doc.output('datauristring'));
-    setShowReportModal(true);
+    generateReport('positions_report', {}, { employees, positions });
+    setShowReportPreview(true);
   };
 
-  // --- RENDER ---
+  const handleCloseReportPreview = () => {
+    setShowReportPreview(false);
+    if(pdfDataUri) URL.revokeObjectURL(pdfDataUri);
+    setPdfDataUri('');
+  };
+
+
   if (selectedPosition) {
     return (
       <div className="container-fluid p-0 page-module-container">
@@ -203,7 +168,7 @@ const PositionsPage = ({ employees, positions, handlers }) => {
             </span>
         </div>
         <div className="header-actions d-flex align-items-center gap-2">
-            <button className="btn btn-outline-secondary" onClick={generatePositionsReportPdf} disabled={!positions || positions.length === 0}>
+            <button className="btn btn-outline-secondary" onClick={handleGenerateReport} disabled={!positions || positions.length === 0}>
                 <i className="bi bi-file-earmark-text-fill"></i> Generate Report
             </button>
             <button className="btn btn-success" onClick={handleOpenAddPositionModal}>
@@ -260,12 +225,15 @@ const PositionsPage = ({ employees, positions, handlers }) => {
       {showAddEditPositionModal && (
         <AddEditPositionModal show={showAddEditPositionModal} onClose={handleCloseAddEditPositionModal} onSave={handleSavePosition} positionData={editingPosition} />
       )}
-      <ReportPreviewModal 
-        show={showReportModal}
-        onClose={() => setShowReportModal(false)}
-        pdfDataUri={pdfDataUri}
-        reportTitle={reportTitle}
-      />
+      
+      {(isLoading || pdfDataUri) && (
+        <ReportPreviewModal 
+            show={showReportPreview}
+            onClose={handleCloseReportPreview}
+            pdfDataUri={pdfDataUri}
+            reportTitle="Company Positions Report"
+        />
+      )}
     </div>
   );
 };

@@ -88,7 +88,6 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
                       <i className="bi bi-three-dots-vertical"></i>
                     </button>
                     <ul className="dropdown-menu dropdown-menu-end">
-                      <li><a className="dropdown-item" href="#">View Profile</a></li>
                       {currentUser.isTeamLeader && <li><a className="dropdown-item" href="#">Evaluate</a></li>}
                     </ul>
                   </div>
@@ -137,7 +136,6 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
                                 <div className="dropdown">
                                     <button className="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">Actions</button>
                                     <ul className="dropdown-menu dropdown-menu-end">
-                                        <li><a className="dropdown-item" href="#">View Profile</a></li>
                                         {currentUser.isTeamLeader && <li><a className="dropdown-item" href="#">Evaluate</a></li>}
                                     </ul>
                                 </div>

@@ -4,18 +4,18 @@
     gap: 1.25rem;
 }
 .team-member-card-final {
-    background: #ffffff;
+    background: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     transition: all 0.25s ease-in-out;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    box-shadow: var(--card-shadow);
 }
 .team-member-card-final:hover {
     transform: translateY(-5px);
     box-shadow: 0 7px 14px rgba(0,0,0,0.07), 0 3px 6px rgba(0,0,0,0.05);
 }
 .team-member-card-final.leader {
-    background: linear-gradient(to right, #f7fdf7, #ffffff);
+    background: linear-gradient(to right, rgba(var(--app-success-rgb), 0.05), var(--bg-primary));
     border-color: var(--app-success-color);
 }
 
@@ -41,7 +41,7 @@
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
-    border: 2px solid var(--light-gray);
+    border: 2px solid var(--bg-tertiary);
 }
 .leader .member-avatar {
     border-color: var(--app-success-color);
@@ -53,7 +53,7 @@
 .member-info .member-name {
     font-weight: 600;
     font-size: 1.05rem;
-    color: var(--dark-gray);
+    color: var(--text-primary);
     margin: 0;
     line-height: 1.3;
 }
@@ -61,6 +61,7 @@
     font-size: 0.8rem;
     margin: 0;
     font-family: monospace;
+    color: var(--text-secondary); 
 }
 
 .card-actions {
@@ -77,14 +78,14 @@
 .card-bottom-section {
     border-top: 1px solid var(--border-color);
     padding: 0.75rem 1rem;
-    background-color: var(--light-gray);
+    background-color: var(--bg-secondary);
 }
 .contact-link {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-size: 0.85rem;
-    color: var(--secondary-color);
+    color: var(--text-secondary);
     text-decoration: none;
     transition: color 0.2s ease;
 }
@@ -100,11 +101,9 @@
     text-overflow: ellipsis;
 }
 
-
-/* === Table & General Control Styles === */
 .view-toggle-buttons .btn.active {
     background-color: var(--app-success-color);
-    color: white;
+    color: var(--text-on-success);
     border-color: var(--app-success-color);
 }
 .avatar-table {
@@ -126,7 +125,7 @@
     transition: color 0.2s ease-in-out;
 }
 .data-table th.sortable:hover {
-    color: var(--dark-gray);
+    color: var(--text-primary);
 }
 .data-table .sort-icon {
     opacity: 0.5;
@@ -147,4 +146,16 @@
 
 .controls-bar .sort-dropdown {
     flex-shrink: 0;
+}
+
+.dark-theme .team-member-card-final.leader {
+    background: linear-gradient(to right, rgba(var(--app-success-rgb), 0.1), var(--bg-primary));
+}
+
+.dark-theme .leader-row {
+    background-color: rgba(var(--app-success-rgb), 0.1);
+}
+
+.dark-theme .team-member-card-final:hover {
+    box-shadow: 0 7px 14px rgba(0,0,0,0.2), 0 3px 6px rgba(0,0,0,0.15);
 }

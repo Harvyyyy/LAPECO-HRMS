@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Login.css';
+import ForgotPasswordModal from '../modals/ForgotPasswordModal';
 
-// --- Sample User Credentials for Demo ---
 const sampleUsers = {
     'hr_user': { id: 'EMP005', password: 'password123' },
     'leader_carol': { id: 'EMP003', password: 'password123' },
@@ -9,13 +9,15 @@ const sampleUsers = {
     'employee_alice': { id: 'EMP001', password: 'password123' },
 };
 
-const Login = ({ onLoginSuccess }) => {
+const Login = ({ onLoginSuccess, onSendCode, onVerifyCode, onResetPassword }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  
-  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+
+  const [modalStep, setModalStep] = useState(0);
+  const [resetEmail, setResetEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -35,9 +37,41 @@ const Login = ({ onLoginSuccess }) => {
     }
   };
 
-  const handleForgotPasswordClick = (e) => {
-    e.preventDefault();
-    setShowForgotPasswordModal(true);
+  const handleCloseModals = () => {
+    setModalStep(0);
+    setResetEmail('');
+    setIsLoading(false);
+  };
+  
+  const handleSendCode = (email) => {
+    setIsLoading(true);
+    const result = onSendCode(email);
+    if (result.success) {
+      setResetEmail(email);
+      setModalStep(2);
+    } else {
+      alert(result.message); 
+    }
+    setIsLoading(false);
+  };
+
+  const handleVerifyCode = (code) => {
+    const success = onVerifyCode(resetEmail, code);
+    if (success) {
+      setModalStep(3); 
+      return true;
+    }
+    return false;
+  };
+
+  const handleResetPassword = (newPassword) => {
+    const success = onResetPassword(resetEmail, newPassword);
+    if (success) {
+      alert("Password has been reset successfully! You can now log in with your new password.");
+      handleCloseModals();
+    } else {
+      alert("An error occurred. Please try again or contact HR.");
+    }
   };
 
   return (
@@ -54,46 +88,26 @@ const Login = ({ onLoginSuccess }) => {
 
               <div className="login-error-container mb-3">
                 {error && (
-                  <div className="alert alert-danger py-2 fade show" role="alert">
-                    {error}
-                  </div>
+                  <div className="alert alert-danger py-2 fade show" role="alert">{error}</div>
                 )}
               </div>
 
               <form onSubmit={handleSubmit} className="login-form">
                 <div className="mb-3">
                   <label htmlFor="username" className="form-label login-label">Username</label>
-                  <input
-                    type="text"
-                    className="form-control login-input"
-                    id="username"
-                    placeholder="e.g., leader_carol"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    autoComplete="username"
-                  />
+                  <input type="text" className="form-control login-input" id="username" placeholder="e.g., leader_carol" value={username} onChange={(e) => setUsername(e.target.value)} required autoComplete="username" />
                 </div>
                 <div className="mb-3">
                   <label htmlFor="password" className="form-label login-label">Password</label>
                   <div className="input-group">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      className="form-control login-input"
-                      id="password"
-                      placeholder="password123"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      autoComplete="current-password"
-                    />
+                    <input type={showPassword ? 'text' : 'password'} className="form-control login-input" id="password" placeholder="password123" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
                     <span className="input-group-text login-input-group-text" onClick={togglePasswordVisibility} style={{ cursor: 'pointer' }}>
                       <i className={showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'}></i>
                     </span>
                   </div>
                 </div>
                 <div className="d-flex justify-content-end mb-4">
-                  <a href="#" className="text-success text-decoration-none login-forgot-password" onClick={handleForgotPasswordClick}>
+                  <a href="#" className="text-success text-decoration-none login-forgot-password" onClick={(e) => { e.preventDefault(); setModalStep(1); }}>
                     Forgot Password?
                   </a>
                 </div>
@@ -117,27 +131,12 @@ const Login = ({ onLoginSuccess }) => {
         </div>
       </div>
 
-      {showForgotPasswordModal && (
-        <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title"><i className="bi bi-shield-lock-fill me-2"></i>Password Reset</h5>
-                <button type="button" className="btn-close" onClick={() => setShowForgotPasswordModal(false)}></button>
-              </div>
-              <div className="modal-body">
-                <p>For security reasons, password resets must be handled by an authorized administrator.</p>
-                <p className="mb-0"><strong>Please contact an HR Personnel to request a password reset for your account.</strong></p>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-primary" onClick={() => setShowForgotPasswordModal(false)}>
-                  Got it
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ForgotPasswordModal
+        show={modalStep === 1}
+        onClose={handleCloseModals}
+        onSendCode={handleSendCode}
+        isLoading={isLoading}
+      />
     </>
   );
 };

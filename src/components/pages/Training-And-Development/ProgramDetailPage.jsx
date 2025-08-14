@@ -1,25 +1,24 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import './ProgramDetailPage.css';
 import EnrollEmployeeModal from '../../modals/EnrollEmployeeModal';
 import UpdateEnrollmentStatusModal from '../../modals/UpdateEnrollmentStatusModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
-import logo from '../../../assets/logo.png';
+import useReportGenerator from '../../../hooks/useReportGenerator';
 
 const ProgramDetailPage = ({ employees, trainingPrograms, enrollments, handlers }) => {
   const { programId } = useParams();
   
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [pdfDataUri, setPdfDataUri] = useState('');
+  const [showReportPreview, setShowReportPreview] = useState(false);
   const [editingEnrollment, setEditingEnrollment] = useState(null);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState({ key: 'employeeName', direction: 'ascending' });
+
+  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
 
   const selectedProgram = useMemo(() => {
     return trainingPrograms.find(p => p.id.toString() === programId);
@@ -76,45 +75,18 @@ const ProgramDetailPage = ({ employees, trainingPrograms, enrollments, handlers 
   const handleUpdateStatus = (enrollmentId, updatedData) => { handlers.updateEnrollmentStatus(enrollmentId, updatedData); handleCloseStatusModal(); };
 
   const handleGenerateReport = () => {
-    const doc = new jsPDF();
-    const pageW = doc.internal.pageSize.getWidth();
+    generateReport(
+        'training_program_summary',
+        { programId: selectedProgram.id },
+        { trainingPrograms, enrollments, employees }
+    );
+    setShowReportPreview(true);
+  };
 
-    // Header
-    doc.addImage(logo, 'PNG', 15, 12, 40, 13);
-    doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
-    doc.text('Training Program Report', pageW - 15, 25, { align: 'right' });
-    doc.setLineWidth(0.5);
-    doc.line(15, 32, pageW - 15, 32);
-
-    // Program Details
-    doc.setFontSize(14);
-    doc.text(selectedProgram.title, 15, 45);
-    doc.setFontSize(10);
-    doc.setTextColor(108, 117, 125);
-    doc.text(`Provider: ${selectedProgram.provider}`, 15, 52);
-    doc.text(`Duration: ${selectedProgram.duration}`, 15, 58);
-    
-    // Participant Table
-    const tableBody = displayedEnrollments.map(enr => [
-        enr.employeeId,
-        enr.employeeName,
-        `${enr.progress || 0}%`,
-        enr.status,
-    ]);
-
-    autoTable(doc, {
-        head: [['Employee ID', 'Employee Name', 'Progress', 'Status']],
-        body: tableBody,
-        startY: 70,
-        theme: 'striped',
-        headStyles: { fillColor: '#343a40' },
-    });
-
-    const pdfBlob = doc.output('blob');
-    const url = URL.createObjectURL(pdfBlob);
-    setPdfDataUri(url);
-    setShowReportModal(true);
+  const handleCloseReportPreview = () => {
+    setShowReportPreview(false);
+    if(pdfDataUri) URL.revokeObjectURL(pdfDataUri);
+    setPdfDataUri('');
   };
 
   if (!selectedProgram) { return <div>Program Not Found</div>; }
@@ -183,12 +155,14 @@ const ProgramDetailPage = ({ employees, trainingPrograms, enrollments, handlers 
       <EnrollEmployeeModal show={showEnrollModal} onClose={() => setShowEnrollModal(false)} onEnroll={handlers.enrollEmployees} program={selectedProgram} allEmployees={employees} existingEnrollments={enrolledInProgram} />
       {editingEnrollment && <UpdateEnrollmentStatusModal show={showStatusModal} onClose={handleCloseStatusModal} onSave={handleUpdateStatus} enrollmentData={editingEnrollment} />}
       
-      <ReportPreviewModal
-        show={showReportModal}
-        onClose={() => setShowReportModal(false)}
-        pdfDataUri={pdfDataUri}
-        reportTitle={`Training Report - ${selectedProgram.title}`}
-      />
+      {(isLoading || pdfDataUri) && (
+        <ReportPreviewModal
+            show={showReportPreview}
+            onClose={handleCloseReportPreview}
+            pdfDataUri={pdfDataUri}
+            reportTitle={`Training Report - ${selectedProgram.title}`}
+        />
+      )}
     </div>
   );
 };

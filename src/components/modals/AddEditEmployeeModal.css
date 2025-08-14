@@ -9,7 +9,7 @@
 }
 
 .employee-form-left-column {
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
   padding: 2rem 1.5rem;
   width: 320px;
   flex-shrink: 0;
@@ -30,7 +30,7 @@
   height: 100%;
   object-fit: cover;
   border-radius: 50%;
-  border: 4px solid #fff;
+  border: 4px solid var(--bg-primary);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 .employee-profile-img-overlay {
@@ -57,17 +57,11 @@
 .employee-form-left-column .form-label {
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--secondary-color);
+  color: var(--text-secondary);
 }
 .employee-form-left-column .form-control,
 .employee-form-left-column .form-select {
     text-align: left !important;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
-.employee-form-left-column input[type="date"].form-control:disabled {
-    justify-content: flex-start;
 }
 
 .employee-form-right-column {
@@ -84,12 +78,17 @@
 }
 .employee-form-right-column .nav-tabs .nav-link {
   font-weight: 500;
-  color: var(--secondary-color);
+  color: var(--text-secondary);
 }
-.employee-form-right-column .nav-tabs .nav-link.active {
+.dark-theme .employee-form-right-column .nav-tabs .nav-link.active {
+    background-color: var(--bg-primary);
+    border-color: var(--border-color) var(--border-color) var(--bg-primary);
+}
+.light-theme .employee-form-right-column .nav-tabs .nav-link.active {
   color: var(--app-success-color);
   border-color: var(--border-color) var(--border-color) #fff;
 }
+
 .employee-form-right-column .tab-content {
   padding: 1.5rem;
   flex-grow: 1;
@@ -117,7 +116,7 @@
   justify-content: center;
   border: 2px dashed var(--border-color);
   border-radius: var(--border-radius);
-  color: var(--secondary-color);
+  color: var(--text-secondary);
   text-align: center;
 }
 .resume-placeholder i {
@@ -133,15 +132,15 @@
 .form-section-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--dark-gray);
+  color: var(--text-primary);
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--medium-gray);
+  border-bottom: 1px solid var(--border-color);
 }
 .employee-form-right-column .form-label {
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--secondary-color);
+  color: var(--text-secondary);
   margin-bottom: 0.25rem;
 }
 .employee-form-right-column .form-control,
@@ -156,6 +155,13 @@
 .invalid-feedback { font-size: 0.75rem; }
 
 .modal-footer {
-  background-color: var(--light-gray);
+  background-color: var(--bg-secondary);
   border-top: 1px solid var(--border-color);
+}
+
+.dark-theme .form-control:disabled,
+.dark-theme .form-select:disabled {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    opacity: 0.75;
 }

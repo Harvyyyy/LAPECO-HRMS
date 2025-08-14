@@ -1,3 +1,5 @@
+// src/App.jsx
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
@@ -35,14 +37,23 @@ import CaseManagementPage from './components/pages/Case-Management/CaseManagemen
 import AccountsPage from './components/pages/Accounts/AccountsPage';
 import MyProfilePage from './components/pages/My-Profile/MyProfilePage';
 import AccountSettingsPage from './components/pages/Account-Settings/AccountSettingsPage';
-
-// Placeholder Components
-const ContributionsManagementPage = () => <div className="container-fluid p-4"><h1 className="page-main-title">Contributions Management</h1><p>Content coming soon...</p></div>;
+import ContributionsManagementPage from './components/pages/Contributions-Management/ContributionsManagementPage';
 
 // Constants & Assets
 import { USER_ROLES } from './constants/roles';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { initialAttendanceLogs } from './data/attendanceData'; 
+
+const parseFullName = (fullName = '') => {
+    const parts = fullName.trim().split(' ').filter(Boolean);
+    if (parts.length === 0) return { firstName: '', middleName: '', lastName: '' };
+    if (parts.length === 1) return { firstName: parts[0], middleName: '', lastName: '' };
+    
+    const lastName = parts.pop();
+    const firstName = parts.shift();
+    const middleName = parts.join(' ');
+    return { firstName, middleName, lastName };
+};
 
 // --- INITIAL MOCK DATA ---
 const initialPositionsData = [
@@ -54,23 +65,64 @@ const initialPositionsData = [
 ];
 
 const initialEmployeesData = [
-  { id: 'EMP003', name: 'Carol White', positionId: 2, isTeamLeader: true, email: 'carol.w@example.com', joiningDate: '2023-01-10', gender: 'Female', birthday: '1996-12-01', sssNo: '34-123', tinNo: '123-456', pagIbigNo: '5678', philhealthNo: '9012', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
-  { id: 'EMP001', name: 'Alice Johnson', positionId: 2, isTeamLeader: false, email: 'alice.j@example.com', joiningDate: '2022-03-15', gender: 'Female', birthday: '1993-02-18', sssNo: '34-456', tinNo: '321-654', pagIbigNo: '8765', philhealthNo: '4321', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
-  { id: 'EMP009', name: 'Ivy Lee', positionId: 2, isTeamLeader: false, email: 'ivy.l@example.com', joiningDate: '2023-08-12', gender: 'Female', birthday: '2000-10-10', sssNo: null, tinNo: '111-222', pagIbigNo: '3333', philhealthNo: '4444', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
-  { id: 'EMP002', name: 'Bob Smith', positionId: 3, isTeamLeader: true, email: 'bob.s@example.com', joiningDate: '2021-07-01', gender: 'Male', birthday: '1989-08-25', sssNo: '34-789', tinNo: '987-654', pagIbigNo: '4321', philhealthNo: '8765', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
-  { id: 'EMP004', name: 'David Green', positionId: 3, isTeamLeader: false, email: 'david.g@example.com', joiningDate: '2023-05-20', gender: 'Male', birthday: '1999-04-30', sssNo: '34-101', tinNo: null, pagIbigNo: null, philhealthNo: '5555', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
-  { id: 'EMP005', name: 'Grace Field', positionId: 1, isTeamLeader: false, email: 'grace.f@example.com', joiningDate: '2020-11-20', gender: 'Female', birthday: '1995-07-19', sssNo: '34-202', tinNo: '222-333', pagIbigNo: '6666', philhealthNo: '7777', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
-  { id: 'EMP010', name: 'Frank Black', positionId: null, isTeamLeader: false, email: 'frank.b@example.com', joiningDate: '2023-09-01', gender: 'Male', birthday: '1998-05-15', sssNo: '34-303', tinNo: '444-555', pagIbigNo: '8888', philhealthNo: '9999', status: 'Inactive', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP003', firstName: 'Carol', middleName: '', lastName: 'White', name: 'Carol White', positionId: 2, isTeamLeader: true, email: 'carol.w@example.com', joiningDate: '2023-01-10', gender: 'Female', birthday: '1996-12-01', sssNo: '34-123', tinNo: '123-456', pagIbigNo: '1210-5865-0865', philhealthNo: '0802-6579-1208', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP001', firstName: 'Alice', middleName: '', lastName: 'Johnson', name: 'Alice Johnson', positionId: 2, isTeamLeader: false, email: 'alice.j@example.com', joiningDate: '2022-03-15', gender: 'Female', birthday: '1993-02-18', sssNo: '34-456', tinNo: '321-654', pagIbigNo: '1213-1695-8596', philhealthNo: '1120-2485-8688', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP009', firstName: 'Ivy', middleName: '', lastName: 'Lee', name: 'Ivy Lee', positionId: 2, isTeamLeader: false, email: 'ivy.l@example.com', joiningDate: '2023-08-12', gender: 'Female', birthday: '2000-10-10', sssNo: null, tinNo: '111-222', pagIbigNo: '1210-8451-2548', philhealthNo: '0902-5184-4185', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP002', firstName: 'Bob', middleName: '', lastName: 'Smith', name: 'Bob Smith', positionId: 3, isTeamLeader: true, email: 'bob.s@example.com', joiningDate: '2021-07-01', gender: 'Male', birthday: '1989-08-25', sssNo: '34-789', tinNo: '987-654', pagIbigNo: '1210-6385-5854', philhealthNo: '0825-3830-9814', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP004', firstName: 'David', middleName: '', lastName: 'Green', name: 'David Green', positionId: 3, isTeamLeader: false, email: 'david.g@example.com', joiningDate: '2023-05-20', gender: 'Male', birthday: '1999-04-30', sssNo: '34-101', tinNo: null, pagIbigNo: null, philhealthNo: '0805-1312-7883', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP005', firstName: 'Grace', middleName: '', lastName: 'Field', name: 'Grace Field', positionId: 1, isTeamLeader: false, email: 'grace.f@example.com', joiningDate: '2020-11-20', gender: 'Female', birthday: '1995-07-19', sssNo: '34-202', tinNo: '222-333', pagIbigNo: '1211-9050-5943', philhealthNo: '1908-9634-9159', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
+  { id: 'EMP010', firstName: 'Frank', middleName: '', lastName: 'Black', name: 'Frank Black', positionId: null, isTeamLeader: false, email: 'frank.b@example.com', joiningDate: '2023-09-01', gender: 'Male', birthday: '1998-05-15', sssNo: '34-303', tinNo: '444-555', pagIbigNo: '1212-7582-7302', philhealthNo: '0820-1209-8037', status: 'Inactive', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null },
 ];
 
+
+const createScheduleEntry = (id, empId, date, shift = '08:00 - 17:00') => ({
+  scheduleId: id, empId, date: createPastDate(date), shift
+});
+
+const createPastDate = (daysAgo) => {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    return date.toISOString().split('T')[0];
+};
+
 const initialSchedulesData = [
-  { scheduleId: 1, empId: 'EMP001', date: '2025-07-16', shift: '08:00 - 17:00' },
-  { scheduleId: 2, empId: 'EMP001', date: '2025-07-15', shift: '08:00 - 17:00' },
-  { scheduleId: 3, empId: 'EMP001', date: '2025-07-14', shift: '08:00 - 17:00' },
-  { scheduleId: 4, empId: 'EMP001', date: '2025-07-11', shift: '08:00 - 17:00' },
-  { scheduleId: 5, empId: 'EMP001', date: '2025-07-10', shift: '08:00 - 17:00' },
-  { scheduleId: 6, empId: 'EMP002', date: '2025-07-16', shift: '08:00 - 17:00' },
-  { scheduleId: 7, empId: 'EMP002', date: '2025-07-15', shift: '08:00 - 17:00' },
+  // Today's Schedule
+  createScheduleEntry(1, 'EMP001', 0),
+  createScheduleEntry(2, 'EMP002', 0, '09:00 - 18:00'),
+  createScheduleEntry(3, 'EMP003', 0, '09:00 - 18:00'),
+  createScheduleEntry(4, 'EMP004', 0),
+
+  // Yesterday's Schedule
+  createScheduleEntry(5, 'EMP001', 1),
+  createScheduleEntry(6, 'EMP002', 1, '09:00 - 18:00'),
+  createScheduleEntry(7, 'EMP003', 1, '09:00 - 18:00'),
+  createScheduleEntry(8, 'EMP004', 1),
+  createScheduleEntry(9, 'EMP009', 1),
+
+  // 2 Days Ago
+  createScheduleEntry(10, 'EMP001', 2),
+  createScheduleEntry(11, 'EMP002', 2, '09:00 - 18:00'), // Absent
+  createScheduleEntry(12, 'EMP003', 2, '09:00 - 18:00'),
+  createScheduleEntry(13, 'EMP004', 2),
+  createScheduleEntry(14, 'EMP009', 2),
+
+  // 3 Days Ago
+  createScheduleEntry(15, 'EMP001', 3),
+  createScheduleEntry(16, 'EMP002', 3, '09:00 - 18:00'),
+  createScheduleEntry(17, 'EMP003', 3, '08:00 - 17:00'),
+  createScheduleEntry(18, 'EMP004', 3),
+
+  // 4 Days Ago
+  createScheduleEntry(19, 'EMP002', 4, '09:00 - 18:00'),
+  createScheduleEntry(20, 'EMP004', 4),
+  createScheduleEntry(21, 'EMP009', 4, '09:00 - 18:00'),
+
+  // 5 Days Ago
+  createScheduleEntry(22, 'EMP001', 5),
+  createScheduleEntry(23, 'EMP002', 5, '09:00 - 18:00'),
+  createScheduleEntry(24, 'EMP003', 5),
+  createScheduleEntry(25, 'EMP004', 5), // Absent
+  createScheduleEntry(26, 'EMP009', 5),
 ];
 
 const initialTemplatesData = [
@@ -80,8 +132,28 @@ const initialTemplatesData = [
 ];
 
 const initialLeaveRequests = [
-  { leaveId: 'LVE001', leaveType: 'Vacation', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 5, dateFrom: '2025-04-21', dateTo: '2025-04-25', reason: 'Family vacation.', status: 'Approved' },
+  // --- PENDING REQUESTS ---
+  { leaveId: 'LVE003', leaveType: 'Vacation', empId: 'EMP001', name: 'Alice Johnson', position: 'Packer', days: 5, dateFrom: '2025-09-15', dateTo: '2025-09-19', reason: 'Annual trip with family.', status: 'Pending' },
+  { leaveId: 'LVE004', leaveType: 'Personal Leave', empId: 'EMP004', name: 'David Green', position: 'Lifter', days: 1, dateFrom: '2025-08-22', dateTo: '2025-08-22', reason: 'Appointment at a government office.', status: 'Pending' },
+  { leaveId: 'LVE005', leaveType: 'Unpaid Leave', empId: 'EMP009', name: 'Ivy Lee', position: 'Packer', days: 3, dateFrom: '2025-10-01', dateTo: '2025-10-03', reason: 'Personal matters.', status: 'Pending' },
+
+  // --- APPROVED REQUESTS ---
+  { leaveId: 'LVE001', leaveType: 'Vacation', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 5, dateFrom: '2025-04-21', dateTo: '2025-04-25', reason: 'Family vacation to Palawan.', status: 'Approved' },
   { leaveId: 'LVE002', leaveType: 'Sick Leave', empId: 'EMP003', name: 'Carol White', position: 'Picker', days: 2, dateFrom: '2025-05-05', dateTo: '2025-05-06', reason: 'Flu.', status: 'Approved' },
+ 
+
+  { leaveId: 'LVE006', leaveType: 'Vacation', empId: 'EMP003', name: 'Carol White', position: 'Picker', days: 3, dateFrom: '2025-08-11', dateTo: '2025-08-13', reason: 'Short break.', status: 'Approved' }, 
+  { leaveId: 'LVE007', leaveType: 'Sick Leave', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 1, dateFrom: '2025-07-21', dateTo: '2025-07-21', reason: 'Fever and headache.', status: 'Approved' },
+  { leaveId: 'LVE008', leaveType: 'Sick Leave', empId: 'EMP001', name: 'Alice Johnson', position: 'Packer', days: 3, dateFrom: '2025-06-02', dateTo: '2025-06-04', reason: 'Stomach flu, doctor advised rest.', status: 'Approved' },
+  { leaveId: 'LVE009', leaveType: 'Vacation', empId: 'EMP004', name: 'David Green', position: 'Lifter', days: 10, dateFrom: '2025-01-20', dateTo: '2025-01-29', reason: 'Hometown festival.', status: 'Approved' },
+  
+  // --- DECLINED REQUESTS ---
+  { leaveId: 'LVE010', leaveType: 'Vacation', empId: 'EMP009', name: 'Ivy Lee', position: 'Packer', days: 2, dateFrom: '2025-08-18', dateTo: '2025-08-19', reason: 'Sudden plan with friends.', status: 'Declined' },
+  { leaveId: 'LVE011', leaveType: 'Personal Leave', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 1, dateFrom: '2025-07-30', dateTo: '2025-07-30', reason: 'Need to process bank documents.', status: 'Declined' },
+
+  // --- CANCELLED REQUESTS ---
+  { leaveId: 'LVE012', leaveType: 'Vacation', empId: 'EMP012', name: 'Nagi Seishiro', position: 'Packer', days: 2, dateFrom: '2025-08-18', dateTo: '2025-08-19', reason: 'Sudden plan with friends.', status: 'Canceled' },
+  { leaveId: 'LVE013', leaveType: 'Personal Leave', empId: 'EMP013', name: 'Isagi Yoichi', position: 'Lifter', days: 1, dateFrom: '2025-07-30', dateTo: '2025-07-30', reason: 'Need to process bank documents.', status: 'Canceled' },
 ];
 
 const initialHolidaysData = [
@@ -186,26 +258,82 @@ const initialEvaluationFactors = [
 const initialEvaluationsData = [
   {
     id: 'EVAL01',
-    employeeId: 'EMP001',
-    evaluatorId: 'EMP002',
-    periodStart: '2023-01-01',
-    periodEnd: '2023-06-30',
+    employeeId: 'EMP001', // Alice Johnson (Packer)
+    evaluatorId: 'EMP003', // Carol White (Leader)
+    periodStart: '2025-01-01',
+    periodEnd: '2025-06-30',
     status: 'Completed',
     factorScores: {
-      'bhv_teamwork': { score: 5, comments: 'Always willing to help others in the warehouse.' },
-      'bhv_communication': { score: 4, comments: 'Communicates clearly with the team leader.' },
+      'bhv_teamwork': { score: 5, comments: 'Always willing to help others in the warehouse. A true team player.' },
+      'bhv_communication': { score: 4, comments: 'Communicates clearly with the team leader about order status.' },
       'bhv_professionalism': { score: 5, comments: '' },
-      'wq_accuracy': { score: 4, comments: 'Double-checks work, resulting in low return rates.' },
-      'wq_efficiency': { score: 5, comments: '' },
-      'val_safety': { score: 5, comments: 'Always wears required PPE.' },
+      'wq_accuracy': { score: 5, comments: 'Consistently double-checks work, resulting in zero return rates for her packages.' },
+      'wq_efficiency': { score: 4, comments: 'Meets packing speed targets consistently.' },
+      'val_safety': { score: 5, comments: 'Always wears required PPE and keeps her workspace tidy.' },
       'val_integrity': { score: 5, comments: '' },
-      'KPI02': { score: 5, comments: 'Consistently exceeds packing speed targets.' },
-      'factor_manager_summary': { value: 'Alice is a top performer and a key asset to the warehouse team. Her efficiency is outstanding.' },
+      'KPI02': { score: 4, comments: 'Meets the target of packages per hour.' }, // Packing Speed
+      'factor_manager_summary': { value: 'Alice is a top performer and a key asset to the warehouse team. Her efficiency and attention to detail are outstanding.' },
       'factor_employee_feedback': { value: 'I enjoyed the last period and look forward to taking on more responsibility.' },
-      'factor_development_plan': { value: 'Continue to lead by example in packing efficiency.' },
+      'factor_development_plan': { value: 'Continue to lead by example in packing efficiency and mentor new packers.' },
     },
-    overallScore: 95.00,
-  }
+    overallScore: 92.50,
+  },
+  {
+    id: 'EVAL02',
+    employeeId: 'EMP009', // Ivy Lee (Packer)
+    evaluatorId: 'EMP003', // Carol White (Leader)
+    periodStart: '2025-01-01',
+    periodEnd: '2025-06-30',
+    status: 'Completed',
+    factorScores: {
+      'bhv_teamwork': { score: 3, comments: 'Works well independently, can be more proactive in helping teammates.' },
+      'bhv_communication': { score: 4, comments: '' },
+      'bhv_professionalism': { score: 4, comments: '' },
+      'wq_accuracy': { score: 3, comments: 'A few minor errors in packing lists were noted this period. Improvement needed in double-checking.' },
+      'wq_efficiency': { score: 3, comments: 'Packing speed is just below the team average. Can improve with more focus.' },
+      'val_safety': { score: 5, comments: 'Follows all safety rules diligently.' },
+      'val_integrity': { score: 4, comments: '' },
+      'KPI02': { score: 3, comments: 'Slightly below target on average packages per hour.' }, // Packing Speed
+      'factor_manager_summary': { value: 'Ivy is a reliable team member who follows instructions well. Focus for the next period should be on improving speed and accuracy to meet team standards.' },
+      'factor_employee_feedback': { value: 'I will work on being faster and more careful.' },
+      'factor_development_plan': { value: '1. Shadow Alice for one shift to learn efficiency techniques. 2. Implement a personal double-check system before sealing packages.' },
+    },
+    overallScore: 78.00,
+  },
+  {
+    id: 'EVAL03',
+    employeeId: 'EMP004', // David Green (Lifter)
+    evaluatorId: 'EMP002', // Bob Smith (Leader)
+    periodStart: '2025-01-01',
+    periodEnd: '2025-06-30',
+    status: 'Completed',
+    factorScores: {
+      'bhv_teamwork': { score: 4, comments: 'Coordinates well with pickers and movers.' },
+      'bhv_communication': { score: 4, comments: 'Uses hand signals and radio effectively.' },
+      'bhv_professionalism': { score: 5, comments: '' },
+      'wq_accuracy': { score: 4, comments: '' },
+      'wq_efficiency': { score: 5, comments: 'Very efficient in moving pallets, minimizes downtime.' },
+      'val_safety': { score: 3, comments: 'Was observed once operating without a spotter in a congested area. Needs to be more vigilant.' },
+      'val_integrity': { score: 5, comments: '' },
+      'KPI03': { score: 5, comments: 'Zero safety incidents reported for David this period.' }, // Safety Incident Rate
+      'KPI04': { score: 4, comments: 'Completes pre-shift checks consistently.' }, // Equipment Maintenance Checks
+      'factor_manager_summary': { value: 'David is a highly efficient operator. His primary area for improvement is maintaining 100% adherence to all safety protocols, especially during busy periods.' },
+      'factor_employee_feedback': { value: 'I understand the feedback on safety and will make it my top priority.' },
+      'factor_development_plan': { value: 'Attend the advanced forklift safety refresher course. Aim for zero safety protocol deviations in the next 6 months.' },
+    },
+    overallScore: 88.75,
+  },
+  {
+    id: 'EVAL04',
+    employeeId: 'EMP001', // Alice Johnson (Packer)
+    evaluatorId: 'EMP003', // Carol White (Leader)
+    periodStart: '2024-07-01',
+    periodEnd: '2024-12-31',
+    status: 'Completed',
+    factorScores: {
+    },
+    overallScore: 90.00,
+  },
 ];
 
 const initialNotificationsData = [
@@ -331,23 +459,25 @@ function AppContent() {
   const [theme, setTheme] = useState('light');
 
   const appLevelHandlers = {
-    saveEmployee: (formData, existingEmployeeId) => {
+        saveEmployee: (formData, existingEmployeeId) => {
+      const fullName = [formData.firstName, formData.middleName, formData.lastName]
+        .filter(Boolean)
+        .join(' ');
+      
+      const updatedFormData = { ...formData, name: fullName };
+
       if (existingEmployeeId) {
-        setEmployees(prev => prev.map(emp => emp.id === existingEmployeeId ? { ...emp, ...formData } : emp));
+        setEmployees(prev => prev.map(emp => 
+          emp.id === existingEmployeeId ? { ...emp, ...updatedFormData } : emp
+        ));
       } else {
-        const newEmployee = { id: `EMP${Date.now().toString().slice(-4)}`, isTeamLeader: false, status: 'Active', ...formData };
+        const newEmployee = { 
+          id: `EMP${Date.now().toString().slice(-4)}`, 
+          isTeamLeader: false, 
+          status: 'Active', 
+          ...updatedFormData 
+        };
         setEmployees(prev => [newEmployee, ...prev]);
-      }
-    },
-    deleteEmployee: (employeeId) => {
-      setEmployees(prev => prev.filter(emp => emp.id !== employeeId));
-    },
-    savePosition: (formData, positionId) => {
-      if (positionId) {
-        setPositions(prev => prev.map(pos => pos.id === positionId ? { ...pos, ...formData } : pos));
-      } else {
-        const newPosition = { id: Date.now(), ...formData };
-        setPositions(prev => [newPosition, ...prev]);
       }
     },
     deletePosition: (positionId) => {
@@ -425,9 +555,18 @@ function AppContent() {
         }
     },
     saveApplicant: (formData) => {
+        const fullName = [formData.firstName, formData.middleName, formData.lastName]
+            .filter(Boolean)
+            .join(' ');
+
         const newApplicant = {
-            id: Date.now(), ...formData, status: 'New Applicant', applicationDate: new Date().toISOString().split('T')[0],
-            lastStatusUpdate: new Date().toISOString(), resumeUrl: '#'
+            id: Date.now(),
+            ...formData,
+            name: fullName,
+            status: 'New Applicant', 
+            applicationDate: new Date().toISOString().split('T')[0],
+            lastStatusUpdate: new Date().toISOString(), 
+            resumeUrl: '#'
         };
         delete newApplicant.resumeFile;
         setApplicants(prev => [newApplicant, ...prev]);
@@ -448,9 +587,14 @@ function AppContent() {
 
         appLevelHandlers.updateApplicantStatus(applicantId, 'Hired');
 
+        const { firstName, middleName, lastName } = parseFullName(applicantToHire.name);
+
         const newEmployee = {
             id: hiringDetails.employeeId,
-            name: applicantToHire.name,
+            name: applicantToHire.name, 
+            firstName, 
+            middleName, 
+            lastName,
             email: applicantToHire.email,
             contactNumber: applicantToHire.phone,
             birthday: applicantToHire.birthday,
@@ -468,7 +612,7 @@ function AppContent() {
         };
         setEmployees(prev => [newEmployee, ...prev]);
 
-        const username = `${applicantToHire.name.split(' ')[0].toLowerCase()}_${hiringDetails.employeeId.slice(-4)}`;
+        const username = `${firstName.toLowerCase()}_${hiringDetails.employeeId.slice(-4)}`;
         const password = Math.random().toString(36).slice(-8); 
         
         const newAccount = {
@@ -725,8 +869,7 @@ function AppContent() {
             </Route>
             
             <Route path="holiday-management" element={<HolidayManagementPage holidays={holidays} handlers={appLevelHandlers} />} />
-            <Route path="contributions-management" element={<ContributionsManagementPage />} />
-            {/* --- MODIFIED: Pass evaluationFactors prop --- */}
+            <Route path="contributions-management" element={<ContributionsManagementPage employees={employees} positions={positions} />} />
             <Route path="performance" element={<PerformanceManagementPage kras={kras} kpis={kpis} positions={positions} employees={employees} evaluations={evaluations} handlers={appLevelHandlers} evaluationFactors={evaluationFactors} theme={theme} />} />
             <Route path="performance/evaluate" element={
               <EvaluationFormPage 
@@ -758,7 +901,6 @@ function AppContent() {
               <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />
             </Route>
             <Route path="team-employees" element={<MyTeamPage currentUser={currentUser} employees={employees} positions={positions} />} />
-            {/* --- MODIFIED: Pass evaluationFactors prop --- */}
             <Route path="evaluate-team" element={
               <EvaluateTeamPage 
                 currentUser={currentUser}

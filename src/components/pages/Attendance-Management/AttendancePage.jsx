@@ -1,13 +1,11 @@
 import React, { useState, useMemo, useRef } from 'react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import './AttendancePage.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import EditAttendanceModal from '../../modals/EditAttendanceModal';
-import logo from '../../../assets/logo.png';
+import useReportGenerator from '../../../hooks/useReportGenerator';
 import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
 
 const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, setAttendanceLogs }) => {
@@ -20,8 +18,8 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState('');
 
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [pdfDataUri, setPdfDataUri] = useState('');
+  const [showReportPreview, setShowReportPreview] = useState(false);
+  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingAttendanceRecord, setEditingAttendanceRecord] = useState(null);
   
@@ -158,56 +156,26 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
     setCurrentDate(date);
     setActiveView('historyDetail');
   };
+  
   const handleGenerateReport = () => {
     if (!dailyAttendanceList || dailyAttendanceList.length === 0) {
       alert("No attendance data to generate a report for the selected day.");
       return;
     }
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-    const reportDate = new Date(currentDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    doc.addImage(logo, 'PNG', 40, 20, 80, 26);
-    doc.setFontSize(18); doc.setFont(undefined, 'bold');
-    doc.text('Daily Attendance Report', pageWidth - 40, 40, { align: 'right' });
-    doc.setFontSize(11); doc.setFont(undefined, 'normal');
-    doc.text(`Date: ${reportDate}`, pageWidth - 40, 55, { align: 'right' });
-    
-    const totalScheduled = dailyAttendanceList.length;
-    const presentCount = dailyAttendanceList.filter(e => e.status === 'Present').length;
-    const lateCount = dailyAttendanceList.filter(e => e.status === 'Late').length;
-    const absentCount = dailyAttendanceList.filter(e => e.status === 'Absent').length;
-    
-    let summaryY = 80;
-    doc.setFontSize(12); doc.setFont(undefined, 'bold');
-    doc.text('Summary', 40, summaryY);
-    summaryY += 18;
-    doc.setFontSize(10); doc.setFont(undefined, 'normal');
-    doc.text(`- Total Scheduled: ${totalScheduled}`, 50, summaryY);
-    doc.text(`- Present: ${presentCount}`, 200, summaryY);
-    doc.text(`- Late: ${lateCount}`, 350, summaryY);
-    doc.text(`- Absent: ${absentCount}`, 500, summaryY);
-    summaryY += 25;
-    
-    const tableColumns = ["ID", "Name", "Position", "Shift", "Sign In", "Break Out", "Break In", "Sign Out", "Status"];
-    const tableRows = sortedAndFilteredList.map(emp => [
-      emp.id, emp.name, emp.position, emp.shift || '---', emp.signIn || '---',
-      emp.breakOut || '---', emp.breakIn || '---', emp.signOut || '---', emp.status,
-    ]);
-    autoTable(doc, {
-      head: [tableColumns], body: tableRows, startY: summaryY, theme: 'grid',
-      headStyles: { fillColor: [25, 135, 84], fontSize: 9 }, bodyStyles: { fontSize: 8 },
-      didDrawPage: (data) => {
-        doc.setFontSize(9);
-        doc.text('Page ' + doc.internal.getNumberOfPages(), data.settings.margin.left, pageHeight - 10);
-      }
-    });
-
-    const pdfBlob = doc.output('blob');
-    const url = URL.createObjectURL(pdfBlob);
-    setPdfDataUri(url);
-    setShowReportModal(true);
+    generateReport(
+        'attendance_summary', 
+        { startDate: currentDate }, 
+        { employees, schedules: allSchedules, attendanceLogs, positions }
+    );
+    setShowReportPreview(true);
   };
+
+  const handleCloseReportPreview = () => {
+    setShowReportPreview(false);
+    if(pdfDataUri) URL.revokeObjectURL(pdfDataUri);
+    setPdfDataUri('');
+  };
+
   const handleOpenEditModal = (employeeData) => {
     const record = {
       id: employeeData.id,
@@ -484,7 +452,16 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
           </>
         )}
       </div>
-      <ReportPreviewModal show={showReportModal} onClose={() => setShowReportModal(false)} pdfDataUri={pdfDataUri} reportTitle={`Daily_Attendance_Report_${currentDate}`} />
+
+      {(isLoading || pdfDataUri) && (
+        <ReportPreviewModal 
+            show={showReportPreview} 
+            onClose={handleCloseReportPreview} 
+            pdfDataUri={pdfDataUri} 
+            reportTitle={`Daily Attendance - ${currentDate}`} 
+        />
+      )}
+
       {showEditModal && ( <EditAttendanceModal show={showEditModal} onClose={handleCloseEditModal} onSave={handleSaveEditedTime} attendanceRecord={editingAttendanceRecord}/> )}
     </div>
   );

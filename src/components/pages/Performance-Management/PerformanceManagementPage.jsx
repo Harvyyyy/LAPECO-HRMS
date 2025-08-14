@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import './PerformanceManagement.css';
+
+// Component Imports
 import AddEditKraModal from '../../modals/AddEditKraModal';
 import KraAccordionItem from './KraAccordionItem';
 import StartEvaluationModal from '../../modals/StartEvaluationModal';
@@ -12,9 +13,8 @@ import ScoreIndicator from './ScoreIndicator';
 import PerformanceReportModal from '../../modals/PerformanceReportModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import PerformanceInsightsCard from './PerformanceInsightsCard';
+import useReportGenerator from '../../../hooks/useReportGenerator'; 
 import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
-import logo from '../../../assets/logo.png';
-import './PerformanceManagement.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -26,7 +26,8 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
   const [viewingEvaluation, setViewingEvaluation] = useState(null);
   const [showReportConfigModal, setShowReportConfigModal] = useState(false);
   const [showReportPreview, setShowReportPreview] = useState(false);
-  const [pdfDataUri, setPdfDataUri] = useState('');
+
+  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
   
   const [historySearchTerm, setHistorySearchTerm] = useState('');
   const [historySortConfig, setHistorySortConfig] = useState({ key: 'periodEnd', direction: 'descending' });
@@ -121,9 +122,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
     evals.sort((a, b) => {
       const key = historySortConfig.key;
       const direction = historySortConfig.direction === 'ascending' ? 1 : -1;
-      
       let valA, valB;
-      
       if (key === 'employeeName') {
         valA = employeeMap.get(a.employeeId)?.name || '';
         valB = employeeMap.get(b.employeeId)?.name || '';
@@ -131,21 +130,12 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
         valA = employeeMap.get(a.evaluatorId)?.name || '';
         valB = employeeMap.get(b.evaluatorId)?.name || '';
       } else {
-        valA = a[key];
-        valB = b[key];
+        valA = a[key]; valB = b[key];
       }
-
-      if (typeof valA === 'string') {
-        return valA.localeCompare(valB) * direction;
-      }
-      if (typeof valA === 'number') {
-        return (valA - valB) * direction;
-      }
-      
-      // Default for dates as strings
+      if (typeof valA === 'string') return valA.localeCompare(valB) * direction;
+      if (typeof valA === 'number') return (valA - valB) * direction;
       return (new Date(valA) - new Date(valB)) * direction;
     });
-
     return evals;
   }, [evaluations, historySearchTerm, historySortConfig, employeeMap]);
   
@@ -162,49 +152,27 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
   const handleViewEvaluation = (evaluation) => setViewingEvaluation(evaluation);
 
   const handleGenerateReport = ({ startDate, endDate }) => {
-    const filteredEvals = evaluations.filter(ev => {
-        const evalDate = new Date(ev.periodEnd);
-        return evalDate >= new Date(startDate) && evalDate <= new Date(endDate);
-    });
-
+    const filteredEvals = evaluations.filter(ev => new Date(ev.periodEnd) >= new Date(startDate) && new Date(ev.periodEnd) <= new Date(endDate));
     if (filteredEvals.length === 0) {
         alert("No evaluations found in the selected date range.");
         return;
     }
-    
-    const doc = new jsPDF();
-    const pageW = doc.internal.pageSize.getWidth();
-    doc.addImage(logo, 'PNG', 15, 12, 40, 13);
-    doc.setFontSize(18); doc.setFont(undefined, 'bold');
-    doc.text('Performance Summary Report', pageW - 15, 25, { align: 'right' });
-    doc.setFontSize(10); doc.setFont(undefined, 'normal');
-    doc.text(`Period: ${startDate} to ${endDate}`, pageW - 15, 35, { align: 'right' });
-    
-    const tableBody = filteredEvals.map(ev => {
-        const emp = employeeMap.get(ev.employeeId);
-        const evaluator = employeeMap.get(ev.evaluatorId);
-        return [
-            emp?.name || ev.employeeId,
-            positionMap.get(emp?.positionId) || 'N/A',
-            evaluator?.name || ev.evaluatorId,
-            ev.periodEnd,
-            `${ev.overallScore.toFixed(2)}%`
-        ];
-    });
 
-    autoTable(doc, {
-        head: [['Employee', 'Position', 'Evaluator', 'Date', 'Score']],
-        body: tableBody,
-        startY: 50,
-        theme: 'striped',
-        headStyles: { fillColor: '#198754' },
-    });
-    
-    const pdfBlob = doc.output('blob');
-    setPdfDataUri(URL.createObjectURL(pdfBlob));
+    generateReport(
+        'performance_summary', 
+        { startDate, endDate }, 
+        { employees, positions, evaluations }
+    );
+    setShowReportConfigModal(false);
     setShowReportPreview(true);
   };
   
+  const handleCloseReportPreview = () => {
+    setShowReportPreview(false);
+    if(pdfDataUri) URL.revokeObjectURL(pdfDataUri);
+    setPdfDataUri('');
+  };
+
   const requestHistorySort = (key) => {
     let direction = 'ascending';
     if (historySortConfig.key === key && historySortConfig.direction === 'ascending') {
@@ -213,18 +181,11 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
     setHistorySortConfig({ key, direction });
   };
 
-  // --- MODIFIED: Prepare props for the modal before the return statement for clarity and correctness ---
   const modalProps = useMemo(() => {
     if (!viewingEvaluation) return null;
-
     const employee = employeeMap.get(viewingEvaluation.employeeId);
     const position = employee ? positions.find(p => p.id === employee.positionId) : null;
-
-    return {
-      evaluation: viewingEvaluation,
-      employee,
-      position
-    };
+    return { evaluation: viewingEvaluation, employee, position };
   }, [viewingEvaluation, employeeMap, positions]);
   
   const renderDashboard = () => (
@@ -245,7 +206,6 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
             </div>
         </div>
       </div>
-
       <div className="analysis-grid">
         <div className="card">
             <div className="card-header"><h6><i className="bi bi-bar-chart-line-fill me-2"></i>Performance Distribution</h6></div>
@@ -256,7 +216,6 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
             <PerformanceInsightsCard title="Turnover Risks" icon="bi bi-graph-down-arrow" data={strategicInsights.turnoverRisks} className="insight-card turnover-risks" />
         </div>
       </div>
-      
       <div className="card dashboard-history-table">
           <div className="history-table-controls">
             <h6><i className="bi bi-clock-history me-2"></i>Evaluation History</h6>
@@ -348,7 +307,6 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
       {showKraModal && (<AddEditKraModal show={showKraModal} onClose={handleCloseKraModal} onSave={handleSaveKraAndKpis} positions={positions} kraData={editingKra} kpisData={editingKra ? kpis.filter(k => k.kraId === editingKra.id) : []}/>)}
       <StartEvaluationModal show={showStartEvalModal} onClose={() => setShowStartEvalModal(false)} onStart={handleStartEvaluation} employees={employees}/>
       
-      {/* --- MODIFIED: Replaced the IIFE with standard conditional rendering --- */}
       {modalProps && (
         <ViewEvaluationModal 
           show={!!viewingEvaluation} 
@@ -363,7 +321,15 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
       )}
       
       <PerformanceReportModal show={showReportConfigModal} onClose={() => setShowReportConfigModal(false)} onGenerate={handleGenerateReport} />
-      <ReportPreviewModal show={showReportPreview} onClose={() => setShowReportPreview(false)} pdfDataUri={pdfDataUri} reportTitle="Performance Summary Report" />
+      
+      {(isLoading || pdfDataUri) && (
+        <ReportPreviewModal 
+          show={showReportPreview} 
+          onClose={handleCloseReportPreview} 
+          pdfDataUri={pdfDataUri} 
+          reportTitle="Performance Summary Report" 
+        />
+      )}
     </div>
   );
 };

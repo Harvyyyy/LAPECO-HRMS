@@ -113,7 +113,7 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
   const dailyViewColumns = useMemo(() => {
     if (!scheduledEmployeesForDate || scheduledEmployeesForDate.length === 0) return [];
     const columnKeys = new Set();
-    const excludedKeys = new Set(['scheduleId', 'empId', 'date', 'name', 'position', 'id', 'positionId', 'isTeamLeader', 'email', 'joiningDate', 'birthday', 'gender', 'address', 'contactNumber', 'imageUrl', 'sssNo', 'tinNo', 'pagIbigNo', 'philhealthNo', 'resumeUrl', 'shift']);
+    const excludedKeys = new Set(['scheduleId', 'empId', 'date', 'name', 'position', 'id', 'positionId', 'isTeamLeader', 'email', 'joiningDate', 'birthday', 'gender', 'address', 'contactNumber', 'imageUrl', 'sssNo', 'tinNo', 'pagIbigNo', 'philhealthNo', 'resumeUrl', 'shift', 'status']);
     scheduledEmployeesForDate.forEach(schedule => Object.keys(schedule).forEach(key => !excludedKeys.has(key) && columnKeys.add(key)));
     return Array.from(columnKeys).map(key => ({ key, name: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ') }));
   }, [scheduledEmployeesForDate]);
@@ -140,6 +140,7 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
     handleCloseEditScheduleModal();
   };
   
+  // --- MODIFIED: Simplified handler ---
   const handleStartCreationFlow = (source) => {
     setCreationSource(source);
     setShowSelectDateModal(true);
@@ -310,8 +311,10 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
                             <div className="info-row"><span className="info-label">Employees Scheduled:</span><span className="info-value">{scheduleInfo.employeeCount}</span></div>
                         </div>
                         <div className="card-footer">
+                            {/* --- MODIFIED: Added Use Schedule button --- */}
+                            <button className="btn btn-sm btn-success" onClick={() => handleStartCreationFlow({ type: 'copy', data: schedulesByDate[scheduleInfo.date] })}>Use Schedule</button>
                             <button className="btn btn-sm btn-outline-secondary" onClick={() => handleOpenEditScheduleModal(scheduleInfo.date)}>Edit</button>
-                            <button className="btn btn-sm btn-success" onClick={() => setPreviewData({ info: scheduleInfo, type: 'schedule' })}>View Details</button>
+                            <button className="btn btn-sm btn-outline-primary" onClick={() => setPreviewData({ info: scheduleInfo, type: 'schedule' })}>View</button>
                         </div>
                     </div>
                 )) : <div className="w-100"><p className="text-muted text-center mt-4">No schedules match your search.</p></div>}
@@ -341,8 +344,10 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
                             </dl>
                         </div>
                         <div className="card-footer">
+                            {/* --- MODIFIED: Added Use Template button --- */}
+                            <button className="btn btn-sm btn-success" onClick={() => handleStartCreationFlow({ type: 'template', data: tpl })}>Use Template</button>
                             <button className="btn btn-sm btn-outline-secondary" onClick={() => handleOpenCreateTemplateModal(tpl)}>Edit</button>
-                            <button className="btn btn-sm btn-success" onClick={() => setPreviewData({ ...tpl, type: 'template' })}>View Details</button>
+                            <button className="btn btn-sm btn-outline-primary" onClick={() => setPreviewData({ ...tpl, type: 'template' })}>View</button>
                         </div>
                     </div>
                 )) : <div className="w-100"><p className="text-muted text-center mt-4">No templates match your search.</p></div>}

@@ -80,7 +80,7 @@ const EmployeeDashboard = ({
       </div>
       
       <div className="employee-dashboard-grid-top">
-        <div className={`dashboard-card my-status-card-revised ${!myScheduleToday ? 'day-off' : ''}`}>
+        <div className={`dashboard-card my-status-card-revised`}>
             <div className="card-body">
                 <i className={`bi ${myScheduleToday ? 'bi-calendar-check' : 'bi-calendar-x'} status-icon`}></i>
                 <h5 className="status-text">{myScheduleToday ? "On Schedule Today" : "Day Off"}</h5>
@@ -98,11 +98,12 @@ const EmployeeDashboard = ({
                       </Link>
                   </li>
                   {leaderEvaluation.leader && leaderEvaluation.isDue && (
-                    <li className="action-hub-item">
-                        <Link to="/dashboard/evaluate-leader" className="bg-warning-subtle">
-                            <i className="action-icon bi bi-star-fill text-warning"></i>
+                    // --- MODIFIED: Added the new highlight class to the <li> ---
+                    <li className="action-hub-item action-item-highlight">
+                        <Link to="/dashboard/evaluate-leader">
+                            <i className="action-icon bi bi-star-fill"></i>
                             <span className="action-label">Evaluate Your Leader</span>
-                            <span className="badge bg-warning text-dark">Action Required</span>
+                            <span className="badge bg-dark text-white">Action Required</span>
                         </Link>
                     </li>
                   )}
@@ -126,7 +127,7 @@ const EmployeeDashboard = ({
 
         <div className="dashboard-card my-team-card">
           <div className="card-header"><h6><i className="bi bi-people-fill me-2"></i>My Team</h6></div>
-          <div className="card-body">
+          <div className="card-body" style={{padding: '0.75rem 1rem', maxHeight: '150px', overflowY: 'auto'}}>
             <ul className="roster-snapshot-list">
               {myTeam.slice(0, 3).map(member => (
                 <li key={member.id} className="roster-item">
@@ -139,7 +140,7 @@ const EmployeeDashboard = ({
         </div>
       </div>
 
-      <div className="dashboard-grid-span-2 dashboard-card recent-activity-card">
+      <div className="dashboard-grid-span-4 dashboard-card recent-activity-card">
           <div className="card-header"><h6><i className="bi bi-clock-history me-2"></i>Recent Activity</h6></div>
           <div className="card-body">
               <ul className="activity-list">
@@ -158,21 +159,6 @@ const EmployeeDashboard = ({
           <div className="card-footer">
               <Link to="/dashboard/my-attendance">View Full Attendance Log</Link>
           </div>
-      </div>
-
-      <div className="dashboard-grid-span-2 dashboard-card upcoming-holidays-card">
-        <div className="card-header"><h6><i className="bi bi-flag-fill me-2"></i>Upcoming Holidays</h6></div>
-        <div className="card-body">
-          <ul className="holiday-snapshot-list">
-            {upcomingHolidays.map(h => (
-              <li key={h.id} className="holiday-item">
-                <i className="bi bi-dot"></i>
-                <span>{h.name} - {format(new Date(h.date), 'MMM dd')}</span>
-              </li>
-            ))}
-            {upcomingHolidays.length === 0 && <li className='text-muted'>No upcoming holidays.</li>}
-          </ul>
-        </div>
       </div>
     </>
   );

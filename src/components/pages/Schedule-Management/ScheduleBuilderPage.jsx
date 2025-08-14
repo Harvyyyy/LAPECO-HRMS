@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import './ScheduleManagementPage.css';
 import AddColumnModal from '../../modals/AddColumnModal';
+import ConfirmationModal from '../../modals/ConfirmationModal';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
@@ -15,6 +16,14 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
   const [columns, setColumns] = useState([{ key: 'shift', name: 'Shift' }]);
   const [gridData, setGridData] = useState([]);
   const [showAddColumnModal, setShowAddColumnModal] = useState(false);
+  const [editingHeaderKey, setEditingHeaderKey] = useState(null);
+
+  const [confirmationModalState, setConfirmationModalState] = useState({
+    isOpen: false,
+    title: '',
+    body: '',
+    onConfirm: () => {},
+  });
 
   const employeeOptions = useMemo(() => (employees || []).map(e => ({ value: e.id, label: `${e.name} (${e.id})` })), [employees]);
   const positionsMap = useMemo(() => new Map((positions || []).map(p => [p.id, p.title])), [positions]);
@@ -34,7 +43,7 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
       const sourceColumns = new Set(['shift']);
       sourceData.forEach(entry => {
         Object.keys(entry).forEach(key => {
-          if (!['scheduleId', 'empId', 'date', 'name', 'shift'].includes(key)) {
+          if (!['scheduleId', 'empId', 'date', 'name', 'shift', 'status'].includes(key)) {
             sourceColumns.add(key);
           }
         });
@@ -72,7 +81,16 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
   };
 
   const removeEmployeeRow = (rowIndex) => {
-    setGridData(prev => prev.filter((_, index) => index !== rowIndex));
+    const employeeName = employeeOptions.find(e => e.value === gridData[rowIndex].empId)?.label || `Row ${rowIndex + 1}`;
+    setConfirmationModalState({
+      isOpen: true,
+      title: 'Remove Row',
+      body: `Are you sure you want to remove ${employeeName} from this schedule?`,
+      onConfirm: () => {
+        setGridData(prev => prev.filter((_, index) => index !== rowIndex));
+        closeConfirmationModal();
+      }
+    });
   };
 
   const handleAddColumn = (newColumn) => {
@@ -82,6 +100,50 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
     }
     setColumns(prev => [...prev, newColumn]);
     setGridData(prevGrid => prevGrid.map(row => ({ ...row, [newColumn.key]: '' })));
+  };
+
+  const handleDeleteColumn = (keyToDelete) => {
+    if (keyToDelete === 'shift') {
+      alert("The 'Shift' column is required and cannot be deleted.");
+      return;
+    }
+    const columnName = columns.find(c => c.key === keyToDelete)?.name;
+    setConfirmationModalState({
+        isOpen: true,
+        title: 'Delete Column',
+        body: `Are you sure you want to delete the "${columnName}" column? This cannot be undone.`,
+        onConfirm: () => {
+            setColumns(prev => prev.filter(col => col.key !== keyToDelete));
+            setGridData(prevGrid => prevGrid.map(row => {
+                const newRow = { ...row };
+                delete newRow[keyToDelete];
+                return newRow;
+            }));
+            closeConfirmationModal();
+        }
+    });
+  };
+
+  const closeConfirmationModal = () => {
+    setConfirmationModalState({ isOpen: false, title: '', body: '', onConfirm: () => {} });
+  };
+
+  const handleColumnHeaderChange = (columnKey, newLabel) => {
+    setColumns(currentColumns =>
+      currentColumns.map(col =>
+        col.key === columnKey ? { ...col, name: newLabel } : col
+      )
+    );
+  };
+
+  const handleHeaderClick = (key) => {
+    if (key !== 'shift') {
+      setEditingHeaderKey(key);
+    }
+  };
+
+  const handleHeaderInputBlur = () => {
+    setEditingHeaderKey(null);
   };
 
   const handleEmployeeSelect = (rowIndex, selectedOption) => {
@@ -101,29 +163,24 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
       alert("Please provide a name for the schedule.");
       return;
     }
-
     const newScheduleEntries = [];
     const uniqueEmpIds = new Set();
     let hasDuplicates = false;
-
     gridData.forEach(row => {
       if (row.empId) {
         if (uniqueEmpIds.has(row.empId)) {
           hasDuplicates = true;
         }
         uniqueEmpIds.add(row.empId);
-
         const entryData = columns.reduce((acc, col) => {
           if (row[col.key] && String(row[col.key]).trim() !== '') acc[col.key] = row[col.key];
           return acc;
         }, {});
-
         if (Object.keys(entryData).length > 0 && entryData.shift && entryData.shift.trim() !== '' && entryData.shift.toUpperCase() !== 'OFF') {
           newScheduleEntries.push({ empId: row.empId, date: scheduleDate, name: scheduleName, ...entryData });
         }
       }
     });
-
     if (hasDuplicates) {
       alert("Error: Each employee can only be listed once per schedule.");
       return;
@@ -132,7 +189,6 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
       alert("Please add at least one employee and assign a valid shift.");
       return;
     }
-
     const success = handlers.createSchedules(newScheduleEntries);
     if (success) {
       navigate('/dashboard/schedule-management');
@@ -165,7 +221,35 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
                   <th className="employee-id-column">Employee ID</th>
                   <th className="employee-name-column">Employee Name</th>
                   <th className="position-column">Position</th>
-                  {columns.map(col => <th key={col.key} className="text-center custom-column">{col.name}</th>)}
+                  {columns.map(col => (
+                    <th key={col.key} className={`text-center custom-column ${col.key !== 'shift' ? 'editable-header' : ''}`}>
+                      {editingHeaderKey === col.key ? (
+                        <input
+                          type="text"
+                          className="header-input"
+                          value={col.name}
+                          onChange={(e) => handleColumnHeaderChange(col.key, e.target.value)}
+                          onBlur={handleHeaderInputBlur}
+                          autoFocus
+                        />
+                      ) : (
+                        <span className="header-label" onClick={() => handleHeaderClick(col.key)}>
+                          {col.name}
+                        </span>
+                      )}
+                      
+                      {col.key !== 'shift' && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger p-0 delete-column-btn"
+                          onClick={() => handleDeleteColumn(col.key)}
+                          title={`Delete '${col.name}' column`}
+                        >
+                          <i className="bi bi-x"></i>
+                        </button>
+                      )}
+                    </th>
+                  ))}
                   <th className="action-column"></th>
                 </tr>
               </thead>
@@ -175,9 +259,7 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
                   const positionTitle = selectedEmployee ? (positionsMap.get(selectedEmployee.positionId) || 'Unassigned') : '';
                   return (
                     <tr key={rowIndex}>
-                      <td>
-                        <input type="text" className="form-control form-control-sm readonly-input" value={selectedEmployee?.id || ''} readOnly disabled />
-                      </td>
+                      <td><input type="text" className="form-control form-control-sm readonly-input" value={selectedEmployee?.id || ''} readOnly disabled /></td>
                       <td>
                         <div className="react-select-container">
                           <Select
@@ -188,16 +270,13 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
                             onChange={(selectedOption) => handleEmployeeSelect(rowIndex, selectedOption)}
                             menuPortalTarget={document.body}
                             styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                            classNamePrefix="react-select"
                           />
                         </div>
                       </td>
-                      <td>
-                        <input type="text" className="form-control form-control-sm readonly-input" value={positionTitle} readOnly disabled />
-                      </td>
+                      <td><input type="text" className="form-control form-control-sm readonly-input" value={positionTitle} readOnly disabled /></td>
                       {columns.map(col => (
-                        <td key={col.key}>
-                          <input type="text" className="form-control form-control-sm shift-input" value={row[col.key] || ''} onChange={e => handleGridInputChange(rowIndex, col.key, e.target.value)} />
-                        </td>
+                        <td key={col.key}><input type="text" className="form-control form-control-sm shift-input" value={row[col.key] || ''} onChange={e => handleGridInputChange(rowIndex, col.key, e.target.value)} /></td>
                       ))}
                       <td>
                         <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => removeEmployeeRow(rowIndex)} title="Remove Row">
@@ -224,6 +303,17 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
         onClose={() => setShowAddColumnModal(false)}
         onAddColumn={handleAddColumn}
       />
+
+      <ConfirmationModal
+        show={confirmationModalState.isOpen}
+        onClose={closeConfirmationModal}
+        onConfirm={confirmationModalState.onConfirm}
+        title={confirmationModalState.title}
+        confirmText="Yes, Delete"
+        confirmVariant="danger"
+      >
+        <p>{confirmationModalState.body}</p>
+      </ConfirmationModal>
     </div>
   );
 };

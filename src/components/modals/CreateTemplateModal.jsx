@@ -134,6 +134,10 @@ const CreateTemplateModal = ({ show, onClose, onSave, positions, templateData })
                   <button className="btn btn-outline-secondary" type="button" onClick={handleAddColumn}>Add</button>
                 </div>
                 <div className="d-flex flex-wrap gap-2 border rounded p-2" style={{ minHeight: '40px' }}>
+                  <span className="badge d-flex align-items-center bg-light text-dark border">Employee ID</span>
+                  <span className="badge d-flex align-items-center bg-light text-dark border">Employee Name</span>
+                  <span className="badge d-flex align-items-center bg-light text-dark border">Position</span>
+
                   {formData.columns.map(col => (
                     <span key={col.key} className="badge d-flex align-items-center bg-secondary">
                       {col.name}

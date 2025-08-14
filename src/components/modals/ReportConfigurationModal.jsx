@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
 
-const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig }) => {
+const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, trainingPrograms }) => {
   const [params, setParams] = useState({});
 
   useEffect(() => {
@@ -8,7 +9,12 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig }) 
       const initialParams = reportConfig.parameters.reduce((acc, param) => {
         if (param.type === 'date-range') {
           acc.startDate = new Date().toISOString().split('T')[0];
-          acc.endDate = new Date().toISOString().split('T')[0];
+          if (param.labels.end) {
+            acc.endDate = new Date().toISOString().split('T')[0];
+          }
+        }
+        if (param.type === 'program-selector') {
+          acc.programId = null;
         }
         return acc;
       }, {});
@@ -26,6 +32,8 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig }) 
   };
 
   if (!show || !reportConfig) return null;
+  
+  const programOptions = trainingPrograms?.map(p => ({ value: p.id, label: p.title })) || [];
 
   return (
     <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
@@ -44,7 +52,7 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig }) 
                   case 'date-range':
                     return (
                       <div key={param.id} className="row g-3">
-                        <div className="col-md-6">
+                        <div className={param.labels.end ? "col-md-6" : "col-12"}>
                           <label htmlFor="startDate" className="form-label">{param.labels.start}</label>
                           <input
                             type="date"
@@ -55,18 +63,32 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig }) 
                             required
                           />
                         </div>
-                        <div className="col-md-6">
-                          <label htmlFor="endDate" className="form-label">{param.labels.end}</label>
-                          <input
-                            type="date"
-                            id="endDate"
-                            className="form-control"
-                            value={params.endDate || ''}
-                            onChange={(e) => handleParamChange('endDate', e.target.value)}
-                            required
-                          />
-                        </div>
+                        {param.labels.end && (
+                            <div className="col-md-6">
+                            <label htmlFor="endDate" className="form-label">{param.labels.end}</label>
+                            <input
+                                type="date"
+                                id="endDate"
+                                className="form-control"
+                                value={params.endDate || ''}
+                                onChange={(e) => handleParamChange('endDate', e.target.value)}
+                                required
+                            />
+                            </div>
+                        )}
                       </div>
+                    );
+                  case 'program-selector':
+                    return (
+                        <div key={param.id}>
+                            <label htmlFor="programId" className="form-label">{param.label}</label>
+                            <Select 
+                                id="programId"
+                                options={programOptions}
+                                onChange={(option) => handleParamChange('programId', option ? option.value : null)}
+                                isClearable
+                            />
+                        </div>
                     );
                   default:
                     return null;
