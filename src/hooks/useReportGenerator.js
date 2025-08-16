@@ -4,16 +4,10 @@ import autoTable from 'jspdf-autotable';
 import { Chart } from 'chart.js/auto';
 import logo from '../assets/logo.png';
 
-/**
- * A helper function to generate a chart on an off-screen canvas and return it as a Base64 image.
- * This prevents the chart from being visibly rendered on the page.
- * @param {object} chartConfig - A standard Chart.js configuration object.
- * @returns {Promise<string>} A promise that resolves with the chart image as a data URI.
- */
 const generateChartAsImage = async (chartConfig) => {
   const canvas = document.createElement('canvas');
-  canvas.width = 600; // Set a fixed width for consistent chart rendering
-  canvas.height = 300; // Set a fixed height
+  canvas.width = 600; 
+  canvas.height = 300;
   
   const ctx = canvas.getContext('2d');
 
@@ -28,7 +22,7 @@ const generateChartAsImage = async (chartConfig) => {
             const chartCtx = chart.canvas.getContext('2d');
             chartCtx.save();
             chartCtx.globalCompositeOperation = 'destination-over';
-            chartCtx.fillStyle = 'white'; // Set a white background, as canvas is transparent by default
+            chartCtx.fillStyle = 'white'; 
             chartCtx.fillRect(0, 0, chart.width, chart.height);
             chartCtx.restore();
           }
@@ -41,31 +35,22 @@ const generateChartAsImage = async (chartConfig) => {
   });
 };
 
-/**
- * Custom hook to manage all report generation logic for the application.
- */
 const useReportGenerator = () => {
   const [pdfDataUri, setPdfDataUri] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  /**
-   * Generates a PDF report based on a report ID, parameters, and data sources.
-   * @param {string} reportId - The unique ID of the report to generate (from reports.config.js).
-   * @param {object} params - User-provided parameters (e.g., dates).
-   * @param {object} dataSources - An object containing all necessary data arrays (employees, positions, etc.).
-   */
   const generateReport = async (reportId, params, dataSources) => {
     setIsLoading(true);
     setError(null);
     setPdfDataUri('');
 
-    const { employees, positions, schedules, attendanceLogs, evaluations, trainingPrograms, enrollments, leaveRequests, payslipData } = dataSources;
+    const { employees, positions, schedules, attendanceLogs, evaluations, trainingPrograms, enrollments, leaveRequests, payslipData, payrolls, cases, applicants, jobOpenings } = dataSources;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
     const generationDate = new Date().toLocaleDateString();
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 40;
-    let finalY = 0; // Tracks the vertical position on the PDF page.
+    let finalY = 0; 
 
     const addHeader = (title) => {
       doc.addImage(logo, 'PNG', margin, 20, 80, 26);
@@ -222,6 +207,122 @@ const useReportGenerator = () => {
             autoTable(doc, { head: [tableColumns], body: tableRows, startY: finalY, theme: 'striped', headStyles: { fillColor: [25, 135, 84] } });
             break;
         }
+        
+        case 'disciplinary_cases': {
+            addHeader("Disciplinary Cases Report");
+            const filteredCases = (cases || []).filter(c => {
+                const caseDate = new Date(c.issueDate);
+                return caseDate >= new Date(params.startDate) && caseDate <= new Date(params.endDate);
+            });
+            if (filteredCases.length === 0) {
+                doc.text("No disciplinary cases found for the selected period.", margin, finalY);
+                break;
+            }
+            const actionTypeCounts = filteredCases.reduce((acc, c) => {
+                acc[c.actionType] = (acc[c.actionType] || 0) + 1;
+                return acc;
+            }, {});
+            const chartConfig = {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(actionTypeCounts),
+                    datasets: [{
+                        data: Object.values(actionTypeCounts),
+                        backgroundColor: ['#ffc107', '#fd7e14', '#dc3545', '#6f42c1', '#0dcaf0', '#6c757d'],
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    plugins: { legend: { position: 'right' } }
+                }
+            };
+            await addChartAndTitle(`Cases by Action Type (${params.startDate} to ${params.endDate})`, chartConfig);
+            doc.setFontSize(10);
+            doc.text(`Period: ${params.startDate} to ${params.endDate}`, margin, finalY);
+            finalY += 20;
+            const employeeMap = new Map(employees.map(e => [e.id, e.name]));
+            const tableColumns = ["Case ID", "Employee Name", "Reason / Infraction", "Action Type", "Issue Date", "Status"];
+            const tableRows = filteredCases.map(c => [ c.caseId, employeeMap.get(c.employeeId) || c.employeeId, c.reason, c.actionType, c.issueDate, c.status ]);
+            autoTable(doc, { head: [tableColumns], body: tableRows, startY: finalY, theme: 'striped', headStyles: { fillColor: [25, 135, 84] } });
+            break;
+        }
+        
+        case 'recruitment_activity': {
+            addHeader("Recruitment Activity Report");
+            const jobOpeningsMap = new Map((jobOpenings || []).map(j => [j.id, j.title]));
+            const filteredApps = (applicants || []).filter(app => {
+                const appDate = new Date(app.applicationDate);
+                return appDate >= new Date(params.startDate) && appDate <= new Date(params.endDate);
+            });
+            if (filteredApps.length === 0) {
+                doc.text("No recruitment activity found for the selected period.", margin, finalY);
+                break;
+            }
+            const statusCounts = filteredApps.reduce((acc, app) => {
+                acc[app.status] = (acc[app.status] || 0) + 1;
+                return acc;
+            }, {});
+            const chartConfig = {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(statusCounts),
+                    datasets: [{
+                        label: 'Applicants',
+                        data: Object.values(statusCounts),
+                        backgroundColor: ['#0d6efd', '#6c757d', '#0dcaf0', '#ffc107', '#198754', '#dc3545']
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            };
+            await addChartAndTitle(`Applicant Status Distribution (${params.startDate} to ${params.endDate})`, chartConfig);
+            const tableColumns = ["Applicant Name", "Applied For", "Application Date", "Status"];
+            const tableRows = filteredApps.map(app => [ app.name, jobOpeningsMap.get(app.jobOpeningId) || 'N/A', app.applicationDate, app.status ]);
+            autoTable(doc, { head: [tableColumns], body: tableRows, startY: finalY, theme: 'striped', headStyles: { fillColor: [25, 135, 84] } });
+            break;
+        }
+
+        case 'payroll_run_summary': {
+            addHeader("Payroll Summary Report");
+            const run = (payrolls || []).find(p => p.runId === params.runId);
+            if (!run) {
+                doc.text("Selected payroll run could not be found.", margin, finalY);
+                break;
+            }
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Pay Period:`, margin, finalY);
+            doc.setFont(undefined, 'normal');
+            doc.text(run.cutOff, margin + 60, finalY);
+            const runTotals = run.records.reduce((acc, rec) => {
+                const totalDeductions = Object.values(rec.deductions).reduce((s,v) => s + v, 0);
+                acc.gross += rec.grossPay;
+                acc.deductions += totalDeductions;
+                acc.net += rec.netPay;
+                return acc;
+            }, { gross: 0, deductions: 0, net: 0 });
+            doc.setFont(undefined, 'bold');
+            doc.text(`Total Net Payout:`, pageWidth / 2, finalY);
+            doc.setFont(undefined, 'normal');
+            doc.text(`₱ ${runTotals.net.toLocaleString('en-US', {minimumFractionDigits: 2})}`, pageWidth / 2 + 85, finalY);
+            finalY += 20;
+            const tableColumns = ['ID', 'Employee Name', 'Gross Pay (₱)', 'Deductions (₱)', 'Net Pay (₱)', 'Status'];
+            const tableRows = run.records.map(rec => {
+                const totalDeductions = Object.values(rec.deductions).reduce((sum, val) => sum + val, 0);
+                return [
+                    rec.empId, rec.employeeName,
+                    rec.grossPay.toLocaleString('en-US', {minimumFractionDigits: 2}),
+                    totalDeductions.toLocaleString('en-US', {minimumFractionDigits: 2}),
+                    rec.netPay.toLocaleString('en-US', {minimumFractionDigits: 2}),
+                    rec.status
+                ];
+            });
+            autoTable(doc, { head: [tableColumns], body: tableRows, startY: finalY, theme: 'striped', headStyles: { fillColor: [25, 135, 84] }, columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }} });
+            break;
+        }
 
         case 'payslip': {
             const totalEarnings = Object.values(payslipData.earnings).reduce((s, v) => s + v, 0) + (payslipData.adjustments?.allowances || 0) + (payslipData.adjustments?.bonuses || 0);
@@ -275,4 +376,4 @@ const useReportGenerator = () => {
   return { generateReport, pdfDataUri, isLoading, error, setPdfDataUri };
 };
 
-export default useReportGenerator;
+export default useReportGenerator;  

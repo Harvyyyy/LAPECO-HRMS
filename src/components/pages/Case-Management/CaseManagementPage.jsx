@@ -1,9 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+
+// Import modals, hooks, and components
 import AddEditCaseModal from './AddEditCaseModal';
 import CaseCard from './CaseCard';
 import CaseDetailView from './CaseDetailView';
+import CaseSummaryByEmployee from './CaseSummaryByEmployee';
+import ReportConfigurationModal from '../../modals/ReportConfigurationModal';
+import ReportPreviewModal from '../../modals/ReportPreviewModal';
+import useReportGenerator from '../../../hooks/useReportGenerator';
+import { reportsConfig } from '../../../config/reports.config'; 
 import './CaseManagement.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -15,6 +22,10 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
   const [selectedCase, setSelectedCase] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showReportPreview, setShowReportPreview] = useState(false);
+  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
 
   const employeeMap = useMemo(() => new Map(employees.map(e => [e.id, e])), [employees]);
 
@@ -34,7 +45,7 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
         datasets: [{
             data: Object.values(counts),
             backgroundColor: ['#ffc107', '#fd7e14', '#dc3545', '#6c757d', '#0dcaf0'],
-            borderColor: '#fff',
+            borderColor: 'var(--bg-primary)',
             borderWidth: 2,
         }],
     };
@@ -46,6 +57,9 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
     plugins: {
         legend: {
             position: 'right',
+            labels: {
+                color: 'var(--text-secondary)'
+            }
         }
     }
   };
@@ -83,6 +97,35 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
 
   const handleViewDetails = (caseData) => {
     setSelectedCase(caseData);
+  };
+  
+  const caseReportConfig = reportsConfig.find(r => r.id === 'disciplinary_cases');
+
+  const handleGenerateReportClick = () => {
+    if (caseReportConfig) {
+      setShowConfigModal(true);
+    } else {
+      alert("Report configuration not found.");
+    }
+  };
+
+  const handleRunReport = (reportId, params) => {
+    generateReport(reportId, params, { cases, employees });
+    setShowConfigModal(false);
+    setShowReportPreview(true);
+  };
+
+  const handleClosePreview = () => {
+    setShowReportPreview(false);
+    if (pdfDataUri) {
+      URL.revokeObjectURL(pdfDataUri);
+    }
+    setPdfDataUri('');
+  };
+
+  const handleViewEmployeeCases = (employee) => {
+    setSearchTerm(employee.name);
+    setActiveTab('list');
   };
 
   if (selectedCase) {
@@ -135,7 +178,7 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
           <div className="card">
               <div className="card-header"><h6><i className="bi bi-clock-history me-2"></i>Recently Updated Cases</h6></div>
               <div className="table-responsive">
-                <table className="table data-table mb-0">
+                <table className="table data-table mb-0 table-hover">
                     <tbody>
                         {cases.slice(0,5).map(c => (
                             <tr key={c.caseId} onClick={() => handleViewDetails(c)} style={{cursor:'pointer'}}>
@@ -194,15 +237,31 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
     <div className="container-fluid p-0 page-module-container">
       <header className="page-header d-flex justify-content-between align-items-center mb-4">
         <h1 className="page-main-title">Case Management</h1>
-        <button className="btn btn-success" onClick={() => handleOpenModal()}><i className="bi bi-plus-circle-fill me-2"></i>Log New Case</button>
+        <div className="d-flex gap-2">
+            <button className="btn btn-outline-secondary" onClick={handleGenerateReportClick}>
+                <i className="bi bi-file-earmark-pdf-fill me-2"></i>Generate Report
+            </button>
+            <button className="btn btn-success" onClick={() => handleOpenModal()}>
+                <i className="bi bi-plus-circle-fill me-2"></i>Log New Case
+            </button>
+        </div>
       </header>
 
       <ul className="nav nav-tabs case-management-tabs mb-4">
         <li className="nav-item"><button className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>Dashboard</button></li>
         <li className="nav-item"><button className={`nav-link ${activeTab === 'list' ? 'active' : ''}`} onClick={() => setActiveTab('list')}>All Cases</button></li>
+        <li className="nav-item"><button className={`nav-link ${activeTab === 'byEmployee' ? 'active' : ''}`} onClick={() => setActiveTab('byEmployee')}>By Employee</button></li>
       </ul>
 
-      {activeTab === 'dashboard' ? renderDashboard() : renderCaseList()}
+      {activeTab === 'dashboard' && renderDashboard()}
+      {activeTab === 'list' && renderCaseList()}
+      {activeTab === 'byEmployee' && (
+        <CaseSummaryByEmployee 
+          employees={employees}
+          cases={cases}
+          onViewEmployeeCases={handleViewEmployeeCases}
+        />
+      )}
 
       <AddEditCaseModal 
         show={showModal && !selectedCase}
@@ -211,6 +270,22 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
         caseData={editingCase}
         employees={employees}
       />
+
+      <ReportConfigurationModal
+        show={showConfigModal}
+        onClose={() => setShowConfigModal(false)}
+        reportConfig={caseReportConfig}
+        onRunReport={handleRunReport}
+      />
+
+      {(isLoading || pdfDataUri) && (
+        <ReportPreviewModal
+          show={showReportPreview}
+          onClose={handleClosePreview}
+          pdfDataUri={pdfDataUri}
+          reportTitle="Disciplinary Cases Report"
+        />
+      )}
     </div>
   );
 };

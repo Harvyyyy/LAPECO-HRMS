@@ -1,8 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Select from 'react-select';
 
-const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, trainingPrograms }) => {
+const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, trainingPrograms, payrolls }) => {
   const [params, setParams] = useState({});
+
+  // (FIX) Moved useMemo to the top level before the early return.
+  // This ensures it is called on every render, satisfying the Rules of Hooks.
+  const payrollRunOptions = useMemo(() => 
+    (payrolls || []).map(run => ({
+      value: run.runId,
+      label: `Pay Period: ${run.cutOff} (${run.records.length} employees)`
+    })).sort((a,b) => {
+      // Robust sorting for dates in "YYYY-MM-DD to YYYY-MM-DD" format
+      const dateA = new Date(a.label.split(' to ')[1].split(' (')[0]);
+      const dateB = new Date(b.label.split(' to ')[1].split(' (')[0]);
+      return dateB - dateA;
+    }),
+  [payrolls]);
 
   useEffect(() => {
     if (show && reportConfig?.parameters) {
@@ -16,11 +30,19 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
         if (param.type === 'program-selector') {
           acc.programId = null;
         }
+        if (param.type === 'payroll-run-selector') {
+          acc.runId = null;
+        }
         return acc;
       }, {});
       setParams(initialParams);
     }
   }, [show, reportConfig]);
+
+  // Early return is now safe because all hooks are declared above it.
+  if (!show || !reportConfig) {
+    return null;
+  }
 
   const handleParamChange = (name, value) => {
     setParams(prev => ({ ...prev, [name]: value }));
@@ -30,8 +52,6 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
     e.preventDefault();
     onRunReport(reportConfig.id, params);
   };
-
-  if (!show || !reportConfig) return null;
   
   const programOptions = trainingPrograms?.map(p => ({ value: p.id, label: p.title })) || [];
 
@@ -39,7 +59,7 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
     <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <div className="modal-header">
               <h5 className="modal-title">Configure Report: {reportConfig.title}</h5>
               <button type="button" className="btn-close" onClick={onClose}></button>
@@ -87,9 +107,30 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
                                 options={programOptions}
                                 onChange={(option) => handleParamChange('programId', option ? option.value : null)}
                                 isClearable
+                                className="react-select-container"
+                                classNamePrefix="react-select"
+                                required
                             />
                         </div>
                     );
+                  
+                  case 'payroll-run-selector':
+                    return (
+                      <div key={param.id}>
+                        <label htmlFor="runId" className="form-label">{param.label}</label>
+                        <Select 
+                          id="runId"
+                          options={payrollRunOptions}
+                          onChange={(option) => handleParamChange('runId', option ? option.value : null)}
+                          isClearable
+                          placeholder="Select a generated payroll run..."
+                          className="react-select-container"
+                          classNamePrefix="react-select"
+                          required
+                        />
+                      </div>
+                    );
+
                   default:
                     return null;
                 }

@@ -1,14 +1,17 @@
 export const reportCategories = {
   EMPLOYEE_DATA: 'Employee Data',
+  ORGANIZATION_MANAGEMENT: 'Organization Management',
   ATTENDANCE: 'Attendance & Schedules',
-  PERFORMANCE: 'Performance Management',
   LEAVE: 'Leave Management',
+  PERFORMANCE: 'Performance Management',
+  CASE_MANAGEMENT: 'Case Management',
   TRAINING: 'Training & Development',
   RECRUITMENT: 'Recruitment',
   PAYROLL: 'Payroll & Compensation',
 };
 
 export const reportsConfig = [
+  // --- Employee Data ---
   {
     id: 'employee_masterlist',
     title: 'Employee Masterlist',
@@ -17,14 +20,18 @@ export const reportsConfig = [
     category: reportCategories.EMPLOYEE_DATA,
     parameters: null,
   },
+
+  // --- Organization Management ---
   {
     id: 'positions_report',
     title: 'Company Positions Report',
     description: 'A list of all defined positions, including salary comparisons and employee counts.',
     icon: 'bi-diagram-3-fill',
-    category: reportCategories.EMPLOYEE_DATA,
+    category: reportCategories.ORGANIZATION_MANAGEMENT,
     parameters: null,
   },
+
+  // --- Attendance & Schedules ---
   {
     id: 'attendance_summary',
     title: 'Daily Attendance Report',
@@ -35,6 +42,8 @@ export const reportsConfig = [
       { id: 'date_range_1', type: 'date-range', labels: { start: 'Select Date', end: null } },
     ],
   },
+
+  // --- Leave Management ---
   {
     id: 'leave_requests_report',
     title: 'Leave Requests Report',
@@ -45,6 +54,8 @@ export const reportsConfig = [
       { id: 'date_range_4', type: 'date-range', labels: { start: 'Start Date', end: 'End Date' } },
     ],
   },
+  
+  // --- Performance Management ---
   {
     id: 'performance_summary',
     title: 'Performance Summary Report',
@@ -55,6 +66,20 @@ export const reportsConfig = [
       { id: 'date_range_2', type: 'date-range', labels: { start: 'Start Date', end: 'End Date' } },
     ],
   },
+
+  // --- Case Management ---
+  {
+    id: 'disciplinary_cases',
+    title: 'Disciplinary Cases Report',
+    description: 'Generates a list of all disciplinary cases logged within a specified date range.',
+    icon: 'bi-briefcase-fill',
+    category: reportCategories.CASE_MANAGEMENT,
+    parameters: [
+        { id: 'date_range_5', type: 'date-range', labels: { start: 'Start Date', end: 'End Date' } },
+    ],
+  },
+  
+  // --- Training & Development ---
   {
     id: 'training_program_summary',
     title: 'Training Program Report',
@@ -65,10 +90,24 @@ export const reportsConfig = [
       { id: 'program_selector', type: 'program-selector', label: 'Select Program' }
     ],
   },
+
+  // --- Payroll & Compensation ---
+  {
+    id: 'payroll_run_summary',
+    title: 'Payroll Run Summary',
+    description: 'Generates a detailed summary of a previously completed payroll run, including all employee earnings, deductions, and net pay.',
+    icon: 'bi-receipt-cutoff',
+    category: reportCategories.PAYROLL,
+    parameters: [
+      { id: 'payroll_run_selector', type: 'payroll-run-selector', label: 'Select Payroll Run' }
+    ],
+  },
+  
+  // --- Recruitment ---
   {
     id: 'recruitment_activity',
     title: 'Recruitment Activity Report',
-    description: 'Summarizes recruitment activities for a given period. (Coming Soon)',
+    description: 'Summarizes new applications, interviews, and hiring outcomes within a specified period.', // (MODIFIED)
     icon: 'bi-person-plus-fill',
     category: reportCategories.RECRUITMENT,
     parameters: [
