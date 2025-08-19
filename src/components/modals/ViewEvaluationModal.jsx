@@ -15,8 +15,8 @@ const EvaluationItem = ({ name, comment, score }) => (
   </div>
 );
 
-const getIconForFactorType = (factorType) => {
-  switch (factorType) {
+const getIconForFactorType = (type) => {
+  switch (type) {
     case 'kpi_section':
       return 'bi bi-bullseye';
     case 'rating_scale':
@@ -28,18 +28,19 @@ const getIconForFactorType = (factorType) => {
   }
 };
 
-const ViewEvaluationModal = ({ show, onClose, evaluation, employee, position, kpis, evaluationFactors }) => {
-  if (!show || !evaluation || !evaluationFactors) return null;
+const ViewEvaluationModal = ({ show, onClose, evaluation, employee, position, kras, kpis, evaluationFactors }) => {
+  if (!show || !evaluation || !evaluationFactors || !employee) return null;
 
   const getFactorData = (factorId) => evaluation.factorScores[factorId] || {};
 
-  const managerSummaryFactor = evaluationFactors.find(f => f.id === 'factor_manager_summary');
-  const otherTextareaFactors = evaluationFactors.filter(f => f.type === 'textarea' && f.id !== 'factor_manager_summary');
+  const managerSummaryFactor = evaluationFactors.find(f => f.id === 'factor_evaluator_summary');
+  const developmentAreaFactor = evaluationFactors.find(f => f.id === 'factor_development_areas');
+  const textareaFactors = evaluationFactors.filter(f => f.type === 'textarea' && f.id !== 'factor_evaluator_summary' && f.id !== 'factor_development_areas');
 
   const sectionAverages = useMemo(() => {
     const averages = {};
     evaluationFactors.forEach(factor => {
-      if (factor.type === 'rating_scale') {
+      if (factor.type === 'rating_scale' && factor.id !== 'factor_potential' && factor.id !== 'factor_engagement') { // Exclude new sections for avg calculation if desired, or include them
         let totalScore = 0;
         let count = 0;
         factor.items.forEach(item => {
@@ -60,7 +61,7 @@ const ViewEvaluationModal = ({ show, onClose, evaluation, employee, position, kp
     }
     
     return averages;
-  }, [evaluation, evaluationFactors, kpis, position]);
+  }, [evaluation, evaluationFactors, kpis, position, getFactorData]); // Ensure dependencies are correct
 
   return (
     <div className="modal fade show d-block view-evaluation-modal" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
@@ -78,6 +79,7 @@ const ViewEvaluationModal = ({ show, onClose, evaluation, employee, position, kp
           </div>
 
           <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+            
             {managerSummaryFactor && (
               <div className="card featured-summary-card mb-3">
                 <div className="card-header"><i className="bi bi-chat-left-quote-fill me-2"></i>{managerSummaryFactor.title}</div>
@@ -95,25 +97,27 @@ const ViewEvaluationModal = ({ show, onClose, evaluation, employee, position, kp
                 const avgScore = sectionAverages[factor.id];
                 const iconClass = getIconForFactorType(factor.type); 
 
+                // Render KPIs if they are relevant for this employee's position
                 if (factor.type === 'kpi_section') {
                   const relevantKpis = kpis.filter(kpi => kpi.appliesToPositionIds?.includes(position?.id));
-                  if (relevantKpis.length === 0) return null;
+                  if (relevantKpis.length === 0) return null; // Skip if no relevant KPIs
+                  
                   return (
                     <div className="accordion-item" key={factor.id}>
                       <h2 className="accordion-header">
                         <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target={`#${collapseId}`}>
-                          <span className="d-flex align-items-center"><i className={`${iconClass} me-2`}></i>{factor.title}</span> {/* MODIFIED: Added Icon */}
-                          <span className="section-avg-score">Avg: {avgScore} / 5.0</span>
+                          <span className="d-flex align-items-center"><i className={`${iconClass} me-2`}></i>{factor.title}</span>
+                          {avgScore !== 'N/A' && <span className="section-avg-score">Avg: {avgScore} / 5.0</span>}
                         </button>
                       </h2>
                       <div id={collapseId} className="accordion-collapse collapse" data-bs-parent="#evaluationDetailsAccordion">
                         <div className="accordion-body">
                           {relevantKpis.map(kpi => (
-                            <EvaluationItem
-                              key={kpi.id}
-                              name={`${kpi.title} (${kpi.weight}%)`}
-                              score={getFactorData(kpi.id).score}
-                              comment={getFactorData(kpi.id).comments}
+                             <EvaluationItem
+                                key={kpi.id}
+                                name={`${kpi.title} (${kpi.weight}%)`}
+                                score={getFactorData(kpi.id).score}
+                                comment={getFactorData(kpi.id).comments}
                             />
                           ))}
                         </div>
@@ -127,8 +131,8 @@ const ViewEvaluationModal = ({ show, onClose, evaluation, employee, position, kp
                     <div className="accordion-item" key={factor.id}>
                       <h2 className="accordion-header">
                         <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target={`#${collapseId}`}>
-                           <span className="d-flex align-items-center"><i className={`${iconClass} me-2`}></i>{factor.title}</span> {/* MODIFIED: Added Icon */}
-                           <span className="section-avg-score">Avg: {avgScore} / 5.0</span>
+                           <span className="d-flex align-items-center"><i className={`${iconClass} me-2`}></i>{factor.title}</span>
+                           {avgScore !== 'N/A' && <span className="section-avg-score">Avg: {avgScore} / 5.0</span>}
                         </button>
                       </h2>
                       <div id={collapseId} className="accordion-collapse collapse" data-bs-parent="#evaluationDetailsAccordion">
@@ -147,12 +151,12 @@ const ViewEvaluationModal = ({ show, onClose, evaluation, employee, position, kp
                   );
                 }
 
-                if (otherTextareaFactors.some(f => f.id === factor.id)) {
+                if (textareaFactors.some(f => f.id === factor.id)) {
                   return (
                      <div className="accordion-item" key={factor.id}>
                         <h2 className="accordion-header">
                            <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target={`#${collapseId}`}>
-                              <span className="d-flex align-items-center"><i className={`${iconClass} me-2`}></i>{factor.title}</span> {/* MODIFIED: Added Icon */}
+                              <span className="d-flex align-items-center"><i className={`${iconClass} me-2`}></i>{factor.title}</span>
                            </button>
                         </h2>
                         <div id={collapseId} className="accordion-collapse collapse" data-bs-parent="#evaluationDetailsAccordion">
@@ -161,7 +165,7 @@ const ViewEvaluationModal = ({ show, onClose, evaluation, employee, position, kp
                            </div>
                         </div>
                      </div>
-                  )
+                  );
                 }
 
                 return null;

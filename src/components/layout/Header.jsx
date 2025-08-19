@@ -5,7 +5,15 @@ import placeholderAvatar from '../../assets/placeholder-profile.jpg';
 import NotificationDropdown from './NotificationDropdown';
 import ThemeToggle from './ThemeToggle'; 
 
-const Header = ({ onLogout, currentUser, notifications, appLevelHandlers, theme }) => {
+const Header = ({ 
+  onLogout, 
+  currentUser, 
+  notifications, 
+  appLevelHandlers, 
+  theme,
+  isMobileView,
+  onToggleMobileSidebar
+}) => {
   const user = currentUser || { 
     name: 'GUEST', employeeId: '0000000', avatarUrl: null, role: 'REGULAR_EMPLOYEE'
   };
@@ -20,7 +28,16 @@ const Header = ({ onLogout, currentUser, notifications, appLevelHandlers, theme 
 
   return (
     <header className="app-header">
-      <div className="header-left"></div>
+      <div className="header-left">
+        {isMobileView && (
+          <button 
+            className="btn btn-link sidebar-toggle-mobile"
+            onClick={onToggleMobileSidebar}
+          >
+            <i className="bi bi-list"></i>
+          </button>
+        )}
+      </div>
       <div className="header-right">
         <ThemeToggle theme={theme} onToggle={appLevelHandlers.toggleTheme} />
         
@@ -49,12 +66,12 @@ const Header = ({ onLogout, currentUser, notifications, appLevelHandlers, theme 
               <div className="text-muted small">ID: {user.employeeId}</div>
             </li>
             <li><hr className="dropdown-divider" /></li>
-            <li><Link className="dropdown-item" to="/dashboard/my-profile"><i className="bi bi-person-fill"></i> My Profile</Link></li>
-            <li><Link className="dropdown-item" to="/dashboard/account-settings"><i className="bi bi-gear-fill"></i> Settings</Link></li>
+            <li><Link className="dropdown-item" to="/dashboard/my-profile"><i className="bi bi-person-fill me-2"></i> My Profile</Link></li>
+            <li><Link className="dropdown-item" to="/dashboard/account-settings"><i className="bi bi-gear-fill me-2"></i> Settings</Link></li>
             <li><hr className="dropdown-divider" /></li>
             <li>
               <button className="dropdown-item text-danger" onClick={onLogout}>
-                <i className="bi bi-box-arrow-right"></i> Logout
+                <i className="bi bi-box-arrow-right me-2"></i> Logout
               </button>
             </li>
           </ul>

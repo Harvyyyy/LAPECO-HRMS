@@ -415,9 +415,28 @@ export const initialEvaluationFactors = [
     title: 'Behavioral Competencies', 
     type: 'rating_scale', 
     items: [
-      { id: 'bhv_teamwork', name: 'Teamwork & Collaboration', description: 'Works effectively with others to achieve common goals; shares information and supports team members.' },
-      { id: 'bhv_communication', name: 'Communication', description: 'Clearly and effectively conveys information and ideas to individuals or groups.' },
-      { id: 'bhv_professionalism', name: 'Professionalism & Integrity', description: 'Demonstrates a high standard of professional conduct, ethics, and accountability.' },
+      { 
+        id: 'bhv_teamwork', 
+        name: 'Teamwork & Collaboration', 
+        description: 'Works effectively with others to achieve common goals; shares information and supports team members.',
+        b_a_r_s: {
+          1: "Consistently works in isolation, negatively impacts team morale, and is unwilling to help others.",
+          2: "Rarely offers assistance, participates only when prompted, and sometimes withholds information.",
+          3: "Reliably participates in team tasks, shares necessary information, and is a dependable team member.",
+          4: "Frequently and proactively offers help to teammates and actively fosters a positive environment.",
+          5: "Acts as a role model for collaboration, proactively mentors teammates, and takes initiative to improve team processes."
+        }
+      },
+      { 
+        id: 'bhv_communication', 
+        name: 'Communication', 
+        description: 'Clearly and effectively conveys information and ideas to individuals or groups in a timely manner.' 
+      },
+      { 
+        id: 'bhv_professionalism', 
+        name: 'Professionalism & Integrity', 
+        description: 'Demonstrates a high standard of professional conduct, ethics, accountability, and aligns with company values.' 
+      },
     ]
   },
   { 
@@ -425,17 +444,30 @@ export const initialEvaluationFactors = [
     title: 'Work Quality', 
     type: 'rating_scale',
     items: [
-      { id: 'wq_accuracy', name: 'Accuracy & Attention to Detail', description: 'Completes tasks with a high degree of accuracy and minimizes errors.' },
+      { id: 'wq_accuracy', name: 'Accuracy & Attention to Detail', description: 'Completes tasks with a high degree of precision, minimizing errors and rework.' },
       { id: 'wq_efficiency', name: 'Efficiency & Time Management', description: 'Effectively manages time and resources to meet deadlines and complete tasks efficiently.' },
     ]
   },
-  { 
-    id: 'factor_company_values', 
-    title: 'Company Values Alignment', 
+  {
+    id: 'factor_potential',
+    title: 'Potential & Growth',
     type: 'rating_scale',
+    description: 'This section assesses forward-looking indicators of an employee\'s potential for growth within the company.',
     items: [
-      { id: 'val_safety', name: 'Commitment to Safety', description: 'Prioritizes and adheres to all safety protocols and procedures.' },
-      { id: 'val_integrity', name: 'Integrity', description: 'Acts with honesty and transparency in all dealings.' },
+      { id: 'pot_learning_agility', name: 'Learning Agility', description: 'Demonstrates the ability to learn quickly, adapt to new situations, and apply feedback effectively.' },
+      { id: 'pot_ambition_drive', name: 'Ambition & Drive', description: 'Shows initiative, seeks out new challenges, and expresses a desire for career progression.' },
+      { id: 'pot_leadership', name: 'Leadership Capability', description: 'Exhibits potential to lead others, either formally or informally, by inspiring and mentoring.' },
+    ]
+  },
+  {
+    id: 'factor_engagement',
+    title: 'Engagement & Alignment',
+    type: 'rating_scale',
+    description: 'This section measures factors directly related to job satisfaction and an employee\'s alignment with the team and company.',
+    items: [
+      { id: 'eng_role_satisfaction', name: 'Role Satisfaction', description: 'Appears energized and fulfilled by their day-to-day responsibilities.' },
+      // --- MODIFIED: "Manager Relationship" has been removed as requested. ---
+      { id: 'eng_growth_opportunity', name: 'Career Growth Opportunities', description: 'Sees a clear and viable path for advancement and skill development within the company.' },
     ]
   },
   {
@@ -443,24 +475,20 @@ export const initialEvaluationFactors = [
     title: 'Key Performance Indicators (KPIs)',
     type: 'kpi_section',
   },
+  // --- MODIFIED: The summary sections are now combined and evaluator-focused. ---
   {
-    id: 'factor_manager_summary',
-    title: "Manager's Overall Summary",
+    id: 'factor_evaluator_summary', // Renamed from factor_manager_summary
+    title: "Evaluator's Overall Summary", // Renamed title
     type: 'textarea',
-    description: "Provide a holistic summary of the employee's performance, strengths, and areas for improvement during this review period."
+    description: "Provide a holistic summary of the individual's performance, highlighting key achievements and overall contributions during this review period."
   },
   {
-    id: 'factor_employee_feedback',
-    title: "Employee's Comments",
+    id: 'factor_development_areas', // Renamed from factor_development_plan
+    title: "Key Strengths & Development Areas", // Renamed title
     type: 'textarea',
-    description: "The employee can provide feedback on their performance, achievements, or challenges during this review period."
-  },
-  {
-    id: 'factor_development_plan',
-    title: 'Goals & Development Plan',
-    type: 'textarea',
-    description: "Outline specific, measurable, achievable, relevant, and time-bound (SMART) goals for the next review period."
+    description: "Identify 1-2 key strengths to leverage and 1-2 areas for focused development for the next review period."
   }
+  // --- MODIFIED: factor_employee_feedback has been removed as requested. ---
 ];
 
 export const initialEvaluationsData = [
@@ -477,12 +505,14 @@ export const initialEvaluationsData = [
       'bhv_professionalism': { score: 5, comments: '' },
       'wq_accuracy': { score: 5, comments: 'Consistently double-checks work, resulting in zero return rates for her packages.' },
       'wq_efficiency': { score: 4, comments: 'Meets packing speed targets consistently.' },
-      'val_safety': { score: 5, comments: 'Always wears required PPE and keeps her workspace tidy.' },
-      'val_integrity': { score: 5, comments: '' },
+      'pot_learning_agility': { score: 4, comments: 'Quickly learned the new scanning system.' },
+      'pot_ambition_drive': { score: 4, comments: '' },
+      'pot_leadership': { score: 3, comments: 'Informally helps guide new packers.' },
+      'eng_role_satisfaction': { score: 5, comments: '' },
+      'eng_growth_opportunity': { score: 4, comments: '' },
       'KPI02': { score: 4, comments: 'Meets the target of packages per hour.' }, // Packing Speed
-      'factor_manager_summary': { value: 'Alice is a top performer and a key asset to the warehouse team. Her efficiency and attention to detail are outstanding.' },
-      'factor_employee_feedback': { value: 'I enjoyed the last period and look forward to taking on more responsibility.' },
-      'factor_development_plan': { value: 'Continue to lead by example in packing efficiency and mentor new packers.' },
+      'factor_evaluator_summary': { value: 'Alice is a top performer and a key asset to the warehouse team. Her efficiency and attention to detail are outstanding.' },
+      'factor_development_areas': { value: 'Continue to lead by example in packing efficiency and mentor new packers. Explore cross-training as a Picker.' },
     },
     overallScore: 92.50,
   },
@@ -499,12 +529,14 @@ export const initialEvaluationsData = [
       'bhv_professionalism': { score: 4, comments: '' },
       'wq_accuracy': { score: 3, comments: 'A few minor errors in packing lists were noted this period. Improvement needed in double-checking.' },
       'wq_efficiency': { score: 3, comments: 'Packing speed is just below the team average. Can improve with more focus.' },
-      'val_safety': { score: 5, comments: 'Follows all safety rules diligently.' },
-      'val_integrity': { score: 4, comments: '' },
+      'pot_learning_agility': { score: 3, comments: '' },
+      'pot_ambition_drive': { score: 3, comments: '' },
+      'pot_leadership': { score: 2, comments: '' },
+      'eng_role_satisfaction': { score: 3, comments: '' },
+      'eng_growth_opportunity': { score: 3, comments: '' },
       'KPI02': { score: 3, comments: 'Slightly below target on average packages per hour.' }, // Packing Speed
-      'factor_manager_summary': { value: 'Ivy is a reliable team member who follows instructions well. Focus for the next period should be on improving speed and accuracy to meet team standards.' },
-      'factor_employee_feedback': { value: 'I will work on being faster and more careful.' },
-      'factor_development_plan': { value: '1. Shadow Alice for one shift to learn efficiency techniques. 2. Implement a personal double-check system before sealing packages.' },
+      'factor_evaluator_summary': { value: 'Ivy is a reliable team member who follows instructions well. Focus for the next period should be on improving speed and accuracy to meet team standards.' },
+      'factor_development_areas': { value: 'Strengths: Diligent and follows rules. Development Areas: 1. Shadow Alice for one shift to learn efficiency techniques. 2. Implement a personal double-check system before sealing packages.' },
     },
     overallScore: 78.00,
   },
@@ -521,13 +553,15 @@ export const initialEvaluationsData = [
       'bhv_professionalism': { score: 5, comments: '' },
       'wq_accuracy': { score: 4, comments: '' },
       'wq_efficiency': { score: 5, comments: 'Very efficient in moving pallets, minimizes downtime.' },
-      'val_safety': { score: 3, comments: 'Was observed once operating without a spotter in a congested area. Needs to be more vigilant.' },
-      'val_integrity': { score: 5, comments: '' },
+      'pot_learning_agility': { score: 4, comments: '' },
+      'pot_ambition_drive': { score: 4, comments: '' },
+      'pot_leadership': { score: 3, comments: '' },
+      'eng_role_satisfaction': { score: 4, comments: '' },
+      'eng_growth_opportunity': { score: 3, comments: '' },
       'KPI03': { score: 5, comments: 'Zero safety incidents reported for David this period.' }, // Safety Incident Rate
       'KPI04': { score: 4, comments: 'Completes pre-shift checks consistently.' }, // Equipment Maintenance Checks
-      'factor_manager_summary': { value: 'David is a highly efficient operator. His primary area for improvement is maintaining 100% adherence to all safety protocols, especially during busy periods.' },
-      'factor_employee_feedback': { value: 'I understand the feedback on safety and will make it my top priority.' },
-      'factor_development_plan': { value: 'Attend the advanced forklift safety refresher course. Aim for zero safety protocol deviations in the next 6 months.' },
+      'factor_evaluator_summary': { value: 'David is a highly efficient operator. His primary area for improvement is maintaining 100% adherence to all safety protocols, especially during busy periods.' },
+      'factor_development_areas': { value: 'Strengths: Highly efficient and reliable. Development Areas: Attend the advanced forklift safety refresher course. Aim for zero safety protocol deviations in the next 6 months.' },
     },
     overallScore: 88.75,
   },
@@ -538,8 +572,40 @@ export const initialEvaluationsData = [
     periodStart: '2024-07-01',
     periodEnd: '2024-12-31',
     status: 'Completed',
-    factorScores: {},
+    factorScores: { /* ... abbreviated for brevity ... */ },
     overallScore: 90.00,
+  },
+  // --- (NEW) Needs Improvement Employee ---
+  {
+    id: 'EVAL05',
+    employeeId: 'EMP004', // David Green (Lifter)
+    evaluatorId: 'EMP002', // Bob Smith (Leader)
+    periodStart: '2025-07-01',
+    periodEnd: '2025-12-31',
+    status: 'Completed',
+    factorScores: {
+      // Low Behavioral Scores
+      'bhv_teamwork': { score: 2, comments: 'Has been working in isolation and is sometimes reluctant to assist others when asked.' },
+      'bhv_communication': { score: 3, comments: '' },
+      'bhv_professionalism': { score: 2, comments: 'Observed being dismissive of feedback during a safety briefing.' },
+      // Low Work Quality Scores
+      'wq_accuracy': { score: 4, comments: 'Still accurate when focused.' },
+      'wq_efficiency': { score: 2, comments: 'Noticeable decrease in the speed of pallet movements. Often seems disengaged.' },
+      // Low Potential Scores
+      'pot_learning_agility': { score: 2, comments: 'Resistant to feedback regarding safety protocols.' },
+      'pot_ambition_drive': { score: 2, comments: 'Has not shown initiative for new tasks recently.' },
+      'pot_leadership': { score: 1, comments: '' },
+      // Low Engagement Scores (Turnover Risk Indicators)
+      'eng_role_satisfaction': { score: 2, comments: 'Appears less motivated than in previous periods.' },
+      'eng_growth_opportunity': { score: 2, comments: '' },
+      // Low KPI Scores
+      'KPI03': { score: 2, comments: 'Involved in one minor, non-injury incident due to rushing.' }, // Safety Incident Rate
+      'KPI04': { score: 3, comments: 'Checks are completed, but sometimes hastily.' }, // Equipment Maintenance Checks
+      // Evaluator Summary
+      'factor_evaluator_summary': { value: "David's performance has seen a significant decline this period, particularly concerning safety compliance and overall efficiency. Immediate and sustained improvement is required." },
+      'factor_development_areas': { value: "Key Strengths: Still knowledgeable about the equipment when focused. Development Areas: Must recommit to all safety protocols without exception. Needs to improve time management and re-engage with the team." },
+    },
+    overallScore: 46.80, // Calculated score, clearly in the "Needs Improvement" range
   },
 ];
 

@@ -1,3 +1,19 @@
+.header-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+.header-actions-group .btn-link {
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-decoration: none;
+}
+.header-actions-group .btn-link:hover {
+    color: var(--text-primary);
+}
+
+
 .my-leave-dashboard {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -149,9 +165,26 @@
     background-color: rgba(var(--warning-rgb), 0.15);
 }
 
-
 @media (max-width: 768px) {
+    .page-header {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .header-actions-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .header-actions-group .btn-success {
+        flex-grow: 1;
+    }
+
     .my-leave-dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .leave-balances {
         grid-template-columns: 1fr;
     }
 }

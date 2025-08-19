@@ -124,7 +124,7 @@
 .activity-item .info .status { font-weight: 500; font-size: 0.9rem; color: var(--text-primary); }
 .activity-item .info .details { font-size: 0.8rem; display: block; color: var(--text-secondary); }
 
-.whos-out-card .card-body {
+.whos_out-card .card-body {
     padding: 0;
     max-height: 320px;
     overflow-y: auto;
@@ -142,24 +142,88 @@
 .status-dot.status-late { background-color: var(--warning-color); }
 .status-dot.status-absent { background-color: var(--danger-color); }
 .status-dot.status-off { background-color: var(--text-secondary); }
-.manager-hub-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); align-items: stretch; }
-.team-roster-snapshot, .actionable-reminders { padding: 1.25rem; }
-.team-roster-snapshot { border-right: 1px solid var(--border-color); }
-.dark-theme .team-roster-snapshot { border-right-color: var(--border-color); }
-.roster-list, .action-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-.roster-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; padding: 0.4rem 0; }
-.roster-item .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-.roster-item .name { font-weight: 500; color: var(--text-primary); }
-.action-item .action-icon { font-size: 1.1rem; color: var(--text-secondary); width: 20px; text-align: center; }
-.action-item .action-label { font-weight: 500; flex-grow: 1; }
-.action-item .action-badge { margin-left: auto; }
+
+.manager-hub-grid { 
+    display: grid; 
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); 
+    align-items: stretch; 
+}
+.team-roster-snapshot, .actionable-reminders { 
+    padding: 1.25rem; 
+}
+.team-roster-snapshot { 
+    border-right: 1px solid var(--border-color); 
+}
+.dark-theme .team-roster-snapshot { 
+    border-right-color: var(--border-color); 
+}
+.roster-list { 
+    list-style: none; 
+    padding: 0; 
+    margin: 0; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 0.5rem; 
+}
+.roster-item { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.75rem; 
+    font-size: 0.9rem; 
+    padding: 0.4rem 0; 
+}
+.roster-item .avatar { 
+    width: 32px; 
+    height: 32px; 
+    border-radius: 50%; 
+    object-fit: cover; 
+}
+.roster-item .name { 
+    font-weight: 500; 
+    color: var(--text-primary); 
+}
+.action-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+.action-item a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    color: var(--text-secondary);
+}
+.action-item a:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+.action-item .action-icon { 
+    font-size: 1.1rem; 
+    width: 20px; 
+    text-align: center; 
+}
+.action-item .action-label { 
+    font-weight: 500; 
+    flex-grow: 1; 
+    color: var(--text-primary);
+}
+.action-item .action-badge { 
+    margin-left: auto; 
+}
+
 
 @media (max-width: 1200px) {
     .employee-dashboard-grid-top { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 992px) {
     .dashboard-grid, .employee-dashboard-grid-top { grid-template-columns: repeat(2, 1fr); }
-    .dashboard-grid-span-4, .dashboard-grid-span-2, .dashboard-grid-span-1 { grid-column: span 2; }
+    .dashboard-grid-span-4, .dashboard-grid-span-3, .dashboard-grid-span-2, .dashboard-grid-span-1 { grid-column: span 2; }
 }
 @media (max-width: 768px) {
     .manager-hub-grid { grid-template-columns: 1fr; }
@@ -169,4 +233,21 @@
 @media (max-width: 576px) {
     .dashboard-grid, .employee-dashboard-grid-top { grid-template-columns: 1fr; }
     .dashboard-grid-span-4, .dashboard-grid-span-3, .dashboard-grid-span-2, .dashboard-grid-span-1 { grid-column: span 1; }
+}
+
+@media (max-width: 991.98px) {
+    .dashboard-stats-container {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 767.98px) {
+    .welcome-header {
+        padding: 1.25rem;
+    }
+    .welcome-header h2 {
+        font-size: 1.5rem;
+    }
+    .dashboard-stats-container {
+        grid-template-columns: 1fr;
+    }
 }

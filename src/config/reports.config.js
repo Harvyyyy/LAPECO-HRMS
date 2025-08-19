@@ -1,6 +1,6 @@
 export const reportCategories = {
   EMPLOYEE_DATA: 'Employee Data',
-  ORGANIZATION_MANAGEMENT: 'Organization Management',
+  POSITION_MANAGEMENT: 'Positions',
   ATTENDANCE: 'Attendance & Schedules',
   LEAVE: 'Leave Management',
   PERFORMANCE: 'Performance Management',
@@ -21,13 +21,13 @@ export const reportsConfig = [
     parameters: null,
   },
 
-  // --- Organization Management ---
+  // --- Position Management ---
   {
     id: 'positions_report',
     title: 'Company Positions Report',
     description: 'A list of all defined positions, including salary comparisons and employee counts.',
     icon: 'bi-diagram-3-fill',
-    category: reportCategories.ORGANIZATION_MANAGEMENT,
+    category: reportCategories.POSITION_MANAGEMENT,
     parameters: null,
   },
 

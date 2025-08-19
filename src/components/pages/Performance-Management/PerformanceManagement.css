@@ -446,6 +446,11 @@
     background-color: rgba(var(--app-success-rgb), 0.1);
 }
 
+.dark-theme .insight-card .card-title .badge {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-secondary) !important;
+}
+
 @media (max-width: 992px) {
     .analysis-grid {
         grid-template-columns: 1fr;
