@@ -65,7 +65,7 @@ const ReportsPage = (props) => {
     <div className="container-fluid p-0 page-module-container">
       <header className="page-header mb-4">
         <h1 className="page-main-title">Reports Center</h1>
-        <p className="text-muted">Select a category and generate reports based on your HRMS data.</p>
+        <p className="text-muted">Select a category and generate report.</p>
       </header>
       
       <div className="reports-category-filter">

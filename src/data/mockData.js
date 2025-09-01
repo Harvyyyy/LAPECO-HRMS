@@ -634,22 +634,39 @@ export const initialPayrollsData = [
         payrollId: 'PAY003', 
         empId: 'EMP001', 
         employeeName: 'Alice Johnson',
-        earnings: { basePay: 9000.00, overtimePay: 0, holidayPay: 0 },
-        grossPay: 9000.00,
-        deductions: { tax: 250, sss: 405, philhealth: 200, hdmf: 100 },
-        adjustments: { allowances: 0, bonuses: 0, otherEarnings: 0, loanRepayments: 0, cashAdvances: 0 },
-        netPay: 8045.00, 
-        status: 'Paid' 
+        // --- NEW DETAILED STRUCTURE ---
+        period: 'Oct 16-31',
+        paymentDate: '2023-11-05',
+        cutOffStart: '2023-10-16',
+        cutOffEnd: '2023-10-31',
+        earnings: [
+          { description: 'Regular Pay', hours: 88, amount: 9000.00 },
+          { description: 'Overtime Pay', hours: 5.5, amount: 511.36 }
+        ],
+        deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 },
+        otherDeductions: [
+          { description: 'Company Loan', amount: 1000.00 }
+        ],
+        absences: [],
+        leaveBalances: { vacation: 12.5, sick: 8 },
+        status: 'Paid'
       },
       { 
         payrollId: 'PAY004', 
         empId: 'EMP003', 
         employeeName: 'Carol White',
-        earnings: { basePay: 9000.00, overtimePay: 511.36, holidayPay: 0 },
-        grossPay: 9511.36,
+        // --- NEW DETAILED STRUCTURE ---
+        period: 'Oct 16-31',
+        paymentDate: '2023-11-05',
+        cutOffStart: '2023-10-16',
+        cutOffEnd: '2023-10-31',
+        earnings: [
+          { description: 'Regular Pay', hours: 88, amount: 9000.00 },
+        ],
         deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 },
-        adjustments: { allowances: 0, bonuses: 0, otherEarnings: 0, loanRepayments: 0, cashAdvances: 0 },
-        netPay: 8455.00, 
+        otherDeductions: [],
+        absences: [],
+        leaveBalances: { vacation: 10, sick: 5 },
         status: 'Pending'
       },
     ]
@@ -662,22 +679,40 @@ export const initialPayrollsData = [
         payrollId: 'PAY001', 
         empId: 'EMP001', 
         employeeName: 'Alice Johnson',
-        earnings: { basePay: 9000.00, overtimePay: 1022.73, holidayPay: 0 },
-        grossPay: 10022.73,
+        // --- NEW DETAILED STRUCTURE ---
+        period: 'Oct 1-15',
+        paymentDate: '2023-10-20',
+        cutOffStart: '2023-10-01',
+        cutOffEnd: '2023-10-15',
+        earnings: [
+          { description: 'Regular Pay', hours: 88, amount: 9000.00 },
+          { description: 'Holiday Pay - Regular', hours: 8, amount: 950.00 }
+        ],
         deductions: { tax: 452.27, sss: 405, philhealth: 200, hdmf: 100 },
-        adjustments: { allowances: 0, bonuses: 0, otherEarnings: 0, loanRepayments: 0, cashAdvances: 0 },
-        netPay: 8865.46, 
+        otherDeductions: [],
+        absences: [{ description: 'Unexcused Absence', startDate: '2023-10-10', endDate: '2023-10-10', totalDays: 1 }],
+        leaveBalances: { vacation: 13, sick: 8 },
         status: 'Paid' 
       },
       { 
         payrollId: 'PAY002', 
         empId: 'EMP002', 
         employeeName: 'Bob Smith',
-        earnings: { basePay: 11000.00, overtimePay: 0, holidayPay: 0 },
-        grossPay: 11000.00,
+        // --- NEW DETAILED STRUCTURE ---
+        period: 'Oct 1-15',
+        paymentDate: '2023-10-20',
+        cutOffStart: '2023-10-01',
+        cutOffEnd: '2023-10-15',
+        earnings: [
+          { description: 'Regular Pay', hours: 80, amount: 10000.00 },
+          { description: 'Communication Allowance', hours: null, amount: 1000.00 },
+        ],
         deductions: { tax: 650, sss: 495, philhealth: 275, hdmf: 100 },
-        adjustments: { allowances: 0, bonuses: 0, otherEarnings: 0, loanRepayments: 0, cashAdvances: 0 },
-        netPay: 9480.00, 
+        otherDeductions: [
+          { description: 'Pag-IBIG Loan', loanAmount: 20000, amount: 1500.00, outstandingBalance: 18500.00 }
+        ],
+        absences: [],
+        leaveBalances: { vacation: 5, sick: 3 },
         status: 'Paid' 
       },
     ]

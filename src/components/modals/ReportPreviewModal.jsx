@@ -3,13 +3,6 @@ import ReactDOM from 'react-dom';
 import './ReportPreviewModal.css';
 
 const ReportPreviewModal = ({ show, onClose, pdfDataUri, reportTitle }) => {
-  useEffect(() => {
-    return () => {
-      if (pdfDataUri) {
-        URL.revokeObjectURL(pdfDataUri);
-      }
-    };
-  }, [pdfDataUri]);
 
   if (!show) {
     return null;

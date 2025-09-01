@@ -311,6 +311,7 @@
     font-weight: 700;
     line-height: 1.1;
     color: var(--text-primary);
+    margin-bottom: 0.25rem;
 }
 .stat-card-revised .stat-info .stat-label {
     font-size: 0.9rem;

@@ -1,13 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import './RecruitmentPage.css';
 import KanbanColumn from './KanbanColumn';
 import AddApplicantModal from '../../modals/AddApplicantModal';
@@ -16,6 +8,9 @@ import ScheduleInterviewModal from '../../modals/ScheduleInterviewModal';
 import HireApplicantModal from '../../modals/HireApplicantModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import AccountGeneratedModal from '../../modals/AccountGeneratedModal';
+import ReportConfigurationModal from '../../modals/ReportConfigurationModal';
+import { reportsConfig } from '../../../config/reports.config';
+import useReportGenerator from '../../../hooks/useReportGenerator';
 
 const PIPELINE_STAGES = ['New Applicant', 'Screening', 'Interview', 'Offer', 'Hired', 'Rejected'];
 
@@ -39,12 +34,13 @@ const formatDate = (dateString, includeTime = false) => {
 const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
   const [viewMode, setViewMode] = useState('board');
   const [showApplicantModal, setShowApplicantModal] = useState(false);
-  const [showJobOpeningModal, setShowJobOpeningModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showInterviewModal, setShowInterviewModal] = useState(false);
   const [showHireModal, setShowHireModal] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [pdfDataUri, setPdfDataUri] = useState('');
+  const [showReportConfigModal, setShowReportConfigModal] = useState(false);
+  
+  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
+  const [showReportPreview, setShowReportPreview] = useState(false);
   
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,6 +50,7 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
   const [newlyGeneratedAccount, setNewlyGeneratedAccount] = useState(null);
 
   const jobOpeningsMap = useMemo(() => new Map(jobOpenings.map(job => [job.id, job.title])), [jobOpenings]);
+  const recruitmentReportConfig = useMemo(() => reportsConfig.find(r => r.id === 'recruitment_activity'), []);
 
   const filteredApplicants = useMemo(() => {
     let results = [...applicants];
@@ -64,9 +61,8 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
     if (start || end) {
         results = results.filter(app => {
             const appDate = new Date(app.applicationDate);
-            const updateDate = new Date(app.lastStatusUpdate);
             const inRange = (date) => (!start || date >= start) && (!end || date <= end);
-            return inRange(appDate) || inRange(updateDate);
+            return inRange(appDate);
         });
     }
     if (searchTerm) {
@@ -84,17 +80,12 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
   }, [applicants, searchTerm, startDate, endDate, sortConfig]);
   
   const stats = useMemo(() => {
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
-    if (start) start.setHours(0, 0, 0, 0);
-    if (end) end.setHours(23, 59, 59, 999);
-    const inRange = (date) => (!start || date >= start) && (!end || date <= end);
     return {
         totalApplicants: filteredApplicants.length,
-        newlyHired: filteredApplicants.filter(a => a.status === 'Hired' && inRange(new Date(a.lastStatusUpdate))).length,
-        interviewsSet: filteredApplicants.filter(a => a.status === 'Interview' && inRange(new Date(a.lastStatusUpdate))).length
+        newlyHired: filteredApplicants.filter(a => a.status === 'Hired').length,
+        interviewsSet: filteredApplicants.filter(a => a.status === 'Interview').length
     };
-  }, [filteredApplicants, startDate, endDate]);
+  }, [filteredApplicants]);
 
   const dateRangeText = useMemo(() => {
     if (startDate && endDate) return `${formatDate(startDate)} - ${formatDate(endDate)}`;
@@ -103,9 +94,7 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
     return 'All Time';
   }, [startDate, endDate]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -136,6 +125,24 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
         alert("An error occurred while hiring the applicant.");
     }
   };
+  
+  const handleRunReport = (reportId, params) => {
+    setShowReportConfigModal(false);
+    generateReport(
+      reportId, 
+      { startDate: params.startDate, endDate: params.endDate },
+      { applicants, jobOpenings }
+    );
+    setShowReportPreview(true);
+  };
+  
+  const handleClosePreview = () => {
+    setShowReportPreview(false);
+    if (pdfDataUri) {
+        URL.revokeObjectURL(pdfDataUri);
+    }
+    setPdfDataUri('');
+  };
 
   const requestSort = (key) => {
     let direction = 'ascending';
@@ -147,63 +154,6 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
     return sortConfig.direction === 'ascending' ? <i className="bi bi-sort-up sort-icon active ms-1"></i> : <i className="bi bi-sort-down sort-icon active ms-1"></i>;
   };
   
-  const handleGenerateReport = () => {
-    if (!filteredApplicants || filteredApplicants.length === 0) {
-      alert("No data to generate a report for the current filters.");
-      return;
-    }
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
-    if (start) start.setHours(0, 0, 0, 0);
-    if (end) end.setHours(23, 59, 59, 999);
-    const inRange = (date) => (!start || date >= start) && (!end || date <= end);
-    const reportData = {
-        applied: filteredApplicants.filter(app => inRange(new Date(app.applicationDate))),
-        hired: filteredApplicants.filter(app => app.status === 'Hired' && inRange(new Date(app.lastStatusUpdate))),
-        rejected: filteredApplicants.filter(app => app.status === 'Rejected' && inRange(new Date(app.lastStatusUpdate))),
-        interview: filteredApplicants.filter(app => app.status === 'Interview' && inRange(new Date(app.lastStatusUpdate))),
-    };
-    const doc = new jsPDF();
-    const pageTitle = "Recruitment Activity Report";
-    const dateRange = startDate && endDate ? `${formatDate(startDate)} to ${formatDate(endDate)}` : 'All Time';
-    let finalY = 0;
-    doc.setFontSize(18); doc.text(pageTitle, 14, 22);
-    doc.setFontSize(11); doc.text(`Date Range: ${dateRange}`, 14, 30);
-    finalY = 35;
-    const createSummarySection = (label, applicants) => {
-        if (applicants.length === 0) return;
-        if (finalY > 250) { doc.addPage(); finalY = 20; }
-        finalY += 10;
-        doc.setFontSize(11);
-        doc.setFont(undefined, 'bold');
-        doc.text(`${label} (${applicants.length})`, 14, finalY);
-        finalY += 7;
-        doc.setFontSize(9);
-        doc.setFont(undefined, 'normal');
-        applicants.forEach(app => {
-            if (finalY > 280) { doc.addPage(); finalY = 20; }
-            doc.text(`- ${app.name} (Applied for: ${jobOpeningsMap.get(app.jobOpeningId) || 'N/A'})`, 20, finalY);
-            finalY += 5;
-        });
-    };
-    createSummarySection('New Applications Received', reportData.applied);
-    createSummarySection('Applicants Moved to Interview', reportData.interview);
-    createSummarySection('Applicants Hired', reportData.hired);
-    createSummarySection('Applicants Rejected', reportData.rejected);
-    finalY += 10;
-    if (finalY > 260) { doc.addPage(); finalY = 20; }
-    autoTable(doc, {
-        head: [['Applicant', 'Job', 'Status', 'Applied On', 'Last Updated']],
-        body: filteredApplicants.map(app => [
-            app.name, jobOpeningsMap.get(app.jobOpeningId) || 'N/A', app.status,
-            formatDate(app.applicationDate), formatDate(app.lastStatusUpdate, true)
-        ]),
-        startY: finalY
-    });
-    setPdfDataUri(doc.output('datauristring'));
-    setShowReportModal(true);
-  };
-
   const handleAction = (action, data) => {
     switch (action) {
       case 'view': setSelectedApplicant(data); setShowViewModal(true); break;
@@ -285,40 +235,22 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
       <header className="page-header d-flex justify-content-between align-items-center mb-4">
         <h1 className="page-main-title">Recruitment</h1>
         <div className="header-actions d-flex align-items-center gap-2">
-            <button className="btn btn-outline-secondary" onClick={handleGenerateReport}><i className="bi bi-file-earmark-pdf-fill me-2"></i>Generate Report</button>
+            <button className="btn btn-outline-secondary" onClick={() => setShowReportConfigModal(true)}><i className="bi bi-file-earmark-pdf-fill me-2"></i>Generate Report</button>
             <button className="btn btn-success" onClick={() => setShowApplicantModal(true)}><i className="bi bi-person-plus-fill me-2"></i>New Applicant</button>
         </div>
       </header>
 
       <div className="recruitment-stats-bar">
         <div className="recruitment-stat-card">
-            <div className="stat-main">
-                <div className="stat-icon icon-total-applicants"><i className="bi bi-people-fill"></i></div>
-                <div className="stat-info">
-                    <span className="stat-value">{stats.totalApplicants}</span>
-                    <span className="stat-label">Total Applicants</span>
-                </div>
-            </div>
+            <div className="stat-main"><div className="stat-icon icon-total-applicants"><i className="bi bi-people-fill"></i></div><div className="stat-info"><span className="stat-value">{stats.totalApplicants}</span><span className="stat-label">Applicants in View</span></div></div>
             <div className="stat-period">{dateRangeText}</div>
         </div>
         <div className="recruitment-stat-card">
-            <div className="stat-main">
-                <div className="stat-icon icon-hired"><i className="bi bi-person-check-fill"></i></div>
-                <div className="stat-info">
-                    <span className="stat-value">{stats.newlyHired}</span>
-                    <span className="stat-label">Newly Hired</span>
-                </div>
-            </div>
+            <div className="stat-main"><div className="stat-icon icon-hired"><i className="bi bi-person-check-fill"></i></div><div className="stat-info"><span className="stat-value">{stats.newlyHired}</span><span className="stat-label">Hired in View</span></div></div>
             <div className="stat-period">{dateRangeText}</div>
         </div>
         <div className="recruitment-stat-card">
-            <div className="stat-main">
-                <div className="stat-icon icon-interviews-set"><i className="bi bi-calendar2-check-fill"></i></div>
-                <div className="stat-info">
-                    <span className="stat-value">{stats.interviewsSet}</span>
-                    <span className="stat-label">Interviews Set</span>
-                </div>
-            </div>
+            <div className="stat-main"><div className="stat-icon icon-interviews-set"><i className="bi bi-calendar2-check-fill"></i></div><div className="stat-info"><span className="stat-value">{stats.interviewsSet}</span><span className="stat-label">Interviews in View</span></div></div>
             <div className="stat-period">{dateRangeText}</div>
         </div>
       </div>
@@ -338,8 +270,23 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
       </div>
       
       {viewMode === 'board' ? renderBoardView() : renderListView()}
-
-      {pdfDataUri && <ReportPreviewModal show={showReportModal} onClose={() => {setShowReportModal(false); setPdfDataUri('')}} pdfDataUri={pdfDataUri} reportTitle="Recruitment Activity Report" />}
+      
+      <ReportConfigurationModal 
+        show={showReportConfigModal}
+        onClose={() => setShowReportConfigModal(false)}
+        onRunReport={handleRunReport}
+        reportConfig={recruitmentReportConfig}
+      />
+      
+      {(isLoading || pdfDataUri) && (
+        <ReportPreviewModal
+            show={showReportPreview}
+            onClose={handleClosePreview}
+            pdfDataUri={pdfDataUri}
+            reportTitle="Recruitment Activity Report"
+        />
+      )}
+      
       <AddApplicantModal show={showApplicantModal} onClose={() => setShowApplicantModal(false)} onSave={handlers.saveApplicant} jobOpenings={jobOpenings}/>
       {selectedApplicant && <ViewApplicantDetailsModal show={showViewModal} onClose={() => setShowViewModal(false)} applicant={selectedApplicant} jobTitle={jobOpeningsMap.get(selectedApplicant?.jobOpeningId)}/>}
       {selectedApplicant && <ScheduleInterviewModal show={showInterviewModal} onClose={() => setShowInterviewModal(false)} onSave={handlers.scheduleInterview} applicant={selectedApplicant}/>}

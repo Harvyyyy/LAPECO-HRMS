@@ -1,3 +1,5 @@
+// src/components/layout/SideBar.jsx
+
 import React, { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Tooltip } from 'bootstrap';
@@ -10,17 +12,17 @@ const navItemsConfig = {
     { path: '/dashboard', icon: 'bi-grid-1x2-fill', label: 'Dashboard', exact: true },
     { path: '/dashboard/employee-data', icon: 'bi-people-fill', label: 'Employee Data' },
     { path: '/dashboard/positions', icon: 'bi-diagram-3-fill', label: 'Positions' },
-    { path: '/dashboard/attendance-management', icon: 'bi-calendar-check-fill', label: 'Attendance' },
-    { path: '/dashboard/schedule-management', icon: 'bi-calendar-range', label: 'Schedules' },
-    { path: '/dashboard/leave-management', icon: 'bi-calendar-event', label: 'Leave' },
-    { path: '/dashboard/payroll/history', icon: 'bi-cash-coin', label: 'Payroll' },
+    { path: '/dashboard/attendance-management', icon: 'bi-calendar-check-fill', label: 'Attendance Management' },
+    { path: '/dashboard/schedule-management', icon: 'bi-calendar-range', label: 'Schedule Management' },
+    { path: '/dashboard/leave-management', icon: 'bi-calendar-event', label: 'Leave Management' },
+    { path: '/dashboard/payroll/history', icon: 'bi-cash-coin', label: 'Payroll Management' },
     { path: '/dashboard/holiday-management', icon: 'bi-flag-fill', label: 'Holidays' },
-    { path: '/dashboard/contributions-management', icon: 'bi-file-earmark-ruled-fill', label: 'Contributions' },
-    { path: '/dashboard/performance', icon: 'bi-graph-up-arrow', label: 'Performance' },
-    { path: '/dashboard/training', icon: 'bi-mortarboard-fill', label: 'Training' },
-    { path: '/dashboard/case-management', icon: 'bi-briefcase-fill', label: 'Cases' },
+    { path: '/dashboard/contributions-management', icon: 'bi-file-earmark-ruled-fill', label: 'Contributions Management' },
+    { path: '/dashboard/performance', icon: 'bi-graph-up-arrow', label: 'Performance Management' },
+    { path: '/dashboard/training', icon: 'bi-mortarboard-fill', label: 'Training and Development' },
+    { path: '/dashboard/case-management', icon: 'bi-briefcase-fill', label: 'Case Management' },
     { path: '/dashboard/recruitment', icon: 'bi-person-plus-fill', label: 'Recruitment' },
-    { path: '/dashboard/accounts', icon: 'bi-shield-lock-fill', label: 'Accounts' },
+    { path: '/dashboard/accounts', icon: 'bi-shield-lock-fill', label: 'Accounts Management' },
     { path: '/dashboard/reports', icon: 'bi-file-earmark-bar-graph-fill', label: 'Reports' },
   ],
   [USER_ROLES.TEAM_LEADER]: [

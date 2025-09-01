@@ -27,14 +27,15 @@ const PayrollGenerationPage = ({ employees, positions, schedules, attendanceLogs
 
       const dailyRate = position.monthlySalary / 22;
       let totalGross = 0;
-      let totalOvertime = 0;
       let totalHolidayPay = 0;
       const breakdown = [];
+      const absences = [];
       let workdays = 0;
+      let totalHours = 0;
 
       for (let d = new Date(startDate); d <= new Date(endDate); d.setDate(d.getDate() + 1)) {
         const dateStr = d.toISOString().split('T')[0];
-        const dayOfWeek = d.getDay();
+        const dayOfWeek = new Date(dateStr + 'T00:00:00').getDay();
         if (dayOfWeek === 0 || dayOfWeek === 6) continue;
 
         const schedule = scheduleMap.get(`${emp.id}-${dateStr}`);
@@ -48,6 +49,7 @@ const PayrollGenerationPage = ({ employees, positions, schedules, attendanceLogs
 
         if (attendance && attendance.signIn) {
             workdays++;
+            totalHours += 8;
             dailyPay = dailyRate;
             dayStatus = 'Present';
 
@@ -62,22 +64,27 @@ const PayrollGenerationPage = ({ employees, positions, schedules, attendanceLogs
                 }
                 dayStatus = `Worked Holiday (${holiday.name})`;
             }
+        } else {
+            dayStatus = 'Absent';
+            absences.push({
+                description: 'Unexcused',
+                startDate: dateStr,
+                endDate: dateStr,
+                totalDays: 1
+            });
         }
         
         totalGross += dailyPay;
         breakdown.push({ date: dateStr, status: dayStatus, pay: dailyPay });
       }
-      return { 
-        emp, 
-        totalGross, 
-        breakdown, 
-        workdays,
-        earnings: {
-            basePay: totalGross - totalHolidayPay,
-            overtimePay: totalOvertime,
-            holidayPay: totalHolidayPay,
-        }
-      };
+      
+      const basePay = totalGross - totalHolidayPay;
+      
+      const earnings = [];
+      if (basePay > 0) earnings.push({ description: 'Regular Pay', hours: totalHours, amount: basePay });
+      if (totalHolidayPay > 0) earnings.push({ description: 'Holiday Pay', hours: 0, amount: totalHolidayPay });
+
+      return { emp, totalGross, breakdown, workdays, earnings, absences };
     }).filter(Boolean);
   }, [startDate, endDate, employees, positions, schedules, attendanceLogs, holidays, positionMap, holidayMap, scheduleMap, attendanceMap]);
 
@@ -92,15 +99,23 @@ const PayrollGenerationPage = ({ employees, positions, schedules, attendanceLogs
   const handleGeneratePayroll = () => {
     const payrollRun = {
       cutOff: `${startDate} to ${endDate}`,
-      records: calculatedData.map(item => ({
-        empId: item.emp.id,
-        employeeName: item.emp.name,
-        earnings: item.earnings,
-        grossPay: item.totalGross,
-        deductions: { tax: item.totalGross * 0.1, sss: 581.30, philhealth: 400, hdmf: 100 },
-        adjustments: { allowances: 0, bonuses: 0, otherEarnings: 0, loanRepayments: 0, cashAdvances: 0 },
-        status: 'Pending',
-      }))
+      records: calculatedData.map(item => {
+        const deductions = { tax: item.totalGross * 0.1, sss: 581.30, philhealth: 400, hdmf: 100 };
+        return {
+            empId: item.emp.id,
+            employeeName: item.emp.name,
+            period: `${new Date(startDate + 'T00:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} - ${new Date(endDate + 'T00:00:00').toLocaleDateString('en-US', {day: 'numeric'})}`,
+            paymentDate: new Date(new Date(endDate).setDate(new Date(endDate).getDate() + 5)).toISOString().split('T')[0],
+            cutOffStart: startDate,
+            cutOffEnd: endDate,
+            earnings: item.earnings,
+            deductions: deductions,
+            otherDeductions: [],
+            absences: item.absences,
+            leaveBalances: { vacation: 12, sick: 8 },
+            status: 'Pending',
+        };
+      })
     };
     onGenerate(payrollRun);
     alert(`Payroll for ${payrollRun.cutOff} has been generated successfully!`);
@@ -118,7 +133,7 @@ const PayrollGenerationPage = ({ employees, positions, schedules, attendanceLogs
     <div className="payroll-generation-container">
       <div className="card shadow-sm mb-4">
         <div className="card-body p-4">
-          <h5 className="card-title">Step 1: Select Pay Period</h5>
+          <h5 className="card-title payroll-projection-title">Step 1: Select Pay Period</h5>
           <p className="card-text text-muted">Select a date range to automatically calculate the gross income for all scheduled employees based on their attendance records.</p>
           <div className="row g-3">
             <div className="col-md-5">
@@ -135,7 +150,7 @@ const PayrollGenerationPage = ({ employees, positions, schedules, attendanceLogs
 
       {hasValidDateRange && (
         <>
-            <h5 className="mb-3">Step 2: Review and Generate</h5>
+            <h5 className="mb-3 payroll-projection-title">Step 2: Review and Generate</h5>
             <div className="payroll-generation-summary mb-4">
                 <div className="row">
                     <div className="col-md-6 summary-item border-end">

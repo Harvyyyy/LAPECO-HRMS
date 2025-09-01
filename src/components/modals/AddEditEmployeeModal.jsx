@@ -156,7 +156,7 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
                       <button type="button" className={`nav-link ${activeTab === 'personal' ? 'active' : ''}`} onClick={() => setActiveTab('personal')}>Personal Details</button>
                     </li>
                     <li className="nav-item">
-                      <button type="button" className={`nav-link ${activeTab === 'statutory' ? 'active' : ''}`} onClick={() => setActiveTab('statutory')}>Government Requirements</button>
+                      <button type="button" className={`nav-link ${activeTab === 'statutory' ? 'active' : ''}`} onClick={() => setActiveTab('statutory')}>Statutory Requirements</button>
                     </li>
                     <li className="nav-item">
                       <button type="button" className={`nav-link ${activeTab === 'resume' ? 'active' : ''}`} onClick={() => setActiveTab('resume')}>Resume</button>

@@ -107,11 +107,16 @@ export const reportsConfig = [
   {
     id: 'recruitment_activity',
     title: 'Recruitment Activity Report',
-    description: 'Summarizes new applications, interviews, and hiring outcomes within a specified period.', // (MODIFIED)
+    description: 'Summarizes new applications, interviews, and hiring outcomes for a given period.',
     icon: 'bi-person-plus-fill',
     category: reportCategories.RECRUITMENT,
     parameters: [
-      { id: 'date_range_3', type: 'date-range', labels: { start: 'Start Date', end: 'End Date' } },
+      { 
+        id: 'date_range_3', 
+        type: 'date-range', 
+        labels: { start: 'Start Date', end: 'End Date' },
+        optional: true, // Make the date range optional for this report
+      },
     ],
   },
 ];

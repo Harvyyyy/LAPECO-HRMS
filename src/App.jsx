@@ -1,5 +1,3 @@
-// src/App.jsx
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
@@ -103,7 +101,15 @@ function AppContent() {
   const [theme, setTheme] = useState('light');
 
   const appLevelHandlers = {
-        saveEmployee: (formData, existingEmployeeId) => {
+    savePosition: (formData, positionId) => {
+        if (positionId) {
+            setPositions(prev => prev.map(pos => pos.id === positionId ? { ...pos, ...formData } : pos));
+        } else {
+            const newPosition = { id: Date.now(), ...formData };
+            setPositions(prev => [...prev, newPosition]);
+        }
+    },
+    saveEmployee: (formData, existingEmployeeId) => {
       const fullName = [formData.firstName, formData.middleName, formData.lastName]
         .filter(Boolean)
         .join(' ');
@@ -361,12 +367,11 @@ function AppContent() {
             runId: `RUN-${Date.now()}`,
             cutOff: payrollRunData.cutOff,
             records: payrollRunData.records.map(r => {
-                const totalEarnings = Object.values(r.earnings).reduce((sum, val) => sum + val, 0);
+                const totalEarnings = (r.earnings || []).reduce((sum, earn) => sum + (earn.amount || 0), 0);
                 const totalDeductions = Object.values(r.deductions).reduce((sum, val) => sum + val, 0);
                 return { 
                     ...r,
                     payrollId: `PAY-${Date.now()}-${r.empId}`,
-                    grossPay: totalEarnings,
                     netPay: totalEarnings - totalDeductions,
                 };
             })
@@ -499,7 +504,7 @@ function AppContent() {
             
             <Route path="payroll" element={<PayrollPage />}>
                 <Route index element={<Navigate to="history" replace />} />
-                <Route path="history" element={<PayrollHistoryPage payrolls={payrolls} onUpdateRecord={appLevelHandlers.updatePayrollRecord} />} />
+                <Route path="history" element={<PayrollHistoryPage payrolls={payrolls} employees={employees} positions={positions} onUpdateRecord={appLevelHandlers.updatePayrollRecord} onSaveEmployee={appLevelHandlers.saveEmployee} />} />
                 <Route path="generate" element={
                     <PayrollGenerationPage 
                         employees={employees}
@@ -533,13 +538,28 @@ function AppContent() {
             <Route path="case-management" element={<CaseManagementPage cases={disciplinaryCases} employees={employees} handlers={appLevelHandlers} />} />
             <Route path="recruitment" element={<RecruitmentPage jobOpenings={jobOpenings} applicants={applicants} positions={positions} handlers={appLevelHandlers} />} />
             <Route path="accounts" element={<AccountsPage userAccounts={userAccounts} employees={employees} handlers={appLevelHandlers} />} />
-            <Route path="reports" element={<ReportsPage employees={employees} positions={positions} />} />
+            <Route path="reports" element={
+              <ReportsPage 
+                employees={employees} 
+                positions={positions}
+                schedules={schedules}
+                attendanceLogs={attendanceLogs}
+                leaveRequests={leaveRequests}
+                evaluations={evaluations}
+                trainingPrograms={trainingPrograms}
+                enrollments={enrollments}
+                payrolls={payrolls}
+                cases={disciplinaryCases}
+                applicants={applicants}
+                jobOpenings={jobOpenings}
+              />} 
+            />
           </>
         )}
         {userRole === USER_ROLES.TEAM_LEADER && (
           <>
             <Route path="my-attendance" element={<MyAttendancePage currentUser={currentUser} allSchedules={schedules} attendanceLogs={attendanceLogs} />} />
-            <Route path="my-payroll" element={<MyPayrollLayout />}>
+            <Route path="my-payroll" element={<MyPayrollLayout employees={employees} />}>
               <Route index element={<Navigate to="projection" replace />} />
               <Route path="projection" element={<MyPayrollProjectionPage currentUser={currentUser} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} holidays={holidays} />} />
               <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />
@@ -573,7 +593,7 @@ function AppContent() {
         {userRole === USER_ROLES.REGULAR_EMPLOYEE && (
           <>
             <Route path="my-attendance" element={<MyAttendancePage currentUser={currentUser} allSchedules={schedules} attendanceLogs={attendanceLogs} />} />
-            <Route path="my-payroll" element={<MyPayrollLayout />}>
+            <Route path="my-payroll" element={<MyPayrollLayout employees={employees} />}>
                 <Route index element={<Navigate to="projection" replace />} />
                 <Route path="projection" element={<MyPayrollProjectionPage currentUser={currentUser} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} holidays={holidays} />} />
                 <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />

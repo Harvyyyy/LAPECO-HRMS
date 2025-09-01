@@ -4,20 +4,26 @@ import PayrollAdjustmentModal from '../../modals/PayrollAdjustmentModal';
 
 const formatCurrency = (value) => Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const PayrollHistoryPage = ({ payrolls, onUpdateRecord }) => {
+const PayrollHistoryPage = ({ payrolls, employees, positions, onUpdateRecord, onSaveEmployee }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+
+  const employeeMap = useMemo(() => new Map(employees.map(e => [e.id, e])), [employees]);
 
   const processedPayrolls = useMemo(() => {
     return payrolls.map(run => {
       const { totalGross, totalDeductions, totalNet } = run.records.reduce((acc, rec) => {
-          const gross = rec.earnings.basePay + rec.earnings.overtimePay + rec.earnings.holidayPay + (rec.adjustments?.allowances || 0) + (rec.adjustments?.bonuses || 0) + (rec.adjustments?.otherEarnings || 0);
-          const deductions = Object.values(rec.deductions).reduce((s, v) => s + v, 0) + (rec.adjustments?.loanRepayments || 0) + (rec.adjustments?.cashAdvances || 0);
-          acc.totalGross += gross;
-          acc.totalDeductions += deductions;
-          acc.totalNet += gross - deductions;
+          const totalEarnings = (rec.earnings || []).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+          const totalStatutory = Object.values(rec.deductions || {}).reduce((sum, val) => sum + val, 0);
+          const totalOther = (rec.otherDeductions || []).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+          const netPay = totalEarnings - totalStatutory - totalOther;
+          
+          acc.totalGross += totalEarnings;
+          acc.totalDeductions += (totalStatutory + totalOther);
+          acc.totalNet += netPay;
           return acc;
       }, { totalGross: 0, totalDeductions: 0, totalNet: 0 });
 
@@ -43,40 +49,48 @@ const PayrollHistoryPage = ({ payrolls, onUpdateRecord }) => {
 
   const handleOpenAdjustmentModal = (record, run) => {
     const fullRecord = run.records.find(r => r.payrollId === record.payrollId);
+    const employeeData = employeeMap.get(record.empId);
+    
     setSelectedRecord({ ...fullRecord, cutOff: run.cutOff });
+    setSelectedEmployee(employeeData);
     setShowAdjustmentModal(true);
   };
   
+  const handleCloseModal = () => {
+      setShowAdjustmentModal(false);
+      setSelectedRecord(null);
+      setSelectedEmployee(null);
+  };
+
   const handleSaveAdjustments = (payrollId, updatedData) => {
     onUpdateRecord(payrollId, updatedData);
-    setShowAdjustmentModal(false);
+    handleCloseModal();
   };
   
+  const handleSaveEmployeeInfo = (employeeId, updatedData) => {
+      onSaveEmployee(updatedData, employeeId);
+  };
+
   const handleMarkRunAsPaid = (run) => {
     if(window.confirm(`Mark all ${run.records.length} pending records in this run as 'Paid'?`)) {
         run.records.forEach(rec => {
             if(rec.status !== 'Paid') {
-                onUpdateRecord(rec.payrollId, { ...rec, status: 'Paid' });
+                const totalEarnings = (rec.earnings || []).reduce((s, i) => s + Number(i.amount), 0);
+                const totalDeductions = Object.values(rec.deductions).reduce((s, v) => s + v, 0) + (rec.otherDeductions || []).reduce((s, i) => s + Number(i.amount), 0);
+                onUpdateRecord(rec.payrollId, { ...rec, status: 'Paid', netPay: totalEarnings - totalDeductions });
             }
         });
     }
   };
 
   const handleExportRun = (run) => {
-    const headers = ["Employee ID", "Employee Name", "Base Pay", "Overtime Pay", "Holiday Pay", "Allowances", "Bonuses", "Gross Pay", "Tax", "SSS", "PhilHealth", "PagIBIG", "Loans", "Cash Advances", "Total Deductions", "Net Pay", "Status"];
-    
+    const headers = ["Employee ID", "Employee Name", "Gross Pay", "Total Deductions", "Net Pay", "Status"];
     const csvData = run.records.map(rec => {
-        const gross = rec.earnings.basePay + rec.earnings.overtimePay + rec.earnings.holidayPay + (rec.adjustments?.allowances || 0) + (rec.adjustments?.bonuses || 0);
-        const deductions = Object.values(rec.deductions).reduce((s, v) => s + v, 0) + (rec.adjustments?.loanRepayments || 0) + (rec.adjustments?.cashAdvances || 0);
-        return [
-            rec.empId, rec.employeeName, rec.earnings.basePay, rec.earnings.overtimePay, rec.earnings.holidayPay,
-            rec.adjustments?.allowances || 0, rec.adjustments?.bonuses || 0, gross,
-            rec.deductions.tax, rec.deductions.sss, rec.deductions.philhealth, rec.deductions.hdmf,
-            rec.adjustments?.loanRepayments || 0, rec.adjustments?.cashAdvances || 0, deductions,
-            gross - deductions, rec.status
-        ].join(',');
+        const totalEarnings = (rec.earnings || []).reduce((s, i) => s + Number(i.amount), 0);
+        const totalDeductions = Object.values(rec.deductions).reduce((s, v) => s + v, 0) + (rec.otherDeductions || []).reduce((s, i) => s + Number(i.amount), 0);
+        const netPay = totalEarnings - totalDeductions;
+        return [ rec.empId, rec.employeeName, totalEarnings, totalDeductions, netPay, rec.status ].join(',');
     });
-
     const csvContent = [headers.join(','), ...csvData].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, `Payroll_${run.cutOff}.csv`);
@@ -109,15 +123,20 @@ const PayrollHistoryPage = ({ payrolls, onUpdateRecord }) => {
                 <table className="table data-table table-hover mb-0">
                   <thead><tr><th className="col-id">Emp ID</th><th className="col-name">Employee</th><th className="col-amount">Net Pay</th><th className="col-status">Status</th><th className="col-action">Action</th></tr></thead>
                   <tbody>
-                    {run.records.map(record => (
-                      <tr key={record.payrollId}>
-                        <td className="col-id">{record.empId}</td>
-                        <td className="col-name">{record.employeeName}</td>
-                        <td className="col-amount fw-bold">₱{formatCurrency(record.netPay)}</td>
-                        <td className="col-status"><span className={`status-badge status-${record.status.toLowerCase()}`}>{record.status}</span></td>
-                        <td className="col-action"><button className="btn btn-sm btn-outline-primary" onClick={() => handleOpenAdjustmentModal(record, run)}>View & Adjust</button></td>
-                      </tr>
-                    ))}
+                    {run.records.map(record => {
+                        const totalEarnings = (record.earnings || []).reduce((s, i) => s + Number(i.amount), 0);
+                        const totalDeductions = Object.values(record.deductions).reduce((s, v) => s + v, 0) + (record.otherDeductions || []).reduce((s, i) => s + Number(i.amount), 0);
+                        const netPay = totalEarnings - totalDeductions;
+                        return (
+                          <tr key={record.payrollId}>
+                            <td className="col-id">{record.empId}</td>
+                            <td className="col-name">{record.employeeName}</td>
+                            <td className="col-amount fw-bold">₱{formatCurrency(netPay)}</td>
+                            <td className="col-status"><span className={`status-badge status-${record.status.toLowerCase()}`}>{record.status}</span></td>
+                            <td className="col-action"><button className="btn btn-sm btn-outline-primary" onClick={() => handleOpenAdjustmentModal(record, run)}>View & Adjust</button></td>
+                          </tr>
+                        )
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -131,7 +150,17 @@ const PayrollHistoryPage = ({ payrolls, onUpdateRecord }) => {
         {filteredPayrolls.length === 0 && <p className="text-center text-muted mt-4">No payroll history matches your criteria.</p>}
       </div>
 
-      {selectedRecord && <PayrollAdjustmentModal show={showAdjustmentModal} onClose={() => setShowAdjustmentModal(false)} onSave={handleSaveAdjustments} payrollData={selectedRecord} />}
+      {selectedRecord && (
+        <PayrollAdjustmentModal 
+          show={showAdjustmentModal} 
+          onClose={handleCloseModal} 
+          onSave={handleSaveAdjustments}
+          onSaveEmployeeInfo={handleSaveEmployeeInfo}
+          payrollData={selectedRecord}
+          employeeDetails={selectedEmployee}
+          positions={positions}
+        />
+      )}
     </div>
   );
 };

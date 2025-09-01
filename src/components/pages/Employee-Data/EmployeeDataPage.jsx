@@ -223,7 +223,7 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
             <button className={`nav-link ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>All Employees</button>
         </li>
         <li className="nav-item">
-            <button className={`nav-link ${activeTab === 'requirements' ? 'active' : ''}`} onClick={() => setActiveTab('requirements')}>Government Requirements</button>
+            <button className={`nav-link ${activeTab === 'requirements' ? 'active' : ''}`} onClick={() => setActiveTab('requirements')}>Statutory Requirements</button>
         </li>
       </ul>
 
