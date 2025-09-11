@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { format } from 'date-fns';
 import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
 
-const CaseDetailView = ({ caseInfo, employee, onBack, onSaveLog, onEdit }) => {
+const CaseDetailView = ({ caseInfo, employee, onBack, onSaveLog, onEdit, onDelete }) => {
   const [newLogEntry, setNewLogEntry] = useState('');
 
   const handleSaveLog = () => {
@@ -30,10 +30,23 @@ const CaseDetailView = ({ caseInfo, employee, onBack, onSaveLog, onEdit }) => {
                 <h1 className="case-reason">{caseInfo.reason}</h1>
                 <p className="employee-name">For: {employee?.name || 'Unknown'} ({caseInfo.employeeId})</p>
             </div>
-            <div className="actions">
-                <button className="btn btn-primary" onClick={() => onEdit(caseInfo)}>
-                    <i className="bi bi-pencil-fill me-2"></i>Edit Case
+            <div className="actions dropdown">
+                <button className="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Manage Case
                 </button>
+                <ul className="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); onEdit(caseInfo); }}>
+                            <i className="bi bi-pencil-fill me-2"></i>Edit Case Details
+                        </a>
+                    </li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li>
+                        <a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); onDelete(); }}>
+                           <i className="bi bi-trash-fill me-2"></i>Delete Case
+                        </a>
+                    </li>
+                </ul>
             </div>
           </div>
           <div className="case-detail-meta">

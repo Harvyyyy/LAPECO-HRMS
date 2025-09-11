@@ -23,6 +23,7 @@
     border-radius: 0 0 var(--border-radius) var(--border-radius);
 }
 
+/* --- Payroll Generation Page --- */
 .payroll-generation-summary { 
     background-color: var(--bg-primary); 
     border: 1px solid var(--border-color); 
@@ -46,89 +47,101 @@
     color: var(--text-primary);
 }
 
+/* --- Payroll History Page --- */
 .payroll-history-controls { 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
     gap: 1rem; 
-    padding: 1rem; 
-    background-color: var(--bg-primary); 
-    border-radius: var(--border-radius); 
-    border: 1px solid var(--border-color); 
+    flex-wrap: wrap; /* Added for responsiveness */
 }
 .payroll-history-controls .input-group { 
-    max-width: 400px; 
+    max-width: 400px;
+    flex-grow: 1; /* Added for responsiveness */
 }
 .payroll-history-controls .btn-group .btn { 
     font-weight: 500; 
 }
 
-.payroll-history-accordion .accordion-item { 
-    background-color: var(--bg-primary); 
-    border: 1px solid var(--border-color); 
-    border-radius: var(--border-radius) !important; 
-    overflow: hidden; 
-}
-.payroll-history-accordion .accordion-button { 
-    padding: 0 !important; 
-    background: none !important; 
-}
-.payroll-history-accordion .accordion-button:focus { 
-    box-shadow: none; 
-}
-.payroll-history-accordion .accordion-button:not(.collapsed) { 
-    background-color: var(--bg-secondary) !important; 
-}
-.accordion-header-grid { 
-    display: grid; 
-    grid-template-columns: 1fr auto; 
-    align-items: center; 
-    width: 100%; 
-    padding: 1rem 1.25rem; 
-    cursor: pointer; 
-}
-.accordion-header-grid .header-main-info .period-title { 
-    font-size: 1.1rem; 
-    font-weight: 600; 
-    color: var(--text-primary); 
-}
-.accordion-header-grid .header-main-info .period-meta { 
-    font-size: 0.85rem; 
-    color: var(--text-secondary); 
-    font-weight: 400; 
-}
-.accordion-header-grid .header-stats { 
-    display: flex; 
-    gap: 1.5rem; 
-}
-.accordion-header-grid .accordion-stat { 
-    text-align: right; 
-}
-.accordion-header-grid .accordion-stat .stat-label { 
-    font-size: 0.75rem; 
-    color: var(--text-secondary); 
-}
-.accordion-header-grid .accordion-stat .stat-value { 
-    font-size: 1rem; 
-    font-weight: 600;
-    color: var(--text-primary);
-}
-.payroll-history-accordion .accordion-body { 
-    padding: 0; 
-}
-.accordion-body-footer { 
-    padding: 0.75rem 1.25rem; 
-    background-color: var(--bg-secondary); 
-    border-top: 1px solid var(--border-color); 
+.payroll-run-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
 }
 
-.table .col-id { width: 12%; }
-.table .col-name { width: 30%; }
-.table .col-amount { width: 17%; text-align: right; }
-.table .col-status { width: 12%; text-align: center; }
-.table .col-action { width: 12%; text-align: center; }
-.table th, .table td { vertical-align: middle; padding: 0.9rem 1rem; }
-.text-right { text-align: right; }
+.payroll-run-card {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+.payroll-run-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+    border-color: var(--app-success-color);
+}
+.payroll-run-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+}
+.payroll-run-card .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+.payroll-run-card .card-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-family: monospace;
+}
+.payroll-run-card .card-body {
+    padding: 1rem;
+}
+.stats-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.stats-list .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+.stats-list dt {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.stats-list dd {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+}
+.stats-list .net-payout {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--app-success-color);
+}
+.payroll-run-card .card-footer {
+    padding: 0.75rem 1rem;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
 
 .status-badge { 
     color: var(--white-color); 
@@ -144,6 +157,12 @@
 .status-pending { 
     background-color: var(--warning-color); 
     color: var(--text-primary) !important; 
+}
+
+/* Detail Modal */
+.modal-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 .dark-theme .payroll-generation-container .card-title {

@@ -102,7 +102,17 @@ export const reportsConfig = [
       { id: 'payroll_run_selector', type: 'payroll-run-selector', label: 'Select Payroll Run' }
     ],
   },
-  
+  {
+    id: 'contributions_summary',
+    title: 'Contributions Summary by Pay Period',
+    description: 'Generates a consolidated PDF of SSS, PhilHealth, and Pag-IBIG contributions for a selected payroll period.', // Corrected Description
+    icon: 'bi-file-earmark-ruled-fill',
+    category: reportCategories.PAYROLL,
+    parameters: [
+      { id: 'payroll_run_selector', type: 'payroll-run-selector', label: 'Select Payroll Run' }
+    ],
+  },
+
   // --- Recruitment ---
   {
     id: 'recruitment_activity',
@@ -115,7 +125,7 @@ export const reportsConfig = [
         id: 'date_range_3', 
         type: 'date-range', 
         labels: { start: 'Start Date', end: 'End Date' },
-        optional: true, // Make the date range optional for this report
+        optional: true,
       },
     ],
   },

@@ -64,11 +64,12 @@ const ApplicantCard = ({ applicant, jobTitle, onAction }) => {
                                 </a>
                             </li>
                         ))}
-                        <div className="dropdown-divider"></div>
+                        <li><hr className="dropdown-divider" /></li>
                         <li><a className="dropdown-item" href="#" onClick={(e) => handleActionClick(e, 'scheduleInterview', applicant)}>Schedule Interview</a></li>
-                        <div className="dropdown-divider"></div>
                         <li><a className="dropdown-item text-success" href="#" onClick={(e) => handleActionClick(e, 'hire', applicant)}>Hire</a></li>
                         <li><a className="dropdown-item text-danger" href="#" onClick={(e) => handleActionClick(e, 'reject', applicant)}>Reject</a></li>
+                        <li><hr className="dropdown-divider" /></li>
+                        <li><a className="dropdown-item text-danger" href="#" onClick={(e) => handleActionClick(e, 'delete', applicant)}>Delete Applicant</a></li>
                     </ul>
                 </div>
             </div>

@@ -106,8 +106,16 @@
 .attendance-history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
 .attendance-history-card { border: 1px solid var(--border-color); border-radius: var(--border-radius); transition: all 0.2s ease-in-out; background-color: var(--bg-primary); cursor: pointer; box-shadow: var(--card-shadow); display: flex; flex-direction: column; }
 .attendance-history-card:hover { transform: translateY(-4px); box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1); }
-.attendance-history-card .card-header { background-color: var(--bg-secondary); padding: 0.75rem 1rem; }
+.attendance-history-card .card-header { 
+    background-color: var(--bg-secondary); 
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 .attendance-history-card .card-title { font-size: 1.05rem; font-weight: 600; margin: 0; color: var(--text-primary); }
+.attendance-history-card .delete-history-btn { opacity: 0.5; transition: opacity 0.2s ease; }
+.attendance-history-card:hover .delete-history-btn { opacity: 1; }
 .attendance-history-card .card-body { padding: 1rem; }
 .attendance-history-card .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
 .attendance-history-card .info-item { text-align: center; }

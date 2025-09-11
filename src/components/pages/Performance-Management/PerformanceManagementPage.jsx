@@ -30,7 +30,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
   const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
   
   const [historySearchTerm, setHistorySearchTerm] = useState('');
-  const [historySortConfig, setHistorySortConfig] = useState({ key: 'periodEnd', direction: 'descending' });
+  const [historySortConfig, setHistorySortConfig] = useState({ key: 'evaluationDate', direction: 'descending' });
 
   const navigate = useNavigate();
 
@@ -134,7 +134,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
       }
       if (typeof valA === 'string') return valA.localeCompare(valB) * direction;
       if (typeof valA === 'number') return (valA - valB) * direction;
-      return (new Date(valA) - new Date(valB)) * direction;
+      return (new Date(valB) - new Date(valA)) * direction;
     });
     return evals;
   }, [evaluations, historySearchTerm, historySortConfig, employeeMap]);
@@ -231,6 +231,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
                     <th className="sortable" onClick={() => requestHistorySort('employeeName')}>Employee {getSortIcon('employeeName')}</th>
                     <th className="sortable" onClick={() => requestHistorySort('evaluatorName')}>Evaluator {getSortIcon('evaluatorName')}</th>
                     <th className="sortable" onClick={() => requestHistorySort('periodEnd')}>Period {getSortIcon('periodEnd')}</th>
+                    <th className="sortable" onClick={() => requestHistorySort('evaluationDate')}>Date Submitted {getSortIcon('evaluationDate')}</th>
                     <th className="sortable" onClick={() => requestHistorySort('overallScore')}>Score {getSortIcon('overallScore')}</th>
                     <th>Action</th>
                   </tr>
@@ -252,12 +253,13 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
                         </td>
                         <td>{evaluator?.name || 'N/A'}</td>
                         <td>{ev.periodStart} to {ev.periodEnd}</td>
+                        <td>{ev.evaluationDate}</td>
                         <td><ScoreIndicator score={ev.overallScore} /></td>
                         <td><button className="btn btn-sm btn-outline-secondary" onClick={() => handleViewEvaluation(ev)}>View</button></td>
                       </tr>
                     )
                   }) : (
-                    <tr><td colSpan="5" className="text-center p-4">No evaluations match your search.</td></tr>
+                    <tr><td colSpan="6" className="text-center p-4">No evaluations match your search.</td></tr>
                   )}
                 </tbody>
               </table>

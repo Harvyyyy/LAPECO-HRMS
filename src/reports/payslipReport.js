@@ -1,394 +1,233 @@
+import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import logo from '../assets/logo.png';
+import { format } from 'date-fns';
 
-const formatCurrency = (value) => {
-    if (typeof value !== 'number') return '₱ 0.00';
-    return `₱ ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
+// --- HELPERS & CONFIG ---
+const FONT_REGULAR = 'Helvetica';
+const FONT_BOLD = 'Helvetica-Bold';
+const COLOR_PRIMARY = '#212529';
+const COLOR_SECONDARY = '#6c757d';
+const COLOR_BORDER = '#dee2e6';
+const COLOR_HEADER_BG = [248, 249, 250];
+const PAGE_MARGIN = 40;
+const SECTION_HEADER_HEIGHT = 18;
+const LINE_HEIGHT = 13;
 
-const addSectionTitle = (doc, title, y, { pageWidth, margin }) => {
-  doc.setFillColor(25, 135, 84); 
-  doc.setDrawColor(25, 135, 84);
-  doc.setLineWidth(0.5);
-  doc.roundedRect(margin, y, pageWidth - margin * 2, 24, 3, 3, 'FD');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(11);
-  doc.setFont(undefined, 'bold');
-  doc.text(title, margin + 10, y + 16);
-  return y + 30;
-};
+const COLOR_BRAND = [25, 135, 84];
+const COLOR_WHITE = [255, 255, 255];
 
-export const generatePayslipReport = async (doc, params, dataSources) => {
-  const { payslipData, employeeDetails } = dataSources;
-  const { pageWidth, margin } = params;
-  let finalY = margin;
+const formatCurrency = (val) => (val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const formatDateString = (dateStr) => dateStr ? format(new Date(dateStr + 'T00:00:00'), 'MMMM dd, yyyy') : 'N/A';
 
-  const headerHeight = 90;
-  doc.setFillColor(248, 249, 250);
-  doc.rect(0, 0, pageWidth, headerHeight, 'F');
-  doc.setDrawColor(233, 236, 239);
-  doc.setLineWidth(1);
-  doc.line(0, headerHeight, pageWidth, headerHeight);
-  
-  const logoWidth = 80;
-  const logoHeight = 26;
-  const logoY = (headerHeight - logoHeight) / 2; 
-  doc.addImage(logo, 'PNG', margin, logoY, logoWidth, logoHeight);
-  
-  doc.setFontSize(22);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(25, 135, 84);
-  doc.text('OFFICIAL PAYSLIP', pageWidth - margin, logoY + 10, { align: 'right' });
-  
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'normal');
-  doc.setTextColor(108, 117, 125);
-  doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - margin, logoY + 25, { align: 'right' });
-  
-  if (employeeDetails.companyName) {
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'bold');
-    doc.setTextColor(33, 37, 41);
-    doc.text(employeeDetails.companyName, margin, logoY + logoHeight + 15);
-  }
-  
-  finalY = headerHeight + 10;
+const addFooterAndConcernSlip = (doc, y, pageWidth, employeeDetails, payrollId) => {
+    doc.setFont(FONT_BOLD); doc.setFontSize(8); doc.setTextColor(COLOR_SECONDARY);
+    doc.text('THIS IS A COMPUTER GENERATED PAYSLIP', pageWidth / 2, y, { align: 'center' });
+    y += 12;
+    doc.setFont(FONT_REGULAR); doc.setFontSize(7);
+    doc.text('For concerns regarding your payslip, please get in touch with the office and we will gladly assist you. Please fill-up form below for your concerns.', pageWidth / 2, y, { align: 'center' });
+    y += 15;
 
-  finalY = addSectionTitle(doc, 'EMPLOYEE & PAYROLL INFORMATION', finalY, { pageWidth, margin });
-  
-  const halfPageWidth = (pageWidth - margin * 2) / 2;
-  const columnGap = 20;
-  const boxHeight = 140;
-  
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(233, 236, 239);
-  doc.roundedRect(margin, finalY, halfPageWidth - columnGap/2, boxHeight, 3, 3, 'FD');
-  
-  doc.setTextColor(33, 37, 41);
-  doc.setFontSize(14);
-  doc.setFont(undefined, 'bold');
-  doc.text(employeeDetails.name, margin + 15, finalY + 25);
-  
-  doc.setFontSize(11);
-  doc.setFont(undefined, 'normal');
-  doc.text(employeeDetails.positionTitle || 'N/A', margin + 15, finalY + 45);
-  
-  doc.setFontSize(9);
-  doc.setTextColor(108, 117, 125);
-  
-  const leftLabelX = margin + 15;
-  const leftValueX = margin + 85;
-  const rightLabelX = margin + halfPageWidth/2 - 10;
-  const rightValueX = margin + halfPageWidth/2 + 60;
-  
-  doc.text('Employee ID:', leftLabelX, finalY + 70);
-  doc.text('Employment Status:', leftLabelX, finalY + 85);
-  doc.text('TIN:', leftLabelX, finalY + 100);
-  
-  doc.text('SSS No:', rightLabelX, finalY + 70);
-  doc.text('PhilHealth No:', rightLabelX, finalY + 85);
-  doc.text('HDMF No:', rightLabelX, finalY + 100);
-  
-  doc.setTextColor(33, 37, 41);
-  doc.setFont(undefined, 'bold');
-  
-  doc.text(employeeDetails.id || 'N/A', leftValueX, finalY + 70);
-  doc.text(employeeDetails.status || 'N/A', leftValueX, finalY + 85);
-  doc.text(employeeDetails.tinNo || 'N/A', leftValueX, finalY + 100);
-  
-  doc.text(employeeDetails.sssNo || 'N/A', rightValueX, finalY + 70);
-  doc.text(employeeDetails.philhealthNo || 'N/A', rightValueX, finalY + 85);
-  doc.text(employeeDetails.pagIbigNo || 'N/A', rightValueX, finalY + 100);
-  
-  doc.setFillColor(255, 255, 255);
-  doc.roundedRect(margin + halfPageWidth + columnGap/2, finalY, halfPageWidth - columnGap/2, boxHeight, 3, 3, 'FD');
-  
-  doc.setTextColor(33, 37, 41);
-  doc.setFontSize(12);
-  doc.setFont(undefined, 'bold');
-  doc.text('PAYROLL PERIOD', margin + halfPageWidth + columnGap/2 + 15, finalY + 25);
-  
-  const rightBoxLabelX = margin + halfPageWidth + columnGap/2 + 15;
-  const rightBoxValueX = margin + halfPageWidth + columnGap/2 + 75;
-  
-  doc.setFontSize(9);
-  doc.setTextColor(108, 117, 125);
-  doc.setFont(undefined, 'normal');
-  doc.text('Period:', rightBoxLabelX, finalY + 50);
-  doc.text('Start Date:', rightBoxLabelX, finalY + 70);
-  doc.text('End Date:', rightBoxLabelX, finalY + 90);
-  doc.text('Pay Date:', rightBoxLabelX, finalY + 110);
-  
-  doc.setTextColor(33, 37, 41);
-  doc.setFont(undefined, 'bold');
-  doc.text(payslipData.period || 'N/A', rightBoxValueX, finalY + 50);
-  doc.text(payslipData.cutOffStart || 'N/A', rightBoxValueX, finalY + 70);
-  doc.text(payslipData.cutOffEnd || 'N/A', rightBoxValueX, finalY + 90);
-  doc.text(payslipData.payDate || new Date().toLocaleDateString(), rightBoxValueX, finalY + 110);
-  
-  finalY += boxHeight + 15;
-
-  finalY = addSectionTitle(doc, 'EARNINGS', finalY, { pageWidth, margin });
-  
-  const totalEarnings = (payslipData.earnings || []).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-  
-  const earningsData = payslipData.earnings || [];
-  
-  if (earningsData.length === 0) {
-    earningsData.push({
-      description: 'No earnings data available',
-      hours: '--',
-      amount: 0
-    });
-  }
-  
-  autoTable(doc, {
-    body: [
-      [{ content: 'Description', styles: { fontStyle: 'bold', fillColor: [248, 249, 250] } }, 
-       { content: 'Hours', styles: { fontStyle: 'bold', fillColor: [248, 249, 250] } }, 
-       { content: 'Amount', styles: { fontStyle: 'bold', halign: 'right', fillColor: [248, 249, 250] } }],
-      ...earningsData.map(e => [e.description, e.hours || '--', formatCurrency(e.amount)])
-    ],
-    foot: [[
-      { content: 'Total Earnings', styles: { fontStyle: 'bold', fillColor: [233, 236, 239] } }, 
-      { content: '', styles: { fillColor: [233, 236, 239] } }, 
-      { content: formatCurrency(totalEarnings), styles: { fontStyle: 'bold', halign: 'right', fillColor: [233, 236, 239] } }
-    ]],
-    startY: finalY,
-    theme: 'grid',
-    tableWidth: pageWidth - margin * 2,
-    styles: { fontSize: 9, cellPadding: 6 },
-    columnStyles: { 
-      0: { cellWidth: 'auto' },
-      1: { cellWidth: 80 },
-      2: { cellWidth: 100, halign: 'right' } 
-    },
-    headStyles: { fillColor: [248, 249, 250] },
-    footStyles: { fillColor: [233, 236, 239] },
-    margin: { top: 10 }
-  });
-  
-  finalY = doc.lastAutoTable.finalY + 25;
-  
-  finalY = addSectionTitle(doc, 'DEDUCTIONS', finalY, { pageWidth, margin });
-  
-  const deductions = payslipData.deductions || { sss: 0, philhealth: 0, hdmf: 0, tax: 0 };
-  
-  const statutoryDeductions = [
-    ['SSS Contribution', formatCurrency(deductions.sss || 0)],
-    ['PhilHealth Contribution', formatCurrency(deductions.philhealth || 0)],
-    ['Pag-IBIG Contribution', formatCurrency(deductions.hdmf || 0)],
-    ['Withholding Tax', formatCurrency(deductions.tax || 0)],
-  ];
-  
-  const totalStatutory = Object.values(deductions).reduce((sum, val) => sum + (Number(val) || 0), 0);
-  
-  autoTable(doc, {
-    body: [
-      [{ content: 'Statutory Deductions', styles: { fontStyle: 'bold', fontSize: 10, fillColor: [248, 249, 250] } }, 
-       { content: '', styles: { fillColor: [248, 249, 250] } }],
-      ...statutoryDeductions,
-      [{ content: 'Subtotal - Statutory Deductions', styles: { fontStyle: 'bold' } }, 
-       { content: formatCurrency(totalStatutory), styles: { fontStyle: 'bold', halign: 'right' } }]
-    ],
-    startY: finalY,
-    theme: 'grid',
-    tableWidth: pageWidth - margin * 2,
-    styles: { fontSize: 9, cellPadding: 6 },
-    columnStyles: { 
-      0: { cellWidth: 'auto' },
-      1: { cellWidth: 100, halign: 'right' } 
-    },
-    margin: { top: 10 }
-  });
-  
-  let deductionsTableEndY = doc.lastAutoTable.finalY + 15;
-  
-  let totalOtherDeductions = 0;
-  
-  if (payslipData.otherDeductions && payslipData.otherDeductions.length > 0) {
-    totalOtherDeductions = payslipData.otherDeductions.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-    
-    const otherDeductionsData = [...payslipData.otherDeductions];
-    
-    autoTable(doc, {
-      body: [
-        [{ content: 'Other Deductions', styles: { fontStyle: 'bold', fontSize: 10, fillColor: [248, 249, 250] } }, 
-         { content: '', styles: { fillColor: [248, 249, 250] } }],
-        ...otherDeductionsData.map(d => [d.description, formatCurrency(d.amount || 0)]),
-        [{ content: 'Subtotal - Other Deductions', styles: { fontStyle: 'bold' } }, 
-         { content: formatCurrency(totalOtherDeductions), styles: { fontStyle: 'bold', halign: 'right' } }]
-      ],
-      startY: deductionsTableEndY,
-      theme: 'grid',
-      tableWidth: pageWidth - margin * 2,
-      styles: { fontSize: 9, cellPadding: 6 },
-      columnStyles: { 
-        0: { cellWidth: 'auto' },
-        1: { cellWidth: 100, halign: 'right' } 
-      },
-      margin: { top: 5 }
-    });
-    
-    deductionsTableEndY = doc.lastAutoTable.finalY;
-  } else {
-    autoTable(doc, {
-      body: [
-        [{ content: 'Other Deductions', styles: { fontStyle: 'bold', fontSize: 10, fillColor: [248, 249, 250] } }, 
-         { content: '', styles: { fillColor: [248, 249, 250] } }],
-        ['No other deductions', formatCurrency(0)],
-        [{ content: 'Subtotal - Other Deductions', styles: { fontStyle: 'bold' } }, 
-         { content: formatCurrency(0), styles: { fontStyle: 'bold', halign: 'right' } }]
-      ],
-      startY: deductionsTableEndY,
-      theme: 'grid',
-      tableWidth: pageWidth - margin * 2,
-      styles: { fontSize: 9, cellPadding: 6 },
-      columnStyles: { 
-        0: { cellWidth: 'auto' },
-        1: { cellWidth: 100, halign: 'right' } 
-      },
-      margin: { top: 5 }
-    });
-    
-    deductionsTableEndY = doc.lastAutoTable.finalY;
-  }
-  
-  finalY = deductionsTableEndY + 25;
-
-  const hasAbsences = payslipData.absences && payslipData.absences.length > 0;
-  const hasLeaveBalances = payslipData.leaveBalances && Object.keys(payslipData.leaveBalances).length > 0;
-  
-  if (hasAbsences || hasLeaveBalances) {
-    finalY = addSectionTitle(doc, 'ADDITIONAL INFORMATION', finalY, { pageWidth, margin });
-  }
-  
-  if (hasAbsences) {
-    const absencesData = [...payslipData.absences];
-    
-    autoTable(doc, {
-      body: [
-        [{ content: 'Absences / Unpaid Leave', styles: { fontStyle: 'bold', fontSize: 10, fillColor: [248, 249, 250], colSpan: 3 } }],
-        [{ content: 'Description', styles: { fontStyle: 'bold', fillColor: [248, 249, 250] } }, 
-         { content: 'Date Range', styles: { fontStyle: 'bold', fillColor: [248, 249, 250] } }, 
-         { content: 'Days', styles: { fontStyle: 'bold', halign: 'center', fillColor: [248, 249, 250] } }],
-        ...absencesData.map(a => [a.description, `${a.startDate || 'N/A'} to ${a.endDate || 'N/A'}`, { content: a.totalDays || 0, styles: { halign: 'center' } }])
-      ],
-      startY: finalY,
-      theme: 'grid',
-      tableWidth: pageWidth - margin * 2,
-      styles: { fontSize: 9, cellPadding: 6 },
-      columnStyles: { 
-        0: { cellWidth: 'auto' },
-        1: { cellWidth: 'auto' },
-        2: { cellWidth: 80, halign: 'center' } 
-      },
-      margin: { top: 10 }
-    });
-    finalY = doc.lastAutoTable.finalY + 15;
-  }
-
-  if (hasLeaveBalances) {
-    const leaveBalances = {
-      vacation: payslipData.leaveBalances.vacation || 0,
-      sick: payslipData.leaveBalances.sick || 0,
-      ...payslipData.leaveBalances
+    const concernStartY = y;
+    const concernLine = (label, lineY, value = '') => {
+        doc.setFontSize(8); doc.setTextColor(COLOR_SECONDARY); doc.text(label, PAGE_MARGIN, lineY);
+        doc.setDrawColor(COLOR_SECONDARY); doc.line(PAGE_MARGIN + 90, lineY, pageWidth / 2 + 80, lineY);
+        if (value) {
+            doc.setFont(FONT_BOLD); doc.setTextColor(COLOR_PRIMARY); doc.text(value, PAGE_MARGIN + 95, lineY - 2);
+        }
     };
     
-    const leaveTypes = Object.entries(leaveBalances)
-      .filter(([key]) => key !== '__typename')
-      .map(([key, value]) => [
-        key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1') + (key.toLowerCase().includes('leave') ? '' : ' Leave'),
-        { content: value, styles: { halign: 'right' } }
-      ]);
-    
-    autoTable(doc, {
-      body: [
-        [{ content: 'Leave Balances', styles: { fontStyle: 'bold', fontSize: 10, fillColor: [248, 249, 250], colSpan: 2 } }],
-        [{ content: 'Leave Type', styles: { fontStyle: 'bold', fillColor: [248, 249, 250] } }, 
-         { content: 'Days Remaining', styles: { fontStyle: 'bold', halign: 'right', fillColor: [248, 249, 250] } }],
-        ...leaveTypes
-      ],
-      startY: finalY,
-      theme: 'grid',
-      tableWidth: pageWidth - margin * 2,
-      styles: { fontSize: 9, cellPadding: 6 },
-      columnStyles: { 
-        0: { cellWidth: 'auto' },
-        1: { cellWidth: 100, halign: 'right' } 
-      },
-      margin: { top: 10 }
-    });
-    finalY = doc.lastAutoTable.finalY + 20;
-  }
-  
-  if (hasAbsences || hasLeaveBalances) {
-    finalY += 5;
-  }
+    concernLine('Employee Full Name', concernStartY, employeeDetails.name.toUpperCase());
+    concernLine('Employee Number', concernStartY + 15, employeeDetails.id);
+    concernLine('Payroll Number in Concern', concernStartY + 30, payrollId);
+    concernLine('Concern dates:', concernStartY + 45);
+    concernLine('Over/Underpaid Amount', concernStartY + 60);
+    concernLine('Loan/Deduction Amount', concernStartY + 75);
+    concernLine('Other Concerns', concernStartY + 90);
 
-  finalY = addSectionTitle(doc, 'PAYMENT SUMMARY', finalY, { pageWidth, margin });
+    const guideX = pageWidth / 2 + 100;
+    const guideY = concernStartY;
+    doc.setDrawColor(COLOR_BORDER); doc.setFillColor(...COLOR_HEADER_BG);
+    doc.roundedRect(guideX, guideY, 150, 45, 3, 3, 'FD');
+    doc.setFont(FONT_BOLD); doc.setTextColor(COLOR_PRIMARY);
+    doc.text('Payslip Guide', guideX + 10, guideY + 10);
+    doc.setFont(FONT_REGULAR); doc.setFontSize(6.5); doc.setTextColor(COLOR_SECONDARY);
+    const guideItems = [
+        { label: 'Gross Pay', formula: '= Total Amount of Earnings' },
+        { label: 'Statutory Ded', formula: '= SSS + PHIC + HDMF' },
+        { label: 'Other Ded', formula: '= Canteen + Cash Advance + Others + Loans' },
+        { label: 'Net Pay', formula: '= Gross - Statutory Deductions - Other Ded' },
+    ];
+    const labelWidths = guideItems.map(item => doc.getTextWidth(item.label));
+    const maxLabelWidth = Math.max(...labelWidths);
+    const formulaX = guideX + 10 + maxLabelWidth + 5;
+    let currentGuideY = guideY + 20;
+    guideItems.forEach(item => {
+        doc.text(item.label, guideX + 10, currentGuideY);
+        doc.text(item.formula, formulaX, currentGuideY);
+        currentGuideY += 9;
+    });
+
+    y = concernStartY + 120;
+    doc.line(PAGE_MARGIN, y, PAGE_MARGIN + 200, y);
+    doc.text('Printed Name over Signature of Employee', PAGE_MARGIN, y + 8);
+    doc.line(pageWidth - PAGE_MARGIN - 200, y, pageWidth - PAGE_MARGIN, y);
+    doc.text('Received and Noted by:', pageWidth - PAGE_MARGIN - 200, y + 8);
+};
+
+// --- MAIN GENERATOR FUNCTION ---
+export const generatePayslipReport = async (doc, params, dataSources) => {
+  const { payslipData, employeeDetails } = dataSources;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  let y = PAGE_MARGIN;
+
+  const addHeader = () => {
+    doc.addImage(logo, 'PNG', pageWidth / 2 - 40, 25, 80, 26);
+    doc.setFont(FONT_BOLD);
+    doc.setFontSize(18);
+    doc.setTextColor(...COLOR_BRAND);
+    doc.text('Payslip', pageWidth / 2, 70, { align: 'center' });
+    doc.setFont(FONT_REGULAR);
+    doc.setFontSize(8);
+    doc.setTextColor(COLOR_SECONDARY);
+    doc.text(`Generated: ${format(new Date(), 'hh:mm a zzz, MMM dd, yyyy')}`, pageWidth / 2, 82, { align: 'center' });
+    y = 95;
+  };
+
+  const addInfoSection = (title, data) => {
+    doc.setFont(FONT_BOLD); doc.setFontSize(10); doc.setTextColor(...COLOR_BRAND);
+    doc.text(title, PAGE_MARGIN, y);
+    doc.setDrawColor(COLOR_BORDER); doc.line(PAGE_MARGIN, y + 4, pageWidth - PAGE_MARGIN, y + 4);
+    y += 15;
+    doc.setFont(FONT_REGULAR); doc.setFontSize(9);
+    const col1LabelX = PAGE_MARGIN + 5, col1ColonX = col1LabelX + 80, col1ValueX = col1ColonX + 5;
+    const col2LabelX = pageWidth / 2 + 15, col2ColonX = col2LabelX + 80, col2ValueX = col2ColonX + 5;
+    const numRows = Math.ceil(data.length / 2);
+    for (let i = 0; i < numRows; i++) {
+        const currentY = y + (i * LINE_HEIGHT);
+        const item1 = data[i], item2 = data[i + numRows];
+        if (item1) {
+            doc.setTextColor(COLOR_SECONDARY); doc.text(item1.label, col1LabelX, currentY);
+            doc.text(':', col1ColonX, currentY); doc.setTextColor(COLOR_PRIMARY); doc.text(item1.value, col1ValueX, currentY);
+        }
+        if (item2) {
+            doc.setTextColor(COLOR_SECONDARY); doc.text(item2.label, col2LabelX, currentY);
+            doc.text(':', col2ColonX, currentY); doc.setTextColor(COLOR_PRIMARY); doc.text(item2.value, col2ValueX, currentY);
+        }
+    }
+    y += numRows * LINE_HEIGHT;
+  };
+
+  const addSectionHeader = (x, currentY, width, title) => {
+    doc.setFillColor(...COLOR_BRAND);
+    doc.rect(x, currentY, width, SECTION_HEADER_HEIGHT, 'F');
+    doc.setFont(FONT_BOLD); doc.setFontSize(9); doc.setTextColor(...COLOR_WHITE);
+    doc.text(title, x + 5, currentY + SECTION_HEADER_HEIGHT / 2, { verticalAlign: 'middle' });
+  };
+
+  const pageBreakCheck = (data) => {
+    if (data.pageNumber > 1) {
+      y = PAGE_MARGIN;
+    }
+  };
+
+  addHeader();
+  const employeeData = [
+      { label: 'Full Name', value: employeeDetails.name || 'N/A' }, { label: 'Tax ID', value: employeeDetails.tinNo || 'N/A' },
+      { label: 'PHIC No.', value: employeeDetails.philhealthNo || 'N/A' }, { label: 'PY Account', value: employeeDetails.pyAccount || '000001' },
+      { label: 'Location', value: employeeDetails.location || 'Manila Warehouse' }, { label: 'Status', value: employeeDetails.status || 'N/A' },
+      { label: 'Employee No.', value: employeeDetails.id || 'N/A' }, { label: 'SSS No.', value: employeeDetails.sssNo || 'N/A' },
+      { label: 'HDMF No.', value: employeeDetails.pagIbigNo || 'N/A' }, { label: 'Position', value: employeeDetails.positionTitle || 'N/A' },
+      { label: 'Schedule', value: employeeDetails.schedule || 'Rotating Shift' },
+  ];
+  addInfoSection('Employee Details', employeeData);
+  y += 5;
+  const periodData = [
+      { label: 'Payroll Type', value: payslipData.payrollType || 'Semi-monthly' }, { label: 'Payment Date', value: formatDateString(payslipData.paymentDate) },
+      { label: 'Pay End Date', value: formatDateString(payslipData.payEndDate) }, { label: 'Period', value: payslipData.period || 'N/A' },
+      { label: 'Pay Start Date', value: formatDateString(payslipData.payStartDate) },
+  ];
+  addInfoSection('Payroll Period', periodData);
+  y += 10;
   
-  const totalDeductions = totalStatutory + totalOtherDeductions;
-  const netPay = totalEarnings - totalDeductions;
+  doc.setFont(FONT_BOLD); doc.setFontSize(10); doc.setTextColor(...COLOR_BRAND);
+  doc.text('Pay Summary', PAGE_MARGIN, y);
+  doc.setDrawColor(COLOR_BORDER); doc.line(PAGE_MARGIN, y + 4, pageWidth - PAGE_MARGIN, y + 4);
+  y += 15;
   
-  const summaryBoxHeight = 120;
-  doc.setFillColor(248, 249, 250);
-  doc.setDrawColor(233, 236, 239);
-  doc.roundedRect(margin, finalY, pageWidth - margin * 2, summaryBoxHeight, 3, 3, 'FD');
+  const totalGross = (payslipData.earnings || []).reduce((sum, item) => sum + (item.amount || 0), 0);
+  const totalStatutory = Object.values(payslipData.deductions || {}).reduce((sum, val) => sum + val, 0);
+  const totalOther = (payslipData.otherDeductions || []).reduce((sum, item) => sum + (item.amount || 0), 0);
+  const netPay = totalGross - totalStatutory - totalOther;
   
-  const summaryStartX = margin + 20;
-  const valueStartX = pageWidth - margin - 150;
+  autoTable(doc, {
+      startY: y, theme: 'grid', styles: { fontSize: 8, cellPadding: 3, lineColor: COLOR_BORDER, lineWidth: 0.5 },
+      headStyles: { fillColor: COLOR_BRAND, textColor: COLOR_WHITE, fontStyle: 'bold', lineColor: COLOR_BORDER },
+      head: [['Category', 'Gross', 'Statutory Deductions', 'Taxes', 'Other Deductions', 'Net Pay']],
+      body: [[ 'Current', formatCurrency(totalGross), formatCurrency(totalStatutory), formatCurrency(payslipData.deductions?.tax || 0), formatCurrency(totalOther), formatCurrency(netPay) ]],
+      columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right', fontStyle: 'bold' } },
+      didDrawCell: (data) => { if (data.section === 'body' && data.column.index === 5) { doc.setTextColor(...COLOR_BRAND); } },
+      didDrawPage: pageBreakCheck,
+  });
+  y = doc.lastAutoTable.finalY + 8;
   
-  finalY += 30;
-  doc.setFontSize(10);
-  doc.setFont(undefined, 'normal');
-  doc.setTextColor(33, 37, 41);
-  doc.text('Total Gross Pay', summaryStartX, finalY);
+  const midPoint = pageWidth / 2;
+  const tableWidth = midPoint - PAGE_MARGIN - 2.5;
+  addSectionHeader(doc, PAGE_MARGIN, y, tableWidth, 'Hours and Earnings');
+  addSectionHeader(doc, midPoint + 2.5, y, tableWidth, 'Statutory Deductions');
+  let tableStartY = y + SECTION_HEADER_HEIGHT;
+
+  autoTable(doc, {
+      startY: tableStartY, head: [['Description', 'Hours', 'Amount']], body: (payslipData.earnings || []).map(e => [e.description, e.hours, formatCurrency(e.amount)]),
+      theme: 'grid', tableWidth: tableWidth, margin: { left: PAGE_MARGIN }, styles: { fontSize: 8, cellPadding: 3, lineColor: COLOR_BORDER, lineWidth: 0.5 },
+      headStyles: { fillColor: COLOR_HEADER_BG, textColor: COLOR_SECONDARY, fontStyle: 'bold', lineColor: COLOR_BORDER }, didDrawPage: pageBreakCheck,
+  });
+  const leftTableY1 = doc.lastAutoTable.finalY;
+
+  autoTable(doc, {
+      startY: tableStartY, head: [['Description', 'Amount']], body: [['SSS', formatCurrency(payslipData.deductions?.sss)], ['PHIC', formatCurrency(payslipData.deductions?.philhealth)], ['HDMF', formatCurrency(payslipData.deductions?.hdmf)]],
+      theme: 'grid', tableWidth: tableWidth, margin: { left: midPoint + 2.5 }, styles: { fontSize: 8, cellPadding: 3, lineColor: COLOR_BORDER, lineWidth: 0.5 },
+      headStyles: { fillColor: COLOR_HEADER_BG, textColor: COLOR_SECONDARY, fontStyle: 'bold', lineColor: COLOR_BORDER }, didDrawPage: pageBreakCheck,
+  });
+  y = Math.max(leftTableY1, doc.lastAutoTable.finalY) + 8;
+
+  addSectionHeader(doc, PAGE_MARGIN, y, tableWidth, 'Leave Balances');
+  addSectionHeader(doc, midPoint + 2.5, y, tableWidth, 'Absences');
+  tableStartY = y + SECTION_HEADER_HEIGHT;
   
-  doc.setFont(undefined, 'bold');
-  doc.text(formatCurrency(totalEarnings), valueStartX, finalY);
+  autoTable(doc, {
+      startY: tableStartY, head: [['Description', 'Unused Leave (hrs)', 'Claimed (hrs)']], body: [['Vacation', formatCurrency((payslipData.leaveBalances?.vacation || 0) * 8), '0.00'], ['Sick', formatCurrency((payslipData.leaveBalances?.sick || 0) * 8), '0.00']],
+      theme: 'grid', tableWidth: tableWidth, margin: { left: PAGE_MARGIN }, styles: { fontSize: 8, cellPadding: 3, lineColor: COLOR_BORDER, lineWidth: 0.5 },
+      headStyles: { fillColor: COLOR_HEADER_BG, textColor: COLOR_SECONDARY, fontStyle: 'bold', lineColor: COLOR_BORDER }, didDrawPage: pageBreakCheck,
+  });
+  const leftTableY2 = doc.lastAutoTable.finalY;
+
+  autoTable(doc, {
+      startY: tableStartY, head: [['Description', 'Start Date', 'End Date', 'Total Day/s']], body: (payslipData.absences || []).length > 0 ? payslipData.absences.map(a => [a.description, a.startDate, a.endDate, a.totalDays]) : [['-', '-', '-', '0.00']],
+      theme: 'grid', tableWidth: tableWidth, margin: { left: midPoint + 2.5 }, styles: { fontSize: 8, cellPadding: 3, lineColor: COLOR_BORDER, lineWidth: 0.5 },
+      headStyles: { fillColor: COLOR_HEADER_BG, textColor: COLOR_SECONDARY, fontStyle: 'bold', lineColor: COLOR_BORDER }, didDrawPage: pageBreakCheck,
+  });
+  y = Math.max(leftTableY2, doc.lastAutoTable.finalY) + 8;
   
-  finalY += 25;
-  doc.setFont(undefined, 'normal');
-  doc.text('Less: Total Deductions', summaryStartX, finalY);
-  
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(220, 53, 69);
-  doc.text(`(${formatCurrency(totalDeductions)})`, valueStartX, finalY);
-  
-  finalY += 15;
-  doc.setDrawColor(233, 236, 239);
-  doc.setLineWidth(0.5);
-  doc.line(valueStartX - 20, finalY, pageWidth - margin - 20, finalY);
-  
-  finalY += 25;
-  doc.setFontSize(14);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(25, 135, 84);
-  doc.text('NET PAY', summaryStartX, finalY);
-  doc.text(formatCurrency(netPay), valueStartX, finalY);
-  
-  const minFooterSpacing = 40;
-  const footerY = Math.max(finalY + minFooterSpacing, doc.internal.pageSize.getHeight() - 70);
-  
-  doc.setDrawColor(108, 117, 125);
-  doc.setLineWidth(0.5);
-  doc.line(margin, footerY, margin + 200, footerY);
-  
-  const signatureTextY = footerY + 15;
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'normal');
-  doc.setTextColor(108, 117, 125);
-  doc.text('Employee Signature', margin, signatureTextY);
-  
-  doc.setFontSize(8);
-  doc.text('This is an official document. Any unauthorized alterations will be considered void.', 
-           pageWidth - margin, signatureTextY, { align: 'right' });
-           
-  const pageNumberY = doc.internal.pageSize.getHeight() - 20;
-  doc.setFontSize(8);
-  doc.setTextColor(108, 117, 125);
-  doc.text(`Page ${doc.internal.getNumberOfPages()}`, pageWidth / 2, pageNumberY, { align: 'center' });
+  addSectionHeader(doc, PAGE_MARGIN, y, pageWidth - (PAGE_MARGIN * 2), 'Other Deductions Information');
+  tableStartY = y + SECTION_HEADER_HEIGHT;
+
+  autoTable(doc, {
+      startY: tableStartY, head: [['Description', 'Loan Amount', 'Amount Deduction', 'Outstanding Balance']],
+      body: (payslipData.otherDeductions || []).map(d => [d.description, formatCurrency(d.loanAmount), formatCurrency(d.amount), formatCurrency(d.outstandingBalance)]),
+      theme: 'grid', margin: { left: PAGE_MARGIN }, styles: { fontSize: 8, cellPadding: 3, lineColor: COLOR_BORDER, lineWidth: 0.5 },
+      headStyles: { fillColor: COLOR_HEADER_BG, textColor: COLOR_SECONDARY, fontStyle: 'bold', lineColor: COLOR_BORDER },
+      didDrawPage: (data) => {
+          pageBreakCheck(data);
+          let finalY = doc.lastAutoTable.finalY || y;
+          if (pageHeight - finalY < 180) {
+              doc.addPage();
+              finalY = PAGE_MARGIN;
+          }
+          addFooterAndConcernSlip(doc, finalY + 15, pageWidth, employeeDetails, payslipData.payrollId);
+      },
+  });
   
   return doc;
 };

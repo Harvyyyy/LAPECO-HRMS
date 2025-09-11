@@ -1,73 +1,65 @@
 import React, { useState } from 'react';
 import './AccountSettingsPage.css';
-import ChangePassword from './ChangePassword';
-import NotificationSettings from './NotificationSettings';
-import SecurityPolicies from './SecurityPolicies';
-import ThemeSettings from './ThemeSettings';
-import LoginActivity from './LoginActivity';
 import { USER_ROLES } from '../../../constants/roles';
+import ChangePassword from './ChangePassword';
+import ThemeSettings from './ThemeSettings';
+import NotificationSettings from './NotificationSettings';
+import LoginActivity from './LoginActivity';
+import DataManagementSettings from './DataManagementSettings';
 
 const AccountSettingsPage = ({ currentUser, userRole, handlers, theme }) => {
-    const [activeSection, setActiveSection] = useState('password');
-    const isHrUser = userRole === USER_ROLES.HR_PERSONNEL;
+  const [activeSection, setActiveSection] = useState('changePassword');
 
-    const renderSection = () => {
-        switch (activeSection) {
-            case 'password':
-                return <ChangePassword currentUser={currentUser} handlers={handlers} />;
-            case 'notifications':
-                return <NotificationSettings />;
-            case 'appearance':
-                return <ThemeSettings currentTheme={theme} onToggleTheme={handlers.toggleTheme} />;
-            case 'activity':
-                return <LoginActivity />;
-            case 'security':
-                return isHrUser ? <SecurityPolicies /> : null; 
-            default:
-                return <ChangePassword currentUser={currentUser} handlers={handlers} />;
-        }
-    };
+  const isHrUser = userRole === USER_ROLES.HR_PERSONNEL;
 
-    return (
-        <div className="container-fluid p-0 page-module-container">
-            <header className="page-header mb-4">
-                <h1 className="page-main-title">Settings</h1>
-                <p className="text-muted">Manage your personal preferences and system settings.</p>
-            </header>
+  const sections = {
+    personal: [
+      { key: 'changePassword', label: 'Change Password', icon: 'bi-key-fill' },
+      { key: 'theme', label: 'Theme & Appearance', icon: 'bi-palette-fill' },
+      { key: 'notifications', label: 'Notifications', icon: 'bi-bell-fill' },
+      { key: 'loginActivity', label: 'Login Activity', icon: 'bi-shield-check' },
+    ],
+    admin: [
+      { key: 'dataManagement', label: 'Data Management', icon: 'bi-database-fill-x' },
+    ]
+  };
 
-            <div className="account-settings-grid">
-                <nav className="settings-nav">
-                    <h6 className="nav-heading">Personal Settings</h6>
-                    <button className={`nav-link ${activeSection === 'password' ? 'active' : ''}`} onClick={() => setActiveSection('password')}>
-                        <i className="bi bi-key-fill"></i><span>Password</span>
-                    </button>
-                    <button className={`nav-link ${activeSection === 'notifications' ? 'active' : ''}`} onClick={() => setActiveSection('notifications')}>
-                        <i className="bi bi-bell-fill"></i><span>Notifications</span>
-                    </button>
-                    <button className={`nav-link ${activeSection === 'appearance' ? 'active' : ''}`} onClick={() => setActiveSection('appearance')}>
-                        <i className="bi bi-palette-fill"></i><span>Appearance</span>
-                    </button>
-                    <button className={`nav-link ${activeSection === 'activity' ? 'active' : ''}`} onClick={() => setActiveSection('activity')}>
-                        <i className="bi bi-clock-history"></i><span>Login Activity</span>
-                    </button>
-                    
-                    {isHrUser && (
-                        <>
-                            <hr className="my-2"/>
-                            <h6 className="nav-heading">Admin</h6>
-                            <button className={`nav-link ${activeSection === 'security' ? 'active' : ''}`} onClick={() => setActiveSection('security')}>
-                                <i className="bi bi-shield-lock-fill"></i><span>Security Policies</span>
-                            </button>
-                        </>
-                    )}
-                </nav>
+  return (
+    <div className="container-fluid p-0 page-module-container">
+      <header className="page-header mb-4">
+        <h1 className="page-main-title">Account Settings</h1>
+      </header>
+      <div className="account-settings-grid">
+        <nav className="settings-nav">
+          <div className="nav-heading">Personal Settings</div>
+          {sections.personal.map(sec => (
+            <button key={sec.key} className={`nav-link ${activeSection === sec.key ? 'active' : ''}`} onClick={() => setActiveSection(sec.key)}>
+              <i className={sec.icon}></i> {sec.label}
+            </button>
+          ))}
+          
+          {isHrUser && (
+            <>
+              <div className="nav-heading">Admin Tools</div>
+              {sections.admin.map(sec => (
+                <button key={sec.key} className={`nav-link ${activeSection === sec.key ? 'active' : ''}`} onClick={() => setActiveSection(sec.key)}>
+                  <i className={sec.icon}></i> {sec.label}
+                </button>
+              ))}
+            </>
+          )}
+        </nav>
+        <div className="settings-content">
+          {activeSection === 'changePassword' && <ChangePassword currentUser={currentUser} handlers={handlers} />}
+          {activeSection === 'theme' && <ThemeSettings theme={theme} onToggleTheme={handlers.toggleTheme} />}
+          {activeSection === 'notifications' && <NotificationSettings />}
+          {activeSection === 'loginActivity' && <LoginActivity />}
 
-                <div className="settings-content">
-                    {renderSection()}
-                </div>
-            </div>
+          {isHrUser && activeSection === 'dataManagement' && <DataManagementSettings onReset={handlers.resetSelectedData} />}
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default AccountSettingsPage;

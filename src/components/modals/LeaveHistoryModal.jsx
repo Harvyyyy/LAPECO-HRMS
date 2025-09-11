@@ -1,10 +1,12 @@
+// src/components/modals/LeaveHistoryModal.jsx (NEW FILE)
+
 import React, { useState, useMemo } from 'react';
 
-const LeaveHistoryModal = ({ show, onClose, leaveHistory }) => {
+const LeaveHistoryModal = ({ show, onClose, employeeName, leaveHistory }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const sortedHistory = useMemo(() => 
-    [...leaveHistory].sort((a, b) => new Date(b.dateFrom) - new Date(a.dateFrom)),
+    [...(leaveHistory || [])].sort((a, b) => new Date(b.dateFrom) - new Date(a.dateFrom)),
   [leaveHistory]);
 
   const filteredHistory = useMemo(() => {
@@ -23,7 +25,7 @@ const LeaveHistoryModal = ({ show, onClose, leaveHistory }) => {
       <div className="modal-dialog modal-dialog-centered modal-lg">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">Complete Leave History</h5>
+            <h5 className="modal-title">Leave History for {employeeName}</h5>
             <button type="button" className="btn-close" onClick={onClose}></button>
           </div>
           <div className="modal-body">
@@ -32,14 +34,13 @@ const LeaveHistoryModal = ({ show, onClose, leaveHistory }) => {
               <input 
                 type="text" 
                 className="form-control" 
-                placeholder="Search by leave type or status..." 
+                placeholder="Filter by leave type or status..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <div className="table-responsive" style={{ maxHeight: '60vh' }}>
               <table className="table data-table table-sm table-striped">
-                {/* --- REFINED THEAD for consistency --- */}
                 <thead style={{backgroundColor: "var(--thead-bg)"}}>
                   <tr>
                     <th>Leave Type</th>

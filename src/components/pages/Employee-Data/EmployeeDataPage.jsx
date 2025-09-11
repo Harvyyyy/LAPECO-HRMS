@@ -6,6 +6,7 @@ import RequirementsChecklist from './RequirementsChecklist';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import placeholderImage from '../../../assets/placeholder-profile.jpg';
 import useReportGenerator from '../../../hooks/useReportGenerator';
+import ConfirmationModal from '../../modals/ConfirmationModal';
 
 const EmployeeDataPage = ({ employees, positions, handlers }) => {
   const [activeTab, setActiveTab] = useState('all');
@@ -18,6 +19,8 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [isViewOnlyMode, setIsViewOnlyMode] = useState(false);
+
+  const [employeeToDelete, setEmployeeToDelete] = useState(null);
   
   const [showReportPreview, setShowReportPreview] = useState(false);
   const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
@@ -91,11 +94,20 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
     setShowModal(true);
   };
   
-  const handleDeleteEmployee = (e, employeeId) => { 
+  const handleOpenDeleteConfirm = (e, employee) => { 
     e.stopPropagation(); 
-    if (window.confirm(`Are you sure you want to delete employee ${employeeId}?`)) { 
-      handlers.deleteEmployee(employeeId); 
-    } 
+    setEmployeeToDelete(employee);
+  };
+  
+  const handleCloseDeleteConfirm = () => {
+    setEmployeeToDelete(null);
+  };
+
+  const confirmDeleteEmployee = () => {
+    if (employeeToDelete) {
+        handlers.deleteEmployee(employeeToDelete.id);
+    }
+    handleCloseDeleteConfirm();
   };
   
   const handleCloseReportPreview = () => { 
@@ -120,6 +132,11 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
     );
     setShowReportPreview(true);
   };
+
+  const isFiltered = searchTerm || positionFilter || statusFilter;
+  const countText = isFiltered 
+    ? `Showing ${filteredAndSortedEmployees.length} of ${employees.length} employees` 
+    : `${employees.length} total employees`;
   
   const renderCardView = () => (
     <div className="employee-grid-container">
@@ -137,7 +154,7 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
               </button>
               <ul className="dropdown-menu dropdown-menu-end">
                 <li><a className="dropdown-item" href="#" onClick={(e) => handleOpenEditModal(e, emp)}>Edit</a></li>
-                <li><a className="dropdown-item text-danger" href="#" onClick={(e) => handleDeleteEmployee(e, emp.id)}>Delete</a></li>
+                <li><a className="dropdown-item text-danger" href="#" onClick={(e) => handleOpenDeleteConfirm(e, emp)}>Delete</a></li>
               </ul>
             </div>
           </div>
@@ -197,7 +214,7 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
                     <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleOpenViewModal(emp);}}><i className="bi bi-eye-fill me-2"></i>View Details</a></li>
                     <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleOpenEditModal(e, emp);}}><i className="bi bi-pencil-fill me-2"></i>Edit</a></li>
                     <li><hr className="dropdown-divider" /></li>
-                    <li><a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); handleDeleteEmployee(e, emp.id);}}><i className="bi bi-trash-fill me-2"></i>Delete</a></li>
+                    <li><a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); handleOpenDeleteConfirm(e, emp);}}><i className="bi bi-trash-fill me-2"></i>Delete</a></li>
                   </ul>
                 </div>
               </td>
@@ -211,7 +228,12 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
   return (
     <div className="container-fluid p-0 page-module-container">
       <header className="page-header d-flex justify-content-between align-items-center mb-4">
-        <h1 className="page-main-title">Employee Data</h1>
+        <div className="d-flex align-items-center">
+            <h1 className="page-main-title me-3">Employee Data</h1>
+            <span className="badge bg-secondary-subtle text-secondary-emphasis rounded-pill">
+                {countText}
+            </span>
+        </div>
         <div className="header-actions d-flex align-items-center gap-2">
             <button className="btn btn-outline-secondary" onClick={handleGenerateReport}><i className="bi bi-file-earmark-text-fill"></i> Generate Report</button>
             <button className="btn btn-success" onClick={handleOpenAddModal}><i className="bi bi-person-plus-fill"></i> Add New Employee</button>
@@ -277,6 +299,18 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
           reportTitle="Employee Masterlist"
         />
       )}
+      
+      <ConfirmationModal
+        show={!!employeeToDelete}
+        onClose={handleCloseDeleteConfirm}
+        onConfirm={confirmDeleteEmployee}
+        title="Confirm Employee Deletion"
+        confirmText="Yes, Delete"
+        confirmVariant="danger"
+      >
+        <p>Are you sure you want to permanently delete <strong>{employeeToDelete?.name} ({employeeToDelete?.id})</strong>?</p>
+        <p className="text-danger">This action cannot be undone.</p>
+      </ConfirmationModal>
     </div>
   );
 };

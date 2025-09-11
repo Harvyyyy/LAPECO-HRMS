@@ -1,10 +1,7 @@
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import logo from '../assets/logo.png';
 
-/**
- * Creates and configures a new jsPDF document instance.
- * @returns {object} An object containing the doc instance, pageWidth, and margin.
- */
 export const createPdfDoc = () => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -12,13 +9,6 @@ export const createPdfDoc = () => {
   return { doc, pageWidth, margin };
 };
 
-/**
- * Adds a standardized header to the PDF document.
- * @param {jsPDF} doc - The jsPDF instance.
- * @param {string} title - The title of the report.
- * @param {object} metadata - Contains pageWidth and margin.
- * @returns {number} The Y position after the header.
- */
 export const addHeader = (doc, title, { pageWidth, margin }) => {
   const generationDate = new Date().toLocaleDateString();
   
@@ -33,4 +23,37 @@ export const addHeader = (doc, title, { pageWidth, margin }) => {
   doc.line(margin, 70, pageWidth - margin, 70);
   
   return 85; // Return the starting Y position for content
+};
+
+export const generateArchivedReport = (archivedReport) => {
+  const { doc, pageWidth, margin } = createPdfDoc();
+  let startY = addHeader(doc, archivedReport.headerData['Employer Name'] || archivedReport.type, { pageWidth, margin });
+
+  // Add custom header data from the archive
+  doc.setFontSize(10);
+  Object.entries(archivedReport.headerData).forEach(([key, value]) => {
+    if (key !== 'Employer Name') {
+      doc.setFont(undefined, 'bold');
+      doc.text(`${key}:`, margin, startY);
+      doc.setFont(undefined, 'normal');
+      doc.text(value, margin + 120, startY);
+      startY += 15;
+    }
+  });
+  startY += 10;
+
+  const tableColumns = archivedReport.columns.map(col => col.label);
+  const tableRows = archivedReport.rows.map(row => 
+    archivedReport.columns.map(col => row[col.key] || '')
+  );
+
+  autoTable(doc, {
+    head: [tableColumns],
+    body: tableRows,
+    startY: startY,
+    theme: 'striped',
+    headStyles: { fillColor: [25, 135, 84] },
+  });
+
+  return doc;
 };

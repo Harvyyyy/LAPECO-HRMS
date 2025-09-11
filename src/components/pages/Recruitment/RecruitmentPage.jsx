@@ -8,7 +8,9 @@ import ScheduleInterviewModal from '../../modals/ScheduleInterviewModal';
 import HireApplicantModal from '../../modals/HireApplicantModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import AccountGeneratedModal from '../../modals/AccountGeneratedModal';
+import ConfirmationModal from '../../modals/ConfirmationModal';
 import ReportConfigurationModal from '../../modals/ReportConfigurationModal';
+import ActionsDropdown from '../../common/ActionsDropdown';
 import { reportsConfig } from '../../../config/reports.config';
 import useReportGenerator from '../../../hooks/useReportGenerator';
 
@@ -48,6 +50,7 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
   const [endDate, setEndDate] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'applicationDate', direction: 'descending' });
   const [newlyGeneratedAccount, setNewlyGeneratedAccount] = useState(null);
+  const [applicantToDelete, setApplicantToDelete] = useState(null);
 
   const jobOpeningsMap = useMemo(() => new Map(jobOpenings.map(job => [job.id, job.title])), [jobOpenings]);
   const recruitmentReportConfig = useMemo(() => reportsConfig.find(r => r.id === 'recruitment_activity'), []);
@@ -126,6 +129,13 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
     }
   };
   
+  const handleConfirmDelete = () => {
+    if (applicantToDelete) {
+      handlers.deleteApplicant(applicantToDelete.id);
+      setApplicantToDelete(null);
+    }
+  };
+  
   const handleRunReport = (reportId, params) => {
     setShowReportConfigModal(false);
     generateReport(
@@ -161,6 +171,7 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
       case 'scheduleInterview': setSelectedApplicant(data); setShowInterviewModal(true); break;
       case 'hire': setSelectedApplicant(data); setShowHireModal(true); break;
       case 'reject': if(window.confirm("Are you sure you want to reject this applicant?")) handlers.updateApplicantStatus(data.id, 'Rejected'); break;
+      case 'delete': setApplicantToDelete(data); break;
       default: break;
     }
   };
@@ -210,16 +221,16 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
                 <td>{formatDate(applicant.lastStatusUpdate, true)}</td>
                 <td><span className={`applicant-status-badge status-${applicant.status.replace(/\s+/g, '-').toLowerCase()}`}>{applicant.status}</span></td>
                 <td>
-                  <div className="dropdown">
-                    <button className="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">Actions</button>
-                    <ul className="dropdown-menu dropdown-menu-end">
-                      <li><a className="dropdown-item" href="#" onClick={() => handleAction('view', applicant)}>View Details</a></li>
-                      <li><a className="dropdown-item" href="#" onClick={() => handleAction('scheduleInterview', applicant)}>Schedule Interview</a></li>
-                      <div className="dropdown-divider"></div>
-                      <li><a className="dropdown-item text-success" href="#" onClick={() => handleAction('hire', applicant)}>Hire</a></li>
-                      <li><a className="dropdown-item text-danger" href="#" onClick={() => handleAction('reject', applicant)}>Reject</a></li>
-                    </ul>
-                  </div>
+                  {/* THE FIX: Replace the old dropdown with our new portal-based component */}
+                  <ActionsDropdown>
+                    <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleAction('view', applicant); }}>View Details</a>
+                    <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleAction('scheduleInterview', applicant); }}>Schedule Interview</a>
+                    <div className="dropdown-divider"></div>
+                    <a className="dropdown-item text-success" href="#" onClick={(e) => { e.preventDefault(); handleAction('hire', applicant); }}>Hire</a>
+                    <a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); handleAction('reject', applicant); }}>Reject</a>
+                    <div className="dropdown-divider"></div>
+                    <a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); handleAction('delete', applicant); }}>Delete Applicant</a>
+                  </ActionsDropdown>
                 </td>
               </tr>
             ))}
@@ -297,6 +308,18 @@ const RecruitmentPage = ({ jobOpenings, applicants, positions, handlers }) => {
         onClose={() => setNewlyGeneratedAccount(null)}
         accountDetails={newlyGeneratedAccount}
       />
+
+      <ConfirmationModal
+        show={!!applicantToDelete}
+        onClose={() => setApplicantToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Confirm Applicant Deletion"
+        confirmText="Yes, Delete"
+        confirmVariant="danger"
+      >
+        {applicantToDelete && <p>Are you sure you want to permanently delete the application for <strong>{applicantToDelete.name}</strong>?</p>}
+        <p className="text-danger">This action cannot be undone.</p>
+      </ConfirmationModal>
     </div>
   );
 };

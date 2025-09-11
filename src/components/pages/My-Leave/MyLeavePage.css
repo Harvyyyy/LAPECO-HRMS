@@ -1,3 +1,5 @@
+/* src/components/pages/My-Leave/MyLeavePage.css (UPDATED) */
+
 .my-leave-dashboard {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -6,7 +8,7 @@
 }
 .leave-balances {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 1rem;
 }
 .balance-card {
@@ -30,6 +32,8 @@
 }
 .balance-icon.icon-vacation { background-color: var(--info-color); }
 .balance-icon.icon-sick { background-color: var(--danger-color); }
+.balance-icon.icon-personal { background-color: #6f42c1; }
+
 .balance-card .balance-info .balance-value { 
     font-size: 1.75rem; 
     font-weight: 700; 
@@ -87,7 +91,7 @@
 }
 .leave-card:hover { 
     transform: translateY(-2px); 
-    box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.06); 
+    box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1); 
 }
 
 .leave-card.status-approved { border-left-color: var(--app-success-color); }
@@ -121,12 +125,27 @@
 .info-body .info-item { display: flex; align-items: center; gap: 0.4rem; }
 .info-reason { font-size: 0.8rem; padding-top: 0.5rem; margin-top: 0.5rem; border-top: 1px dashed var(--border-color); }
 
-.leave-calendar-container { padding: 1rem; }
-.fc .fc-event { cursor: default; }
-.leave-event-approved { background-color: var(--app-success-color) !important; border-color: var(--app-success-color) !important; }
-.leave-event-pending { background-color: var(--warning-color) !important; border-color: var(--warning-color) !important; color: var(--text-primary) !important; }
-.leave-event-declined { background-color: var(--danger-color) !important; border-color: var(--danger-color) !important; }
-.leave-event-canceled { background-color: var(--secondary-color) !important; border-color: var(--secondary-color) !important; }
+.cancel-request-btn {
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: all 0.2s ease-in-out;
+}
+.cancel-request-btn:hover {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+    color: #fff;
+    transform: scale(1.1);
+}
 
 .status-badge { 
     font-size: 0.7rem; 
@@ -144,32 +163,53 @@
 .dark-theme .leave-card:hover {
     box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
 }
-
 .dark-theme .leave-card.status-pending {
     background-color: rgba(var(--warning-rgb), 0.15);
 }
 
-@media (max-width: 768px) {
-    .page-header {
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    .page-header .d-flex {
-        flex-direction: column;
-        gap: 0.5rem !important;
-        flex-shrink: 0;
-    }
-
-    .page-header .btn {
-        width: 100%;
-    }
-
+/* === RESPONSIVE STYLES === */
+@media (max-width: 992px) {
     .my-leave-dashboard {
         grid-template-columns: 1fr;
     }
+}
 
-    .leave-balances {
-        grid-template-columns: 1fr;
+@media (max-width: 768px) {
+    .page-header {
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
     }
+
+    .page-header .page-main-title {
+        width: 100%;
+        text-align: left;
+    }
+
+    .page-header .header-actions {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .page-header .header-actions .btn {
+        flex-grow: 1;
+    }
+
+    /* --- THE FIX for Mobile View --- */
+    .leave-balances {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 0.75rem; /* Space for scrollbar */
+        /* Hide scrollbar visually */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* IE and Edge */
+    }
+    .leave-balances::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, and Opera */
+    }
+    .leave-balances .balance-card {
+        flex: 0 0 180px; /* Give cards a fixed base width so they don't shrink */
+    }
+    /* --- END THE FIX --- */
 }

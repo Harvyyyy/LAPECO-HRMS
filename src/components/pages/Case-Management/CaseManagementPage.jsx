@@ -1,14 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-
-// Import modals, hooks, and components
 import AddEditCaseModal from './AddEditCaseModal';
 import CaseCard from './CaseCard';
 import CaseDetailView from './CaseDetailView';
 import CaseSummaryByEmployee from './CaseSummaryByEmployee';
 import ReportConfigurationModal from '../../modals/ReportConfigurationModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
+import ConfirmationModal from '../../modals/ConfirmationModal';
 import useReportGenerator from '../../../hooks/useReportGenerator';
 import { reportsConfig } from '../../../config/reports.config'; 
 import './CaseManagement.css';
@@ -22,6 +21,7 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
   const [selectedCase, setSelectedCase] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [caseToDelete, setCaseToDelete] = useState(null);
 
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showReportPreview, setShowReportPreview] = useState(false);
@@ -99,6 +99,14 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
     setSelectedCase(caseData);
   };
   
+  const handleConfirmDelete = () => {
+    if (caseToDelete) {
+      handlers.deleteCase(caseToDelete.caseId);
+      setCaseToDelete(null);
+      setSelectedCase(null);
+    }
+  };
+
   const caseReportConfig = reportsConfig.find(r => r.id === 'disciplinary_cases');
 
   const handleGenerateReportClick = () => {
@@ -137,6 +145,7 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
             onBack={() => setSelectedCase(null)}
             onSaveLog={handlers.addCaseLogEntry}
             onEdit={handleOpenModal}
+            onDelete={() => setCaseToDelete(selectedCase)}
         />
         <AddEditCaseModal 
           show={showModal}
@@ -225,7 +234,8 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
                 key={c.caseId} 
                 caseInfo={c} 
                 employee={employeeMap.get(c.employeeId)}
-                onView={handleViewDetails} 
+                onView={handleViewDetails}
+                onDelete={() => setCaseToDelete(c)}
               />
             )}
         </div>
@@ -286,6 +296,20 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
           reportTitle="Disciplinary Cases Report"
         />
       )}
+
+      <ConfirmationModal
+          show={!!caseToDelete}
+          onClose={() => setCaseToDelete(null)}
+          onConfirm={handleConfirmDelete}
+          title="Confirm Case Deletion"
+          confirmText="Yes, Delete Case"
+          confirmVariant="danger"
+      >
+          {caseToDelete && (
+              <p>Are you sure you want to permanently delete the case "<strong>{caseToDelete.reason}</strong>" for <strong>{employeeMap.get(caseToDelete.employeeId)?.name}</strong>?</p>
+          )}
+          <p className="text-danger">This action cannot be undone.</p>
+      </ConfirmationModal>
     </div>
   );
 };

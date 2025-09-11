@@ -1,3 +1,5 @@
+// src/components/modals/PayrollAdjustmentModal.jsx
+
 import React, { useState, useEffect, useMemo } from 'react';
 import './PayrollAdjustmentModal.css';
 import ReportPreviewModal from './ReportPreviewModal';
@@ -13,14 +15,18 @@ const defaultEarnings = [
     { description: 'Special Rate Pay OT', hours: 0, amount: 0 },
     { description: 'Holiday Pay Reg', hours: 0, amount: 0 },
     { description: 'Holiday Pay OT', hours: 0, amount: 0 },
-    { description: 'Allowance', hours: '', amount: 0 },
-    { description: 'Leave Credentials', hours: '', amount: 0 },
-    { description: 'Pay Adjustment', hours: '', amount: 0 },
+    { description: 'Allowance', hours: '--', amount: 0 },
+    { description: 'Leave Pay', hours: '--', amount: 0 },
+    { description: 'Pay Adjustment', hours: '--', amount: 0 },
 ];
 
-const defaultDeductions = [
-    { description: 'SSS Loan', amount: 0 },
-    { description: 'PAGIBIG Loan', amount: 0 },
+const OTHER_DEDUCTION_TYPES = [
+    'Cash Advance',
+    'Company Loan Repayment',
+    'Tardiness / Undertime',
+    'Damaged Equipment',
+    'Uniform',
+    'Other',
 ];
 
 const InfoField = ({ label, children }) => (
@@ -49,7 +55,7 @@ const EditableStatutoryField = ({ label, fieldKey, value, originalValue, onChang
 );
 
 
-const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, payrollData, employeeDetails, positions }) => {
+const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, payrollData, employeeDetails, positions, allLeaveRequests, employees }) => {
   const [activeTab, setActiveTab] = useState('summary');
   const [status, setStatus] = useState('');
   const [earnings, setEarnings] = useState([]);
@@ -61,40 +67,33 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
   const [showPayslipPreview, setShowPayslipPreview] = useState(false);
   const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
 
+  const position = useMemo(() => {
+    if (!employeeDetails || !positions) return null;
+    return positions.find(p => p.id === employeeDetails.positionId);
+  }, [employeeDetails, positions]);
+
   useEffect(() => {
     if (payrollData && show) {
-      setStatus(payrollData.status || 'Pending');
-      setActiveTab('summary');
-      setEditableEmployeeData({ ...employeeDetails });
-      setAbsences(payrollData.absences || []);
-      setStatutoryDeductions(payrollData.deductions || {});
-      
-      const processedEarnings = defaultEarnings.map(item => ({...item}));
-      if (payrollData.earnings && payrollData.earnings.length > 0) {
-        payrollData.earnings.forEach(calculatedEarning => {
-            let descriptionMatch = '';
-            if (calculatedEarning.description.toLowerCase().includes('regular')) {
-                descriptionMatch = 'Regular Hours';
-            } else if (calculatedEarning.description.toLowerCase().includes('holiday')) {
-                descriptionMatch = 'Holiday Pay Reg';
-            }
-            const defaultIndex = processedEarnings.findIndex(e => e.description === descriptionMatch);
-            if (defaultIndex > -1) {
-                processedEarnings[defaultIndex] = { ...processedEarnings[defaultIndex], ...calculatedEarning, description: descriptionMatch };
-            } else {
-                const existingItemIndex = processedEarnings.findIndex(e => e.description === calculatedEarning.description);
-                if (existingItemIndex === -1) {
-                  processedEarnings.push(calculatedEarning);
-                }
-            }
+        setStatus(payrollData.status || 'Pending');
+        setActiveTab('summary');
+        setEditableEmployeeData({ ...employeeDetails });
+        setAbsences(payrollData.absences || []);
+        setStatutoryDeductions(payrollData.deductions || {});
+        
+        const processedEarnings = defaultEarnings.map(defaultItem => {
+            const foundEarning = (payrollData.earnings || []).find(pde => {
+                const desc = defaultItem.description.toLowerCase();
+                const pdeDesc = pde.description.toLowerCase();
+                if (desc.includes('regular') && pdeDesc.includes('regular pay')) return true;
+                if (desc.includes('holiday') && pdeDesc.includes('holiday pay')) return true;
+                if (desc.includes('leave') && pdeDesc.includes('leave pay')) return true;
+                return pdeDesc === desc;
+            });
+            return foundEarning ? { ...defaultItem, ...foundEarning, description: defaultItem.description } : { ...defaultItem };
         });
-      }
-      setEarnings(processedEarnings);
-      
-      const initialDeductions = payrollData.otherDeductions && payrollData.otherDeductions.length > 0 
-        ? payrollData.otherDeductions
-        : defaultDeductions.map(item => ({...item}));
-      setOtherDeductions(initialDeductions);
+
+        setEarnings(processedEarnings);
+        setOtherDeductions(payrollData.otherDeductions || []);
     }
   }, [payrollData, employeeDetails, show]);
 
@@ -107,10 +106,52 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
     return { totalGrossPay, totalDeductions, netPay };
   }, [earnings, otherDeductions, statutoryDeductions]);
   
-  const positionTitle = useMemo(() => {
-      if (!editableEmployeeData || !positions) return 'N/A';
-      return positions.find(p => p.id === editableEmployeeData.positionId)?.title || 'Unassigned';
-  }, [editableEmployeeData, positions]);
+  const leaveBalances = useMemo(() => {
+    if (!employeeDetails) return { vacation: {}, sick: {}, personal: {} };
+    const currentYear = new Date().getFullYear();
+    const totalCredits = employeeDetails.leaveCredits || { vacation: 0, sick: 0, personal: 0 };
+    const usedCredits = (allLeaveRequests || [])
+      .filter(req => 
+        req.empId === employeeDetails.id && 
+        req.status === 'Approved' &&
+        new Date(req.dateFrom).getFullYear() === currentYear
+      )
+      .reduce((acc, req) => {
+        const type = req.leaveType.toLowerCase().replace(' leave', '');
+        if(acc.hasOwnProperty(type)){ acc[type] += req.days; }
+        return acc;
+      }, { vacation: 0, sick: 0, personal: 0 });
+    return {
+      vacation: { total: totalCredits.vacation, used: usedCredits.vacation, remaining: totalCredits.vacation - usedCredits.vacation },
+      sick: { total: totalCredits.sick, used: usedCredits.sick, remaining: totalCredits.sick - usedCredits.sick },
+      personal: { total: totalCredits.personal, used: usedCredits.personal, remaining: totalCredits.personal - usedCredits.personal },
+    };
+  }, [employeeDetails, allLeaveRequests]);
+
+  const leaveEarningsBreakdown = useMemo(() => {
+      if (!absences.length || !position) return { breakdown: [], total: 0 };
+      const dailyRate = position.hourlyRate * 8;
+      const excusedAbsences = absences.filter(a => a.description === 'Excused').length;
+      if (excusedAbsences === 0) return { breakdown: [], total: 0 };
+      let tempBalances = { ...leaveBalances };
+      let breakdown = [];
+      let daysToPay = excusedAbsences;
+      const consumptionOrder = ['vacation', 'personal', 'sick'];
+      for (const type of consumptionOrder) {
+          const available = tempBalances[type].remaining;
+          if (daysToPay > 0 && available > 0) {
+              const daysConsumed = Math.min(daysToPay, available);
+              breakdown.push({
+                  type: `${type.charAt(0).toUpperCase() + type.slice(1)} Leave`,
+                  days: daysConsumed,
+                  amount: daysConsumed * dailyRate
+              });
+              daysToPay -= daysConsumed;
+          }
+      }
+      const total = breakdown.reduce((sum, item) => sum + item.amount, 0);
+      return { breakdown, total };
+  }, [absences, leaveBalances, position]);
 
   const handleItemChange = (index, field, value, type) => {
     let list;
@@ -126,11 +167,9 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
   };
 
   const addItem = (type) => {
-    const setter = type === 'otherDeductions' ? setOtherDeductions : setEarnings;
-    const newItem = type === 'otherDeductions' 
-        ? { description: '', amount: 0 } 
-        : { description: '', hours: '', amount: 0 };
-    setter(prev => [...prev, newItem]);
+    if (type === 'otherDeductions') {
+        setOtherDeductions(prev => [...prev, { description: OTHER_DEDUCTION_TYPES[0], amount: 0 }]);
+    }
   };
   
   const removeItem = (index, type) => {
@@ -152,7 +191,17 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
     if (activeTab === 'info') {
       onSaveEmployeeInfo(editableEmployeeData.id, editableEmployeeData);
     } else {
-      const finalEarnings = earnings.filter(e => e.description.trim() !== '' || Number(e.amount) !== 0);
+      const leavePayTotal = leaveEarningsBreakdown.total;
+      const leavePayHours = leaveEarningsBreakdown.breakdown.reduce((sum, item) => sum + (item.days * 8), 0);
+
+      const updatedEarningsWithLeave = earnings.map(e => {
+        if (e.description === 'Leave Pay') {
+          return { ...e, amount: leavePayTotal, hours: leavePayHours > 0 ? leavePayHours : '--' };
+        }
+        return e;
+      });
+
+      const finalEarnings = updatedEarningsWithLeave.filter(e => Number(e.amount) !== 0 || !defaultEarnings.some(de => de.description === e.description));
       const finalDeductions = otherDeductions.filter(d => d.description.trim() !== '' || Number(d.amount) !== 0);
       
       onSave(payrollData.payrollId, { 
@@ -168,8 +217,21 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
   };
   
   const handleGeneratePayslip = async () => {
-    const currentPayslipData = { ...payrollData, earnings, otherDeductions, absences, deductions: statutoryDeductions };
-    await generateReport('payslip', {}, { payslipData: currentPayslipData, employeeDetails });
+    const fullEmployeeDetails = {
+      ...employees.find(e => e.id === payrollData.empId),
+      ...employeeDetails,
+      positionTitle: position ? position.title : 'Unassigned'
+    };
+
+    const currentPayslipData = { 
+      ...payrollData,
+      earnings: earnings,
+      otherDeductions: otherDeductions,
+      absences: absences,
+      deductions: statutoryDeductions
+    };
+    
+    await generateReport('payslip', {}, { payslipData: currentPayslipData, employeeDetails: fullEmployeeDetails });
     setShowPayslipPreview(true);
   };
 
@@ -180,6 +242,26 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
   };
 
   if (!show || !editableEmployeeData) return null;
+  
+  const LeaveBalanceDisplay = ({ label, balanceData }) => {
+    const percentage = balanceData.total > 0 ? (balanceData.remaining / balanceData.total) * 100 : 0;
+    const getProgressBarVariant = (p) => p > 50 ? 'bg-success' : p > 20 ? 'bg-warning' : 'bg-danger';
+
+    return (
+        <div className="leave-balance-item">
+            <div className="d-flex justify-content-between">
+                <span className="balance-label">{label}</span>
+                <span className="balance-summary-text">{balanceData.remaining} / {balanceData.total} Days Left</span>
+            </div>
+            <div className="progress" style={{height: '8px'}}>
+                <div 
+                    className={`progress-bar ${getProgressBarVariant(percentage)}`} 
+                    style={{width: `${percentage}%`}}
+                ></div>
+            </div>
+        </div>
+    );
+  };
 
   return (
     <>
@@ -196,6 +278,7 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
                 <li className="nav-item"><button className={`nav-link ${activeTab === 'earnings' ? 'active' : ''}`} onClick={() => setActiveTab('earnings')}>Earnings</button></li>
                 <li className="nav-item"><button className={`nav-link ${activeTab === 'deductions' ? 'active' : ''}`} onClick={() => setActiveTab('deductions')}>Deductions</button></li>
                 <li className="nav-item"><button className={`nav-link ${activeTab === 'absences' ? 'active' : ''}`} onClick={() => setActiveTab('absences')}>Absences</button></li>
+                <li className="nav-item"><button className={`nav-link ${activeTab === 'leave' ? 'active' : ''}`} onClick={() => setActiveTab('leave')}>Leave Balances</button></li>
                 <li className="nav-item"><button className={`nav-link ${activeTab === 'info' ? 'active' : ''}`} onClick={() => setActiveTab('info')}>Employee Info</button></li>
               </ul>
               <div className="tab-content">
@@ -205,22 +288,40 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
                   <div className="summary-row net-pay"><span className="label">Net Pay</span><span className="value">₱{formatCurrency(totals.netPay)}</span></div>
                 </div>}
 
-                {activeTab === 'earnings' && <div>
-                    <table className="table table-sm breakdown-table">
-                        <thead><tr><th>Description</th><th>Hours</th><th>Amount (₱)</th><th></th></tr></thead>
-                        <tbody>
-                        {earnings.map((item, index) => (
-                            <tr key={index}>
-                                <td><input type="text" className="form-control form-control-inline" value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value, 'earnings')} /></td>
-                                <td><input type="number" className="form-control form-control-inline" value={item.hours} onChange={(e) => handleItemChange(index, 'hours', e.target.value, 'earnings')} placeholder="--" /></td>
-                                <td><input type="number" className="form-control form-control-inline text-end" value={item.amount} onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'earnings')} /></td>
-                                <td><button className="btn btn-sm btn-remove-row" onClick={() => removeItem(index, 'earnings')} title="Remove Earning"><i className="bi bi-x"></i></button></td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                    <button className="btn btn-sm btn-outline-secondary mt-2" onClick={() => addItem('earnings')}><i className="bi bi-plus-lg me-1"></i> Add Earning</button>
-                </div>}
+                {activeTab === 'earnings' && (
+                  <div role="grid" className="earnings-grid">
+                    <div role="row" className="grid-header">
+                      <div role="columnheader">Description</div>
+                      <div role="columnheader" className="text-center">Hours</div>
+                      <div role="columnheader" className="text-end">Amount (₱)</div>
+                    </div>
+                    {earnings.map((item, index) => (
+                        <div role="row" className="grid-row" key={index}>
+                            <div role="gridcell">
+                              <input type="text" className="form-control form-control-inline" value={item.description} readOnly disabled />
+                            </div>
+                            <div role="gridcell">
+                              <input 
+                                type={typeof item.hours === 'number' ? 'number' : 'text'} 
+                                className="form-control form-control-inline text-center" 
+                                value={item.hours} 
+                                onChange={(e) => handleItemChange(index, 'hours', e.target.value, 'earnings')} 
+                                readOnly={typeof item.hours !== 'number'} 
+                              />
+                            </div>
+                            <div role="gridcell">
+                              <input 
+                                type="number" 
+                                step="0.01"
+                                className="form-control form-control-inline text-end" 
+                                value={item.amount} 
+                                onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'earnings')} 
+                              />
+                            </div>
+                        </div>
+                    ))}
+                  </div>
+                )}
 
                 {activeTab === 'deductions' && (
                   <div className="deductions-tab-grid">
@@ -237,16 +338,28 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
                     <div className="deductions-column">
                        <h6 className="form-grid-title"><i className="bi bi-wallet2 me-2"></i>Other Deductions / Repayments</h6>
                        <div className="deduction-list">
-                         {otherDeductions.map((item, index) => (
-                            <div key={index} className="deduction-item-row">
-                                <input type="text" className="form-control form-control-sm" placeholder="Deduction Name" value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value, 'otherDeductions')} />
-                                <div className="input-group input-group-sm">
-                                    <span className="input-group-text">₱</span>
-                                    <input type="number" className="form-control text-end" placeholder="0.00" value={item.amount} onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'otherDeductions')} />
+                         {otherDeductions.map((item, index) => {
+                            const isPredefined = OTHER_DEDUCTION_TYPES.includes(item.description);
+                            return (
+                                <div key={index} className="deduction-item-row">
+                                    <select 
+                                        className="form-select form-select-sm" 
+                                        value={item.description}
+                                        onChange={(e) => handleItemChange(index, 'description', e.target.value, 'otherDeductions')}
+                                    >
+                                        {OTHER_DEDUCTION_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+                                        {!isPredefined && item.description && (
+                                            <option value={item.description} disabled>{item.description} (custom)</option>
+                                        )}
+                                    </select>
+                                    <div className="input-group input-group-sm">
+                                        <span className="input-group-text">₱</span>
+                                        <input type="number" className="form-control text-end" placeholder="0.00" value={item.amount} onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'otherDeductions')} />
+                                    </div>
+                                    <button className="btn btn-sm btn-remove-row" onClick={() => removeItem(index, 'otherDeductions')} title="Remove Deduction"><i className="bi bi-x"></i></button>
                                 </div>
-                                <button className="btn btn-sm btn-remove-row" onClick={() => removeItem(index, 'otherDeductions')} title="Remove Deduction"><i className="bi bi-x"></i></button>
-                            </div>
-                         ))}
+                            )
+                         })}
                        </div>
                        <button className="btn btn-sm btn-outline-secondary mt-2" onClick={() => addItem('otherDeductions')}><i className="bi bi-plus-lg me-1"></i> Add Deduction</button>
                     </div>
@@ -282,6 +395,46 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
                             <p className="text-muted">The employee had perfect attendance for all scheduled workdays in this period.</p>
                         </div>
                     )}
+                  </div>
+                )}
+
+                {activeTab === 'leave' && (
+                  <div className="p-3">
+                    <div className="leave-balances-grid">
+                        <div>
+                            <h6 className="form-grid-title">Current Leave Balances (Year-to-Date)</h6>
+                            <p className="text-muted small">This is the employee's total remaining leave for the year.</p>
+                            <LeaveBalanceDisplay label="Vacation Leave" balanceData={leaveBalances.vacation} />
+                            <LeaveBalanceDisplay label="Sick Leave" balanceData={leaveBalances.sick} />
+                            <LeaveBalanceDisplay label="Personal Leave" balanceData={leaveBalances.personal} />
+                        </div>
+                        <div className="leave-earnings-breakdown">
+                            <h6 className="form-grid-title">Leave Earnings Breakdown (This Pay Period)</h6>
+                            <p className="text-muted small">Calculated pay for any excused absences in this period, based on available leave credits.</p>
+                            {leaveEarningsBreakdown.breakdown.length > 0 ? (
+                                <table className="table table-sm">
+                                    <tbody>
+                                        {leaveEarningsBreakdown.breakdown.map(item => (
+                                            <tr key={item.type}>
+                                                <td>{item.type} ({item.days} Day/s)</td>
+                                                <td className="text-end">₱{formatCurrency(item.amount)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr className="table-light">
+                                            <th className="text-end">Total Leave Earnings</th>
+                                            <th className="text-end">₱{formatCurrency(leaveEarningsBreakdown.total)}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            ) : (
+                                <div className="text-center text-muted p-4 bg-light rounded">
+                                    No leave earnings recorded for this period.
+                                </div>
+                            )}
+                        </div>
+                    </div>
                   </div>
                 )}
 

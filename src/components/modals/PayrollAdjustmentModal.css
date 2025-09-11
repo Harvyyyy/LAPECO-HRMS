@@ -1,3 +1,5 @@
+/* src/components/modals/PayrollAdjustmentModal.css */
+
 .payroll-adjustment-modal-dialog.modal-xl {
   max-width: 1200px;
 }
@@ -198,4 +200,91 @@ tr:hover .btn-remove-row, .deduction-item-row:hover .btn-remove-row {
     --bs-table-bg: var(--bg-tertiary);
     --bs-table-color: var(--text-primary);
     border-color: var(--border-color);
+}
+
+/* --- Earnings Grid Layout --- */
+.earnings-grid {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.grid-header, .grid-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 0 0.75rem; /* Horizontal padding */
+}
+
+.grid-header {
+    background-color: var(--bg-secondary);
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem; /* Increased padding */
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border-color); /* Bolder separator */
+}
+
+.grid-row {
+    border-bottom: 1px solid var(--border-color);
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+.grid-row:last-child {
+    border-bottom: none;
+}
+.grid-row:hover {
+    background-color: var(--bg-secondary);
+}
+
+.grid-row .form-control-inline {
+    width: 100%;
+    padding: 0.5rem 0.5rem; /* Adjusted padding for better vertical alignment */
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+.grid-row .form-control-inline[disabled],
+.grid-row .form-control-inline[readonly] {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+.grid-row .form-control-inline:focus {
+    background-color: var(--bg-primary);
+    border-color: var(--app-success-color);
+}
+
+
+/* --- Leave Balances Tab --- */
+.leave-balances-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem 3rem;
+    margin-top: 1rem;
+}
+
+.leave-balance-item {
+    margin-bottom: 1.25rem;
+}
+
+.leave-balance-item .balance-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.leave-balance-item .balance-summary-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.leave-earnings-breakdown .table {
+    font-size: 0.9rem;
+}
+.leave-earnings-breakdown .table tfoot {
+    font-weight: 600;
 }

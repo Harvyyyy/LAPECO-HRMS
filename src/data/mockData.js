@@ -1,3 +1,5 @@
+// src/data/mockData.js
+
 // Mock Data for Lapeco HRMS
 // This file contains all the initial mock data used throughout the application
 
@@ -40,7 +42,8 @@ export const initialEmployeesData = [
     status: 'Active', 
     contactNumber: '9123456789', 
     address: '123 Main St, Anytown, USA', 
-    resumeUrl: null 
+    resumeUrl: null,
+    leaveCredits: { sick: 15, vacation: 15, personal: 5 }
   },
   { 
     id: 'EMP001', 
@@ -61,7 +64,8 @@ export const initialEmployeesData = [
     status: 'Active', 
     contactNumber: '9123456789', 
     address: '123 Main St, Anytown, USA', 
-    resumeUrl: null 
+    resumeUrl: null,
+    leaveCredits: { sick: 15, vacation: 15, personal: 5 }
   },
   { 
     id: 'EMP009', 
@@ -75,14 +79,15 @@ export const initialEmployeesData = [
     joiningDate: '2023-08-12', 
     gender: 'Female', 
     birthday: '2000-10-10', 
-    sssNo: null, 
+    sssNo: '34-999',
     tinNo: '111-222', 
     pagIbigNo: '1210-8451-2548', 
     philhealthNo: '0902-5184-4185', 
     status: 'Active', 
     contactNumber: '9123456789', 
     address: '123 Main St, Anytown, USA', 
-    resumeUrl: null 
+    resumeUrl: null,
+    leaveCredits: { sick: 10, vacation: 10, personal: 3 }
   },
   { 
     id: 'EMP002', 
@@ -103,7 +108,8 @@ export const initialEmployeesData = [
     status: 'Active', 
     contactNumber: '9123456789', 
     address: '123 Main St, Anytown, USA', 
-    resumeUrl: null 
+    resumeUrl: null,
+    leaveCredits: { sick: 15, vacation: 15, personal: 5 }
   },
   { 
     id: 'EMP004', 
@@ -118,13 +124,14 @@ export const initialEmployeesData = [
     gender: 'Male', 
     birthday: '1999-04-30', 
     sssNo: '34-101', 
-    tinNo: null, 
-    pagIbigNo: null, 
+    tinNo: '777-888',
+    pagIbigNo: '1215-1312-7883',
     philhealthNo: '0805-1312-7883', 
     status: 'Active', 
     contactNumber: '9123456789', 
     address: '123 Main St, Anytown, USA', 
-    resumeUrl: null 
+    resumeUrl: null,
+    leaveCredits: { sick: 12, vacation: 12, personal: 4 }
   },
   { 
     id: 'EMP005', 
@@ -145,7 +152,8 @@ export const initialEmployeesData = [
     status: 'Active', 
     contactNumber: '9123456789', 
     address: '123 Main St, Anytown, USA', 
-    resumeUrl: null 
+    resumeUrl: null,
+    leaveCredits: { sick: 15, vacation: 20, personal: 5 }
   },
   { 
     id: 'EMP010', 
@@ -166,7 +174,8 @@ export const initialEmployeesData = [
     status: 'Inactive', 
     contactNumber: '9123456789', 
     address: '123 Main St, Anytown, USA', 
-    resumeUrl: null 
+    resumeUrl: null,
+    leaveCredits: { sick: 0, vacation: 0, personal: 0 }
   },
 ];
 
@@ -179,31 +188,51 @@ export const initialPositionsData = [
     id: 1, 
     title: 'HR Personnel', 
     description: 'Handles recruitment, payroll, and employee relations.', 
-    monthlySalary: 35000 
+    monthlySalary: 35000,
+    hourlyRate: 198.86,
+    overtimeRate: 248.58,
+    nightDiffRate: 19.89,
+    lateDeductionPerMin: 3.31,
   },
   { 
     id: 2, 
     title: 'Packer', 
     description: 'Prepares and packs finished products for shipment.', 
-    monthlySalary: 18000 
+    monthlySalary: 18000,
+    hourlyRate: 102.27,
+    overtimeRate: 127.84,
+    nightDiffRate: 10.23,
+    lateDeductionPerMin: 1.70,
   },
   { 
     id: 3, 
     title: 'Lifter', 
     description: 'Operates lifting equipment to move heavy materials.', 
-    monthlySalary: 22000 
+    monthlySalary: 22000,
+    hourlyRate: 125.00,
+    overtimeRate: 156.25,
+    nightDiffRate: 12.50,
+    lateDeductionPerMin: 2.08,
   },
   { 
     id: 4, 
     title: 'Picker', 
     description: 'Selects items from inventory to fulfill orders.', 
-    monthlySalary: 18500 
+    monthlySalary: 18500,
+    hourlyRate: 105.11,
+    overtimeRate: 131.39,
+    nightDiffRate: 10.51,
+    lateDeductionPerMin: 1.75,
   },
   { 
     id: 5, 
     title: 'Mover', 
     description: 'Transports materials and goods within the facility.', 
-    monthlySalary: 19000 
+    monthlySalary: 19000,
+    hourlyRate: 107.95,
+    overtimeRate: 134.94,
+    nightDiffRate: 10.80,
+    lateDeductionPerMin: 1.80,
   },
 ];
 
@@ -312,14 +341,17 @@ export const initialLeaveRequests = [
   { leaveId: 'LVE007', leaveType: 'Sick Leave', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 1, dateFrom: '2025-07-21', dateTo: '2025-07-21', reason: 'Fever and headache.', status: 'Approved' },
   { leaveId: 'LVE008', leaveType: 'Sick Leave', empId: 'EMP001', name: 'Alice Johnson', position: 'Packer', days: 3, dateFrom: '2025-06-02', dateTo: '2025-06-04', reason: 'Stomach flu, doctor advised rest.', status: 'Approved' },
   { leaveId: 'LVE009', leaveType: 'Vacation', empId: 'EMP004', name: 'David Green', position: 'Lifter', days: 10, dateFrom: '2025-01-20', dateTo: '2025-01-29', reason: 'Hometown festival.', status: 'Approved' },
+  // NEW APPROVED LEAVES FOR TESTING
+  { leaveId: 'LVE014', leaveType: 'Personal Leave', empId: 'EMP004', name: 'David Green', position: 'Lifter', days: 1, dateFrom: '2023-09-20', dateTo: '2023-09-20', reason: 'Family emergency.', status: 'Approved' },
+  { leaveId: 'LVE015', leaveType: 'Sick Leave', empId: 'EMP009', name: 'Ivy Lee', position: 'Packer', days: 2, dateFrom: '2023-09-25', dateTo: '2023-09-26', reason: 'Migraine.', status: 'Approved' },
   
   // --- DECLINED REQUESTS ---
   { leaveId: 'LVE010', leaveType: 'Vacation', empId: 'EMP009', name: 'Ivy Lee', position: 'Packer', days: 2, dateFrom: '2025-08-18', dateTo: '2025-08-19', reason: 'Sudden plan with friends.', status: 'Declined' },
   { leaveId: 'LVE011', leaveType: 'Personal Leave', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 1, dateFrom: '2025-07-30', dateTo: '2025-07-30', reason: 'Need to process bank documents.', status: 'Declined' },
 
   // --- CANCELLED REQUESTS ---
-  { leaveId: 'LVE012', leaveType: 'Vacation', empId: 'EMP012', name: 'Nagi Seishiro', position: 'Packer', days: 2, dateFrom: '2025-08-18', dateTo: '2025-08-19', reason: 'Sudden plan with friends.', status: 'Canceled' },
-  { leaveId: 'LVE013', leaveType: 'Personal Leave', empId: 'EMP013', name: 'Isagi Yoichi', position: 'Lifter', days: 1, dateFrom: '2025-07-30', dateTo: '2025-07-30', reason: 'Need to process bank documents.', status: 'Canceled' },
+  { leaveId: 'LVE012', leaveType: 'Vacation', empId: 'EMP001', name: 'Alice Johnson', position: 'Packer', days: 2, dateFrom: '2025-08-18', dateTo: '2025-08-19', reason: 'Sudden plan with friends.', status: 'Canceled' },
+  { leaveId: 'LVE013', leaveType: 'Personal Leave', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 1, dateFrom: '2025-07-30', dateTo: '2025-07-30', reason: 'Need to process bank documents.', status: 'Canceled' },
 ];
 
 // ============================================================================
@@ -466,7 +498,6 @@ export const initialEvaluationFactors = [
     description: 'This section measures factors directly related to job satisfaction and an employee\'s alignment with the team and company.',
     items: [
       { id: 'eng_role_satisfaction', name: 'Role Satisfaction', description: 'Appears energized and fulfilled by their day-to-day responsibilities.' },
-      // --- MODIFIED: "Manager Relationship" has been removed as requested. ---
       { id: 'eng_growth_opportunity', name: 'Career Growth Opportunities', description: 'Sees a clear and viable path for advancement and skill development within the company.' },
     ]
   },
@@ -475,27 +506,25 @@ export const initialEvaluationFactors = [
     title: 'Key Performance Indicators (KPIs)',
     type: 'kpi_section',
   },
-  // --- MODIFIED: The summary sections are now combined and evaluator-focused. ---
   {
-    id: 'factor_evaluator_summary', // Renamed from factor_manager_summary
-    title: "Evaluator's Overall Summary", // Renamed title
+    id: 'factor_evaluator_summary',
+    title: "Evaluator's Overall Summary",
     type: 'textarea',
     description: "Provide a holistic summary of the individual's performance, highlighting key achievements and overall contributions during this review period."
   },
   {
-    id: 'factor_development_areas', // Renamed from factor_development_plan
-    title: "Key Strengths & Development Areas", // Renamed title
+    id: 'factor_development_areas',
+    title: "Key Strengths & Development Areas",
     type: 'textarea',
     description: "Identify 1-2 key strengths to leverage and 1-2 areas for focused development for the next review period."
   }
-  // --- MODIFIED: factor_employee_feedback has been removed as requested. ---
 ];
 
 export const initialEvaluationsData = [
   {
     id: 'EVAL01',
-    employeeId: 'EMP001', // Alice Johnson (Packer)
-    evaluatorId: 'EMP003', // Carol White (Leader)
+    employeeId: 'EMP001',
+    evaluatorId: 'EMP003',
     periodStart: '2025-01-01',
     periodEnd: '2025-06-30',
     status: 'Completed',
@@ -510,7 +539,7 @@ export const initialEvaluationsData = [
       'pot_leadership': { score: 3, comments: 'Informally helps guide new packers.' },
       'eng_role_satisfaction': { score: 5, comments: '' },
       'eng_growth_opportunity': { score: 4, comments: '' },
-      'KPI02': { score: 4, comments: 'Meets the target of packages per hour.' }, // Packing Speed
+      'KPI02': { score: 4, comments: 'Meets the target of packages per hour.' },
       'factor_evaluator_summary': { value: 'Alice is a top performer and a key asset to the warehouse team. Her efficiency and attention to detail are outstanding.' },
       'factor_development_areas': { value: 'Continue to lead by example in packing efficiency and mentor new packers. Explore cross-training as a Picker.' },
     },
@@ -518,8 +547,8 @@ export const initialEvaluationsData = [
   },
   {
     id: 'EVAL02',
-    employeeId: 'EMP009', // Ivy Lee (Packer)
-    evaluatorId: 'EMP003', // Carol White (Leader)
+    employeeId: 'EMP009',
+    evaluatorId: 'EMP003',
     periodStart: '2025-01-01',
     periodEnd: '2025-06-30',
     status: 'Completed',
@@ -534,7 +563,7 @@ export const initialEvaluationsData = [
       'pot_leadership': { score: 2, comments: '' },
       'eng_role_satisfaction': { score: 3, comments: '' },
       'eng_growth_opportunity': { score: 3, comments: '' },
-      'KPI02': { score: 3, comments: 'Slightly below target on average packages per hour.' }, // Packing Speed
+      'KPI02': { score: 3, comments: 'Slightly below target on average packages per hour.' },
       'factor_evaluator_summary': { value: 'Ivy is a reliable team member who follows instructions well. Focus for the next period should be on improving speed and accuracy to meet team standards.' },
       'factor_development_areas': { value: 'Strengths: Diligent and follows rules. Development Areas: 1. Shadow Alice for one shift to learn efficiency techniques. 2. Implement a personal double-check system before sealing packages.' },
     },
@@ -542,8 +571,8 @@ export const initialEvaluationsData = [
   },
   {
     id: 'EVAL03',
-    employeeId: 'EMP004', // David Green (Lifter)
-    evaluatorId: 'EMP002', // Bob Smith (Leader)
+    employeeId: 'EMP004',
+    evaluatorId: 'EMP002',
     periodStart: '2025-01-01',
     periodEnd: '2025-06-30',
     status: 'Completed',
@@ -558,8 +587,8 @@ export const initialEvaluationsData = [
       'pot_leadership': { score: 3, comments: '' },
       'eng_role_satisfaction': { score: 4, comments: '' },
       'eng_growth_opportunity': { score: 3, comments: '' },
-      'KPI03': { score: 5, comments: 'Zero safety incidents reported for David this period.' }, // Safety Incident Rate
-      'KPI04': { score: 4, comments: 'Completes pre-shift checks consistently.' }, // Equipment Maintenance Checks
+      'KPI03': { score: 5, comments: 'Zero safety incidents reported for David this period.' },
+      'KPI04': { score: 4, comments: 'Completes pre-shift checks consistently.' },
       'factor_evaluator_summary': { value: 'David is a highly efficient operator. His primary area for improvement is maintaining 100% adherence to all safety protocols, especially during busy periods.' },
       'factor_development_areas': { value: 'Strengths: Highly efficient and reliable. Development Areas: Attend the advanced forklift safety refresher course. Aim for zero safety protocol deviations in the next 6 months.' },
     },
@@ -567,45 +596,38 @@ export const initialEvaluationsData = [
   },
   {
     id: 'EVAL04',
-    employeeId: 'EMP001', // Alice Johnson (Packer)
-    evaluatorId: 'EMP003', // Carol White (Leader)
+    employeeId: 'EMP001',
+    evaluatorId: 'EMP003',
     periodStart: '2024-07-01',
     periodEnd: '2024-12-31',
     status: 'Completed',
     factorScores: { /* ... abbreviated for brevity ... */ },
     overallScore: 90.00,
   },
-  // --- (NEW) Needs Improvement Employee ---
   {
     id: 'EVAL05',
-    employeeId: 'EMP004', // David Green (Lifter)
-    evaluatorId: 'EMP002', // Bob Smith (Leader)
+    employeeId: 'EMP004',
+    evaluatorId: 'EMP002',
     periodStart: '2025-07-01',
     periodEnd: '2025-12-31',
     status: 'Completed',
     factorScores: {
-      // Low Behavioral Scores
       'bhv_teamwork': { score: 2, comments: 'Has been working in isolation and is sometimes reluctant to assist others when asked.' },
       'bhv_communication': { score: 3, comments: '' },
       'bhv_professionalism': { score: 2, comments: 'Observed being dismissive of feedback during a safety briefing.' },
-      // Low Work Quality Scores
       'wq_accuracy': { score: 4, comments: 'Still accurate when focused.' },
       'wq_efficiency': { score: 2, comments: 'Noticeable decrease in the speed of pallet movements. Often seems disengaged.' },
-      // Low Potential Scores
       'pot_learning_agility': { score: 2, comments: 'Resistant to feedback regarding safety protocols.' },
       'pot_ambition_drive': { score: 2, comments: 'Has not shown initiative for new tasks recently.' },
       'pot_leadership': { score: 1, comments: '' },
-      // Low Engagement Scores (Turnover Risk Indicators)
       'eng_role_satisfaction': { score: 2, comments: 'Appears less motivated than in previous periods.' },
       'eng_growth_opportunity': { score: 2, comments: '' },
-      // Low KPI Scores
-      'KPI03': { score: 2, comments: 'Involved in one minor, non-injury incident due to rushing.' }, // Safety Incident Rate
-      'KPI04': { score: 3, comments: 'Checks are completed, but sometimes hastily.' }, // Equipment Maintenance Checks
-      // Evaluator Summary
+      'KPI03': { score: 2, comments: 'Involved in one minor, non-injury incident due to rushing.' },
+      'KPI04': { score: 3, comments: 'Checks are completed, but sometimes hastily.' },
       'factor_evaluator_summary': { value: "David's performance has seen a significant decline this period, particularly concerning safety compliance and overall efficiency. Immediate and sustained improvement is required." },
       'factor_development_areas': { value: "Key Strengths: Still knowledgeable about the equipment when focused. Development Areas: Must recommit to all safety protocols without exception. Needs to improve time management and re-engage with the team." },
     },
-    overallScore: 46.80, // Calculated score, clearly in the "Needs Improvement" range
+    overallScore: 46.80,
   },
 ];
 
@@ -625,48 +647,49 @@ export const initialNotificationsData = [
 // PAYROLL DATA
 // ============================================================================
 
+// src/data/mockData.js (partial - only the updated array is shown)
+
 export const initialPayrollsData = [
   {
     runId: 'RUN-2023-10-31',
     cutOff: '2023-10-16 to 2023-10-31',
+    payrollType: 'Semi-monthly',
     records: [
       { 
         payrollId: 'PAY003', 
         empId: 'EMP001', 
         employeeName: 'Alice Johnson',
-        // --- NEW DETAILED STRUCTURE ---
-        period: 'Oct 16-31',
+        period: 'Oct 16-31, 2023',
         paymentDate: '2023-11-05',
-        cutOffStart: '2023-10-16',
-        cutOffEnd: '2023-10-31',
+        payStartDate: '2023-10-16',
+        payEndDate: '2023-10-31',
         earnings: [
           { description: 'Regular Pay', hours: 88, amount: 9000.00 },
           { description: 'Overtime Pay', hours: 5.5, amount: 511.36 }
         ],
         deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 },
         otherDeductions: [
-          { description: 'Company Loan', amount: 1000.00 }
+          { description: 'Company Loan', loanAmount: 5000.00, amount: 1000.00, outstandingBalance: 4000.00 }
         ],
         absences: [],
-        leaveBalances: { vacation: 12.5, sick: 8 },
+        leaveBalances: { vacation: 12.5, sick: 8, personal: 5 },
         status: 'Paid'
       },
       { 
         payrollId: 'PAY004', 
         empId: 'EMP003', 
         employeeName: 'Carol White',
-        // --- NEW DETAILED STRUCTURE ---
-        period: 'Oct 16-31',
+        period: 'Oct 16-31, 2023',
         paymentDate: '2023-11-05',
-        cutOffStart: '2023-10-16',
-        cutOffEnd: '2023-10-31',
+        payStartDate: '2023-10-16',
+        payEndDate: '2023-10-31',
         earnings: [
           { description: 'Regular Pay', hours: 88, amount: 9000.00 },
         ],
         deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 },
         otherDeductions: [],
         absences: [],
-        leaveBalances: { vacation: 10, sick: 5 },
+        leaveBalances: { vacation: 10, sick: 5, personal: 5 },
         status: 'Pending'
       },
     ]
@@ -674,45 +697,134 @@ export const initialPayrollsData = [
   {
     runId: 'RUN-2023-10-15',
     cutOff: '2023-10-01 to 2023-10-15',
+    payrollType: 'Semi-monthly',
     records: [
       { 
         payrollId: 'PAY001', 
         empId: 'EMP001', 
         employeeName: 'Alice Johnson',
-        // --- NEW DETAILED STRUCTURE ---
-        period: 'Oct 1-15',
+        period: 'Oct 1-15, 2023',
         paymentDate: '2023-10-20',
-        cutOffStart: '2023-10-01',
-        cutOffEnd: '2023-10-15',
+        payStartDate: '2023-10-01',
+        payEndDate: '2023-10-15',
         earnings: [
-          { description: 'Regular Pay', hours: 88, amount: 9000.00 },
-          { description: 'Holiday Pay - Regular', hours: 8, amount: 950.00 }
+          { description: 'Regular Pay', hours: 80, amount: 8181.82 },
+          { description: 'Holiday Pay', hours: 8, amount: 950.00 },
+          { description: 'Leave Pay', hours: 8, amount: 818.18 }
         ],
         deductions: { tax: 452.27, sss: 405, philhealth: 200, hdmf: 100 },
         otherDeductions: [],
-        absences: [{ description: 'Unexcused Absence', startDate: '2023-10-10', endDate: '2023-10-10', totalDays: 1 }],
-        leaveBalances: { vacation: 13, sick: 8 },
+        absences: [{ description: 'Excused', startDate: '2023-10-10', endDate: '2023-10-10', totalDays: 1 }],
+        leaveBalances: { vacation: 13, sick: 8, personal: 5 },
         status: 'Paid' 
       },
       { 
         payrollId: 'PAY002', 
         empId: 'EMP002', 
         employeeName: 'Bob Smith',
-        // --- NEW DETAILED STRUCTURE ---
-        period: 'Oct 1-15',
+        period: 'Oct 1-15, 2023',
         paymentDate: '2023-10-20',
-        cutOffStart: '2023-10-01',
-        cutOffEnd: '2023-10-15',
+        payStartDate: '2023-10-01',
+        payEndDate: '2023-10-15',
         earnings: [
           { description: 'Regular Pay', hours: 80, amount: 10000.00 },
-          { description: 'Communication Allowance', hours: null, amount: 1000.00 },
+          { description: 'Allowance', hours: null, amount: 1000.00 },
         ],
         deductions: { tax: 650, sss: 495, philhealth: 275, hdmf: 100 },
         otherDeductions: [
-          { description: 'Pag-IBIG Loan', loanAmount: 20000, amount: 1500.00, outstandingBalance: 18500.00 }
+          { description: 'Pag-IBIG Loan', loanAmount: 20000.00, amount: 1500.00, outstandingBalance: 18500.00 }
         ],
         absences: [],
-        leaveBalances: { vacation: 5, sick: 3 },
+        leaveBalances: { vacation: 5, sick: 3, personal: 5 },
+        status: 'Paid' 
+      },
+    ]
+  },
+  {
+    runId: 'RUN-2023-09-30',
+    cutOff: '2023-09-16 to 2023-09-30',
+    payrollType: 'Semi-monthly',
+    records: [
+      { 
+        payrollId: 'PAY005', 
+        empId: 'EMP002', 
+        employeeName: 'Bob Smith',
+        period: 'Sep 16-30, 2023',
+        paymentDate: '2023-10-05',
+        payStartDate: '2023-09-16',
+        payEndDate: '2023-09-30',
+        earnings: [
+          { description: 'Regular Pay', hours: 88, amount: 11000.00 }
+        ],
+        deductions: { tax: 650, sss: 495, philhealth: 275, hdmf: 100 },
+        otherDeductions: [
+            { description: 'Pag-IBIG Loan', loanAmount: 20000.00, amount: 1500.00, outstandingBalance: 17000.00 }
+        ],
+        absences: [],
+        leaveBalances: { vacation: 5.5, sick: 3.5, personal: 4 },
+        status: 'Paid'
+      },
+      { 
+        payrollId: 'PAY006', 
+        empId: 'EMP004', 
+        employeeName: 'David Green',
+        period: 'Sep 16-30, 2023',
+        paymentDate: '2023-10-05',
+        payStartDate: '2023-09-16',
+        payEndDate: '2023-09-30',
+        earnings: [
+          { description: 'Regular Pay', hours: 80, amount: 9090.91 },
+          { description: 'Bonus', hours: null, amount: 2500.00 },
+          { description: 'Leave Pay', hours: 8, amount: 909.09 }
+        ],
+        deductions: { tax: 980.50, sss: 495, philhealth: 275, hdmf: 100 },
+        otherDsuctions: [],
+        absences: [{ description: 'Excused', startDate: '2023-09-20', endDate: '2023-09-20', totalDays: 1 }],
+        leaveBalances: { vacation: 8, sick: 7, personal: 4 },
+        status: 'Paid'
+      },
+    ]
+  },
+  {
+    runId: 'RUN-2023-09-15',
+    cutOff: '2023-09-01 to 2023-09-15',
+    payrollType: 'Semi-monthly',
+    records: [
+      { 
+        payrollId: 'PAY007', 
+        empId: 'EMP001', 
+        employeeName: 'Alice Johnson',
+        period: 'Sep 1-15, 2023',
+        paymentDate: '2023-09-20',
+        payStartDate: '2023-09-01',
+        payEndDate: '2023-09-15',
+        earnings: [
+          { description: 'Regular Pay', hours: 80, amount: 8181.82 },
+          { description: 'Leave Pay', hours: 8, amount: 818.18 }
+        ],
+        deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 },
+        otherDeductions: [
+          { description: 'Company Loan', loanAmount: 5000.00, amount: 1000.00, outstandingBalance: 3000.00 }
+        ],
+        absences: [{ description: 'Excused', startDate: '2023-09-05', endDate: '2023-09-05', totalDays: 1 }],
+        leaveBalances: { vacation: 13.5, sick: 8, personal: 5 },
+        status: 'Paid' 
+      },
+      { 
+        payrollId: 'PAY008', 
+        empId: 'EMP009', 
+        employeeName: 'Ivy Lee',
+        period: 'Sep 1-15, 2023',
+        paymentDate: '2023-09-20',
+        payStartDate: '2023-09-01',
+        payEndDate: '2023-09-15',
+        earnings: [
+          { description: 'Regular Pay', hours: 88, amount: 9000.00 },
+        ],
+        deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 },
+        otherDeductions: [],
+        absences: [],
+        leaveBalances: { vacation: 10, sick: 10, personal: 3 },
         status: 'Paid' 
       },
     ]
@@ -767,4 +879,55 @@ export const initialUserAccounts = [
   { employeeId: 'EMP002', username: 'leader_bob', password: 'password123', status: 'Active' },
   { employeeId: 'EMP001', username: 'employee_alice', password: 'password123', status: 'Active' },
   { employeeId: 'EMP010', username: 'frank_black', password: 'disabledpassword', status: 'Deactivated' },
+];
+
+// ============================================================================
+// ARCHIVED CONTRIBUTIONS DATA
+// ============================================================================
+
+export const initialArchivedContributions = [
+  {
+    id: 'ARCHIVE-SSS-1',
+    type: 'SSS',
+    payPeriod: '2023-10-01 to 2023-10-15',
+    generationDate: '2023-10-20T10:00:00Z',
+    generatedBy: 'Grace Field',
+    columns: [
+      { key: 'no', label: 'No.', editable: false, isPermanent: true },
+      { key: 'sssNo', label: 'SSS Number', editable: false, isPermanent: true },
+      { key: 'lastName', label: 'Last Name', editable: false, isPermanent: true },
+      { key: 'firstName', label: 'First Name', editable: false, isPermanent: true },
+      { key: 'middleName', label: 'Middle Name', editable: false, isPermanent: true },
+      { key: 'employeeContribution', label: 'EE Share', editable: true, isPermanent: false },
+      { key: 'employerContribution', label: 'ER Share', editable: true, isPermanent: false },
+      { key: 'totalContribution', label: 'Total', editable: true, isPermanent: false },
+    ],
+    rows: [
+      { no: 1, sssNo: '34-456', lastName: 'Johnson', firstName: 'Alice', middleName: '', employeeContribution: 290.65, employerContribution: 290.65, totalContribution: 581.30 },
+      { no: 2, sssNo: '34-789', lastName: 'Smith', firstName: 'Bob', middleName: '', employeeContribution: 450, employerContribution: 450, totalContribution: 900.00 },
+    ],
+    headerData: { 'Employer ID Number': '03-9-1234567-8', 'Employer Name': 'Lapeco Group of Companies', 'Contribution Month': 'October 2023' }
+  },
+  {
+    id: 'ARCHIVE-PH-1',
+    type: 'PhilHealth',
+    payPeriod: '2023-10-01 to 2023-10-15',
+    generationDate: '2023-10-20T10:05:00Z',
+    generatedBy: 'Grace Field',
+    columns: [
+        { key: 'no', label: 'No.', editable: false, isPermanent: true },
+        { key: 'philhealthNo', label: 'PhilHealth Number', editable: false, isPermanent: true },
+        { key: 'lastName', label: 'Last Name', editable: false, isPermanent: true },
+        { key: 'firstName', label: 'First Name', editable: false, isPermanent: true },
+        { key: 'middleName', label: 'Middle Name', editable: false, isPermanent: true },
+        { key: 'employeeContribution', label: 'EE Share', editable: true, isPermanent: false },
+        { key: 'employerContribution', label: 'ER Share', editable: true, isPermanent: false },
+        { key: 'totalContribution', label: 'Total', editable: true, isPermanent: false },
+    ],
+    rows: [
+      { no: 1, philhealthNo: '1120-2485-8688', lastName: 'Johnson', firstName: 'Alice', middleName: '', employeeContribution: 200, employerContribution: 200, totalContribution: 400 },
+      { no: 2, philhealthNo: '0825-3830-9814', lastName: 'Smith', firstName: 'Bob', middleName: '', employeeContribution: 220, employerContribution: 220, totalContribution: 440 },
+    ],
+    headerData: { 'Employer Name': 'Lapeco Group of Companies', 'Contribution Month': 'October 2023' }
+  }
 ];

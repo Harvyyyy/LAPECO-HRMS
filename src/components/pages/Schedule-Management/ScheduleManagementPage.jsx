@@ -1,3 +1,5 @@
+// src/components/pages/Schedule-Management/ScheduleManagementPage.jsx
+
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ScheduleManagementPage.css';
@@ -5,6 +7,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import CreateTemplateModal from '../../modals/CreateTemplateModal';
 import EditScheduleModal from '../../modals/EditScheduleModal';
 import SelectDateForScheduleModal from '../../modals/SelectDateForScheduleModal';
+import ConfirmationModal from '../../modals/ConfirmationModal';
 
 const ScheduleManagementPage = ({ employees, positions, schedules, templates, handlers }) => {
   const [activeView, setActiveView] = useState('daily');
@@ -25,6 +28,7 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
   const [editingScheduleDate, setEditingScheduleDate] = useState(null);
   const [showSelectDateModal, setShowSelectDateModal] = useState(false);
   const [creationSource, setCreationSource] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
   
   const navigate = useNavigate();
 
@@ -113,7 +117,12 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
   const dailyViewColumns = useMemo(() => {
     if (!scheduledEmployeesForDate || scheduledEmployeesForDate.length === 0) return [];
     const columnKeys = new Set();
-    const excludedKeys = new Set(['scheduleId', 'empId', 'date', 'name', 'position', 'id', 'positionId', 'isTeamLeader', 'email', 'joiningDate', 'birthday', 'gender', 'address', 'contactNumber', 'imageUrl', 'sssNo', 'tinNo', 'pagIbigNo', 'philhealthNo', 'resumeUrl', 'shift', 'status']);
+    const excludedKeys = new Set([
+        'scheduleId', 'empId', 'date', 'name', 'position', 'id', 'positionId', 'isTeamLeader', 
+        'email', 'joiningDate', 'birthday', 'gender', 'address', 'contactNumber', 'imageUrl', 
+        'sssNo', 'tinNo', 'pagIbigNo', 'philhealthNo', 'resumeUrl', 'shift', 'status',
+        'leaveCredits', 'firstName', 'middleName', 'lastName'
+    ]);
     scheduledEmployeesForDate.forEach(schedule => Object.keys(schedule).forEach(key => !excludedKeys.has(key) && columnKeys.add(key)));
     return Array.from(columnKeys).map(key => ({ key, name: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ') }));
   }, [scheduledEmployeesForDate]);
@@ -139,8 +148,7 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
     handlers.updateSchedule(date, updatedEntries);
     handleCloseEditScheduleModal();
   };
-  
-  // --- MODIFIED: Simplified handler ---
+
   const handleStartCreationFlow = (source) => {
     setCreationSource(source);
     setShowSelectDateModal(true);
@@ -150,6 +158,19 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
     navigate('/dashboard/schedule-management/create', {
         state: { date: selectedDate, method: creationSource.type, sourceData: creationSource.data }
     });
+  };
+
+  const handleOpenDeleteConfirm = (item, type) => {
+    setItemToDelete({ item, type });
+  };
+  
+  const handleConfirmDelete = () => {
+    if (itemToDelete.type === 'schedule') {
+      handlers.deleteSchedule(itemToDelete.item.date);
+    } else if (itemToDelete.type === 'template') {
+      handlers.deleteTemplate(itemToDelete.item.id);
+    }
+    setItemToDelete(null);
   };
 
   const getSortIcon = (key, config) => {
@@ -311,8 +332,7 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
                             <div className="info-row"><span className="info-label">Employees Scheduled:</span><span className="info-value">{scheduleInfo.employeeCount}</span></div>
                         </div>
                         <div className="card-footer">
-                            {/* --- MODIFIED: Added Use Schedule button --- */}
-                            <button className="btn btn-sm btn-success" onClick={() => handleStartCreationFlow({ type: 'copy', data: schedulesByDate[scheduleInfo.date] })}>Use Schedule</button>
+                            <button className="btn btn-sm btn-outline-danger" onClick={() => handleOpenDeleteConfirm(scheduleInfo, 'schedule')}>Delete</button>
                             <button className="btn btn-sm btn-outline-secondary" onClick={() => handleOpenEditScheduleModal(scheduleInfo.date)}>Edit</button>
                             <button className="btn btn-sm btn-outline-primary" onClick={() => setPreviewData({ info: scheduleInfo, type: 'schedule' })}>View</button>
                         </div>
@@ -344,8 +364,7 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
                             </dl>
                         </div>
                         <div className="card-footer">
-                            {/* --- MODIFIED: Added Use Template button --- */}
-                            <button className="btn btn-sm btn-success" onClick={() => handleStartCreationFlow({ type: 'template', data: tpl })}>Use Template</button>
+                            <button className="btn btn-sm btn-outline-danger" onClick={() => handleOpenDeleteConfirm(tpl, 'template')}>Delete</button>
                             <button className="btn btn-sm btn-outline-secondary" onClick={() => handleOpenCreateTemplateModal(tpl)}>Edit</button>
                             <button className="btn btn-sm btn-outline-primary" onClick={() => setPreviewData({ ...tpl, type: 'template' })}>View</button>
                         </div>
@@ -386,6 +405,21 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
       {showCreateTemplateModal && ( <CreateTemplateModal show={showCreateTemplateModal} onClose={handleCloseCreateTemplateModal} onSave={handleSaveAndCloseTemplateModal} positions={positions} templateData={editingTemplate} /> )}
       {showEditScheduleModal && editingScheduleDate && ( <EditScheduleModal show={showEditScheduleModal} onClose={handleCloseEditScheduleModal} onSave={handleSaveAndCloseEditModal} scheduleDate={editingScheduleDate} initialScheduleEntries={schedules.filter(s => s.date === editingScheduleDate)} allEmployees={employees} positions={positions} /> )}
       {showSelectDateModal && ( <SelectDateForScheduleModal show={showSelectDateModal} onClose={() => setShowSelectDateModal(false)} onProceed={handleProceedToBuilder} existingScheduleDates={existingScheduleDatesSet} />)}
+      
+      <ConfirmationModal
+        show={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title={`Confirm ${itemToDelete?.type} Deletion`}
+        confirmText="Yes, Delete"
+        confirmVariant="danger"
+      >
+        <p>
+            Are you sure you want to permanently delete the {itemToDelete?.type}{' '}
+            <strong>"{itemToDelete?.item.name || itemToDelete?.item.date}"</strong>?
+        </p>
+        <p className="text-danger">This action cannot be undone.</p>
+      </ConfirmationModal>
     </div>
   );
 };

@@ -1,113 +1,157 @@
 import { format } from 'date-fns';
 
-const generateBaseData = (employees, positions) => {
-  return employees
-    .filter(emp => emp.status === 'Active' && emp.positionId)
-    .map(emp => {
-      const position = positions.find(p => p.id === emp.positionId);
-      const nameParts = emp.name.split(' ').filter(Boolean);
-      
-      const lastName = nameParts.length > 1 ? nameParts.pop() : emp.name;
-      const firstName = nameParts.length > 0 ? nameParts.shift() : '';
-      const middleName = nameParts.join(' ');
-      const middleInitial = middleName ? middleName.charAt(0).toUpperCase() : '';
-
-      return {
-        ...emp,
-        firstName,
-        lastName,
-        middleName,
-        middleInitial,
-        monthlySalary: position?.monthlySalary || 0,
-      };
-    })
-    .sort((a, b) => a.lastName.localeCompare(b.lastName));
+const MOCK_COMPANY_INFO = {
+    employerIdSss: '03-9-1234567-8',
+    employerName: 'Lapeco Group of Companies',
+    address: '123 Innovation Drive, Tech City',
 };
 
-const getStandardColumns = (agencyName, agencyIdKey) => [
-    { key: 'no', label: 'No.', editable: false, isPermanent: true },
-    { key: 'lastName', label: 'Surname', editable: false, isPermanent: true },
-    { key: 'firstName', label: 'First Name', editable: false, isPermanent: true },
-    { key: 'middleName', label: 'Middle Name', editable: false, isPermanent: true },
-    { key: agencyIdKey, label: `${agencyName} ID No.`, editable: true, isPermanent: true },
-    { key: 'eeShare', label: 'EE Share', editable: true, isPermanent: false },
-    { key: 'erShare', label: 'ER Share', editable: true, isPermanent: false },
-    { key: 'total', label: 'Total', editable: false, isPermanent: true },
-];
+// Simplified calculation for SSS based on a mock salary bracket
+const calculateSss = (salary) => {
+    if (salary > 29750) return 1350;
+    if (salary > 20250) return 900;
+    return 581.30;
+};
 
+// Simplified calculation for PhilHealth
+const calculatePhilhealth = (salary) => {
+    const rate = 0.04; // Example rate
+    let premium = salary * rate;
+    if (premium > 3200) premium = 3200;
+    if (premium < 400) premium = 400;
+    return premium;
+};
 
-export const generatePagibigData = (employees, positions) => {
-  const employeeData = generateBaseData(employees, positions);
-  const columns = getStandardColumns('PAG-IBIG', 'pagIbigNo');
+// --- REFACTORED LOGIC: All functions now use the payroll run records as the source of truth ---
 
-  const rows = employeeData.map((emp, index) => {
-    // Pag-IBIG is typically a fixed amount for most employees
-    const eeShare = 100.00;
-    const erShare = 100.00;
-    const total = eeShare + erShare;
+export const generateSssData = (employees, positions, selectedPayrollRun) => {
+    const employeeMap = new Map(employees.map(e => [e.id, e]));
+    const positionMap = new Map(positions.map(p => [p.id, p]));
+
+    const rows = selectedPayrollRun.records.map((record, index) => {
+        const emp = employeeMap.get(record.empId);
+        if (!emp) return null; // Skip if employee record not found
+
+        const position = positionMap.get(emp.positionId);
+        const salary = position?.monthlySalary || 0;
+        const totalContribution = calculateSss(salary);
+        return {
+            no: index + 1,
+            sssNo: emp.sssNo || '',
+            lastName: emp.lastName || '',
+            firstName: emp.firstName || '',
+            middleName: emp.middleName || '',
+            employeeContribution: totalContribution / 2,
+            employerContribution: totalContribution / 2,
+            totalContribution: totalContribution,
+        };
+    }).filter(Boolean); // Filter out any null entries
 
     return {
-        no: index + 1,
-        lastName: emp.lastName.toUpperCase(),
-        firstName: emp.firstName.toUpperCase(),
-        middleName: emp.middleName.toUpperCase(),
-        pagIbigNo: emp.pagIbigNo || '',
-        eeShare: eeShare.toFixed(2),
-        erShare: erShare.toFixed(2),
-        total: total.toFixed(2),
+        title: 'SSS Contribution Report',
+        headerData: {
+            'Employer ID Number': MOCK_COMPANY_INFO.employerIdSss,
+            'Employer Name': MOCK_COMPANY_INFO.employerName,
+            'Contribution Month': format(new Date(selectedPayrollRun.cutOff.split(' to ')[1]), 'MMMM yyyy'),
+        },
+        columns: [
+            { key: 'no', label: 'No.', editable: false, isPermanent: true },
+            { key: 'sssNo', label: 'SSS Number', editable: false, isPermanent: true },
+            { key: 'lastName', label: 'Last Name', editable: false, isPermanent: true },
+            { key: 'firstName', label: 'First Name', editable: false, isPermanent: true },
+            { key: 'middleName', label: 'Middle Name', editable: false, isPermanent: true },
+            { key: 'employeeContribution', label: 'EE Share', editable: true, isPermanent: false },
+            { key: 'employerContribution', label: 'ER Share', editable: true, isPermanent: false },
+            { key: 'totalContribution', label: 'Total', editable: true, isPermanent: false },
+        ],
+        rows,
     };
-  });
-
-  return { columns, rows, title: 'Pag-IBIG Contribution Report', headerData: { 'PERCOV': format(new Date(), 'yyyyMM') } };
 };
 
-export const generatePhilhealthData = (employees, positions) => {
-    const employeeData = generateBaseData(employees, positions);
-    const columns = getStandardColumns('PHILHEALTH', 'philhealthNo');
-  
-    const rows = employeeData.map((emp, index) => {
-        // Simplified PhilHealth Calculation (e.g., 5% of salary, split 50/50)
-        const premium = emp.monthlySalary * 0.05;
-        const eeShare = premium / 2;
-        const erShare = premium / 2;
-        const total = premium;
+export const generatePhilhealthData = (employees, positions, selectedPayrollRun) => {
+    const employeeMap = new Map(employees.map(e => [e.id, e]));
+    const positionMap = new Map(positions.map(p => [p.id, p]));
+    
+    const rows = selectedPayrollRun.records.map((record, index) => {
+        const emp = employeeMap.get(record.empId);
+        if (!emp) return null;
 
+        const position = positionMap.get(emp.positionId);
+        const salary = position?.monthlySalary || 0;
+        const totalContribution = calculatePhilhealth(salary);
         return {
             no: index + 1,
-            lastName: emp.lastName.toUpperCase(),
-            firstName: emp.firstName.toUpperCase(),
-            middleName: emp.middleName.toUpperCase(),
             philhealthNo: emp.philhealthNo || '',
-            eeShare: eeShare.toFixed(2),
-            erShare: erShare.toFixed(2),
-            total: total.toFixed(2),
+            lastName: emp.lastName || '',
+            firstName: emp.firstName || '',
+            middleName: emp.middleName || '',
+            employeeContribution: totalContribution / 2,
+            employerContribution: totalContribution / 2,
+            totalContribution: totalContribution,
         };
-    });
+    }).filter(Boolean);
 
-    return { columns, rows, title: 'PhilHealth Contribution Report', headerData: { 'Applicable Month': format(new Date(), 'MMMM yyyy') } };
+    return {
+        title: 'PhilHealth Contribution Report',
+        headerData: {
+            'Employer Name': MOCK_COMPANY_INFO.employerName,
+            'Contribution Month': format(new Date(selectedPayrollRun.cutOff.split(' to ')[1]), 'MMMM yyyy'),
+        },
+        columns: [
+            { key: 'no', label: 'No.', editable: false, isPermanent: true },
+            { key: 'philhealthNo', label: 'PhilHealth Number', editable: false, isPermanent: true },
+            { key: 'lastName', label: 'Last Name', editable: false, isPermanent: true },
+            { key: 'firstName', label: 'First Name', editable: false, isPermanent: true },
+            { key: 'middleName', label: 'Middle Name', editable: false, isPermanent: true },
+            { key: 'employeeContribution', label: 'EE Share', editable: true, isPermanent: false },
+            { key: 'employerContribution', label: 'ER Share', editable: true, isPermanent: false },
+            { key: 'totalContribution', label: 'Total', editable: true, isPermanent: false },
+        ],
+        rows,
+    };
 };
 
-export const generateSssData = (employees, positions) => {
-    const employeeData = generateBaseData(employees, positions);
-    const columns = getStandardColumns('SSS', 'sssNo');
+export const generatePagibigData = (employees, positions, selectedPayrollRun) => {
+    const employeeMap = new Map(employees.map(e => [e.id, e]));
+    const positionMap = new Map(positions.map(p => [p.id, p]));
+    
+    const rows = selectedPayrollRun.records.map((record, index) => {
+        const emp = employeeMap.get(record.empId);
+        if (!emp) return null;
 
-    const rows = employeeData.map((emp, index) => {
-        // Simplified SSS Calculation (e.g., 14% of salary, 4.5% EE / 9.5% ER)
-        const premium = emp.monthlySalary * 0.14;
-        const eeShare = emp.monthlySalary * 0.045;
-        const erShare = emp.monthlySalary * 0.095;
-        
+        const position = positionMap.get(emp.positionId);
+        const salary = position?.monthlySalary || 0;
+        const contribution = salary > 1500 ? 100 : salary * 0.02;
+        const totalContribution = contribution * 2;
+
         return {
             no: index + 1,
-            lastName: emp.lastName.toUpperCase(),
-            firstName: emp.firstName.toUpperCase(),
-            middleName: emp.middleName.toUpperCase(),
-            sssNo: emp.sssNo || '',
-            eeShare: eeShare.toFixed(2),
-            erShare: erShare.toFixed(2),
-            total: (eeShare + erShare).toFixed(2),
+            pagibigNo: emp.pagIbigNo || '',
+            lastName: emp.lastName || '',
+            firstName: emp.firstName || '',
+            middleName: emp.middleName || '',
+            employeeContribution: contribution,
+            employerContribution: contribution,
+            totalContribution: totalContribution,
         };
-    });
-
-    return { columns, rows, title: 'SSS Contribution Report', headerData: {} };
+    }).filter(Boolean);
+    
+    return {
+        title: 'Pag-IBIG Contribution Report',
+        headerData: {
+            'Employer Name': MOCK_COMPANY_INFO.employerName,
+            'Contribution Month': format(new Date(selectedPayrollRun.cutOff.split(' to ')[1]), 'MMMM yyyy'),
+        },
+        columns: [
+            { key: 'no', label: 'No.', editable: false, isPermanent: true },
+            { key: 'pagibigNo', label: 'Pag-IBIG MID No.', editable: false, isPermanent: true },
+            { key: 'lastName', label: 'Last Name', editable: false, isPermanent: true },
+            { key: 'firstName', label: 'First Name', editable: false, isPermanent: true },
+            { key: 'middleName', label: 'Middle Name', editable: false, isPermanent: true },
+            { key: 'employeeContribution', label: 'EE Share', editable: true, isPermanent: false },
+            { key: 'employerContribution', label: 'ER Share', editable: true, isPermanent: false },
+            { key: 'totalContribution', label: 'Total', editable: true, isPermanent: false },
+        ],
+        rows,
+    };
 };

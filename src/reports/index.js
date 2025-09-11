@@ -1,4 +1,3 @@
-// Import all individual report generators
 import { generateAttendanceSummaryReport } from './attendanceSummaryReport';
 import { generateDisciplinaryCasesReport } from './disciplinaryCasesReport';
 import { generateEmployeeMasterlistReport } from './employeeMasterlistReport';
@@ -9,6 +8,7 @@ import { generatePerformanceSummaryReport } from './performanceSummaryReport';
 import { generatePositionsReport } from './positionsReport';
 import { generateRecruitmentActivityReport } from './recruitmentActivityReport';
 import { generateTrainingProgramReport } from './trainingProgramReport';
+import { generateContributionsReport } from './contributionsReport';
 
 // Map report IDs from your config to their generator functions
 const reportGenerators = {
@@ -22,6 +22,7 @@ const reportGenerators = {
   positions_report: generatePositionsReport,
   recruitment_activity: generateRecruitmentActivityReport,
   training_program_summary: generateTrainingProgramReport,
+  contributions_summary: generateContributionsReport,
 };
 
 export default reportGenerators;

@@ -6,7 +6,6 @@ const HRDashboard = ({
   employees = [], 
   positions = [], 
   leaveRequests = [], 
-  jobOpenings = [], 
   holidays = [] 
 }) => {
   const stats = useMemo(() => {
@@ -23,9 +22,8 @@ const HRDashboard = ({
       totalEmployees: employees.length,
       onLeaveToday: onLeaveToday,
       pendingLeaves: leaveRequests.filter(req => req.status === 'Pending').length,
-      openPositions: jobOpenings.filter(job => job.status === 'Open').length,
     };
-  }, [employees, leaveRequests, jobOpenings]);
+  }, [employees, leaveRequests]);
 
   const chartData = useMemo(() => {
     const positionMap = new Map(positions.map(p => [p.id, p.title]));
@@ -74,10 +72,6 @@ const HRDashboard = ({
           <div className="dashboard-stat-card">
             <div className="stat-icon icon-pending"><i className="bi bi-hourglass-split"></i></div>
             <div className="stat-info"><span className="stat-value">{stats.pendingLeaves}</span><span className="stat-label">Pending Leaves</span></div>
-          </div>
-          <div className="dashboard-stat-card">
-            <div className="stat-icon icon-open-positions"><i className="bi bi-briefcase-fill"></i></div>
-            <div className="stat-info"><span className="stat-value">{stats.openPositions}</span><span className="stat-label">Open Positions</span></div>
           </div>
         </div>
       </div>

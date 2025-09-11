@@ -1,7 +1,9 @@
+// src/components/pages/My-Leave/LeaveRequestCard.jsx (CORRECTED)
+
 import React from 'react';
 import './MyLeavePage.css';
 
-const LeaveRequestCard = ({ request }) => {
+const LeaveRequestCard = ({ request, onCancel }) => {
   const startDate = new Date(request.dateFrom + 'T00:00:00');
   const statusClass = (request.status || 'pending').toLowerCase().replace(/\s+/g, '-');
 
@@ -14,7 +16,18 @@ const LeaveRequestCard = ({ request }) => {
       <div className="info-section">
         <div className="info-header">
           <h6 className="leave-type">{request.leaveType}</h6>
-          <span className={`status-badge status-${statusClass}`}>{request.status}</span>
+          <div className="d-flex align-items-center gap-2">
+            <span className={`status-badge status-${statusClass}`}>{request.status}</span>
+            {request.status === 'Pending' && (
+              <button 
+                className="btn btn-sm cancel-request-btn" 
+                title="Cancel Request"
+                onClick={() => onCancel(request)}
+              >
+                <i className="bi bi-x"></i>
+              </button>
+            )}
+          </div>
         </div>
         <div className="info-body">
           <div className="info-item">

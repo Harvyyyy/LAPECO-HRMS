@@ -30,7 +30,13 @@ const AddEditKraModal = ({ show, onClose, onSave, positions, kraData, kpisData }
   };
   
   const handleAddNewKpi = () => {
-    setKpis(prev => [...prev, { tempId: `new-${Date.now()}`, title: '', weight: 0, appliesToPositionIds: [] }]);
+    setKpis(prev => [...prev, { 
+      tempId: `new-${Date.now()}`, 
+      title: '', 
+      description: '', // Add description field for new KPIs
+      weight: 0, 
+      appliesToPositionIds: [] 
+    }]);
   };
   
   const handleDeleteKpi = (index) => {

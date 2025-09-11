@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Tooltip } from 'bootstrap';
 
-const EditableContributionTable = ({ columns, rows, onCellChange, onAddRow, onHeaderChange, onHeaderClick, editingHeaderKey, onDeleteRow, onAddColumn, onDeleteColumn }) => {
+const EditableContributionTable = ({ columns, rows, onCellChange, onHeaderChange, onHeaderClick, editingHeaderKey, onDeleteRow, onAddColumn, onDeleteColumn }) => {
   
   const tableRef = useRef(null);
 
@@ -97,9 +97,6 @@ const EditableContributionTable = ({ columns, rows, onCellChange, onAddRow, onHe
           </tbody>
         </table>
       </div>
-      <button className="btn btn-sm btn-outline-secondary mt-2" onClick={onAddRow}>
-        <i className="bi bi-plus-lg me-1"></i> Add Row
-      </button>
     </>
   );
 };

@@ -5,10 +5,11 @@ import './AttendancePage.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import EditAttendanceModal from '../../modals/EditAttendanceModal';
+import ConfirmationModal from '../../modals/ConfirmationModal';
 import useReportGenerator from '../../../hooks/useReportGenerator';
 import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
 
-const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, setAttendanceLogs }) => {
+const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, setAttendanceLogs, handlers }) => {
   const [activeView, setActiveView] = useState('daily');
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -22,6 +23,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
   const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingAttendanceRecord, setEditingAttendanceRecord] = useState(null);
+  const [dateToDelete, setDateToDelete] = useState(null);
   
   const fileInputRef = useRef(null);
 
@@ -268,6 +270,16 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
     }
     event.target.value = null;
   };
+
+  const handleOpenDeleteConfirm = (e, date) => {
+    e.stopPropagation();
+    setDateToDelete(date);
+  };
+  
+  const confirmDelete = () => {
+    handlers.deleteAttendanceForDate(dateToDelete);
+    setDateToDelete(null);
+  };
   
   const uniquePositions = useMemo(() => ['All Positions', ...new Set(dailyAttendanceList.map(item => item.position))], [dailyAttendanceList]);
   
@@ -438,7 +450,12 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
               <div className="attendance-history-grid">
                 {attendanceHistory.map(day => (
                   <div key={day.date} className="attendance-history-card" onClick={() => handleViewHistoryDetail(day.date)}>
-                    <div className="card-header"><h5 className="card-title">{new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h5></div>
+                    <div className="card-header">
+                        <h5 className="card-title">{new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h5>
+                        <button className="btn btn-sm btn-outline-danger delete-history-btn" onClick={(e) => handleOpenDeleteConfirm(e, day.date)} title="Delete this day's records">
+                            <i className="bi bi-trash-fill"></i>
+                        </button>
+                    </div>
                     <div className="card-body"><div className="info-grid">
                         <div className="info-item scheduled"><span className="value">{day.total}</span><span className="label">Scheduled</span></div>
                         <div className="info-item present"><span className="value">{day.present - day.late}</span><span className="label">Present</span></div>
@@ -463,6 +480,18 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
       )}
 
       {showEditModal && ( <EditAttendanceModal show={showEditModal} onClose={handleCloseEditModal} onSave={handleSaveEditedTime} attendanceRecord={editingAttendanceRecord}/> )}
+      
+      <ConfirmationModal
+        show={!!dateToDelete}
+        onClose={() => setDateToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Confirm Deletion"
+        confirmText="Yes, Delete All"
+        confirmVariant="danger"
+      >
+        <p>Are you sure you want to delete all schedules and attendance logs for <strong>{dateToDelete}</strong>?</p>
+        <p className="text-danger">This action cannot be undone and will affect all employees scheduled on this day.</p>
+      </ConfirmationModal>
     </div>
   );
 };

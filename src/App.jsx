@@ -1,3 +1,5 @@
+// src/App.jsx
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
@@ -42,27 +44,18 @@ import { USER_ROLES } from './constants/roles';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 // Import all mock data from centralized file
-import {
-  initialEmployeesData,
-  initialPositionsData,
-  initialSchedulesData,
-  initialTemplatesData,
-  initialLeaveRequests,
-  initialHolidaysData,
-  initialTrainingPrograms,
-  initialEnrollments,
-  initialJobOpenings,
-  initialApplicants,
-  initialKrasData,
-  initialKpisData,
-  initialEvaluationFactors,
-  initialEvaluationsData,
-  initialNotificationsData,
-  initialAttendanceLogs,
-  initialPayrollsData,
-  initialCasesData,
-  initialUserAccounts,
-} from './data/mockData';
+import * as mockData from './data/mockData';
+
+// Add evaluationDate to mock data
+const initialEvaluationsData = mockData.initialEvaluationsData.map((ev, index) => {
+    const periodEndDate = new Date(ev.periodEnd);
+    const evaluationDate = new Date(periodEndDate.setDate(periodEndDate.getDate() + (index % 2 === 0 ? 5 : 8)));
+    return {
+        ...ev,
+        evaluationDate: evaluationDate.toISOString().split('T')[0],
+    };
+});
+
 
 const parseFullName = (fullName = '') => {
     const parts = fullName.trim().split(' ').filter(Boolean);
@@ -79,26 +72,32 @@ function AppContent() {
   const [currentUserId, setCurrentUserId] = useState(() => localStorage.getItem('currentUserId') || null);
   const navigate = useNavigate();
 
-  const [employees, setEmployees] = useState(initialEmployeesData);
-  const [positions, setPositions] = useState(initialPositionsData);
-  const [schedules, setSchedules] = useState(initialSchedulesData);
-  const [templates, setTemplates] = useState(initialTemplatesData);
-  const [leaveRequests, setLeaveRequests] = useState(initialLeaveRequests);
-  const [holidays, setHolidays] = useState(initialHolidaysData);
-  const [trainingPrograms, setTrainingPrograms] = useState(initialTrainingPrograms);
-  const [enrollments, setEnrollments] = useState(initialEnrollments);
-  const [jobOpenings, setJobOpenings] = useState(initialJobOpenings);
-  const [applicants, setApplicants] = useState(initialApplicants);
-  const [kras, setKras] = useState(initialKrasData);
-  const [kpis, setKpis] = useState(initialKpisData);
-  const [evaluationFactors, setEvaluationFactors] = useState(initialEvaluationFactors);
+  const [employees, setEmployees] = useState(mockData.initialEmployeesData);
+  const [positions, setPositions] = useState(mockData.initialPositionsData);
+  const [schedules, setSchedules] = useState(mockData.initialSchedulesData);
+  const [templates, setTemplates] = useState(mockData.initialTemplatesData);
+  const [leaveRequests, setLeaveRequests] = useState(mockData.initialLeaveRequests);
+  const [holidays, setHolidays] = useState(mockData.initialHolidaysData);
+  const [trainingPrograms, setTrainingPrograms] = useState(mockData.initialTrainingPrograms);
+  const [enrollments, setEnrollments] = useState(mockData.initialEnrollments);
+  const [jobOpenings, setJobOpenings] = useState(mockData.initialJobOpenings);
+  const [applicants, setApplicants] = useState(mockData.initialApplicants);
+  const [kras, setKras] = useState(mockData.initialKrasData);
+  const [kpis, setKpis] = useState(mockData.initialKpisData);
+  const [evaluationFactors, setEvaluationFactors] = useState(mockData.initialEvaluationFactors);
   const [evaluations, setEvaluations] = useState(initialEvaluationsData);
-  const [notifications, setNotifications] = useState(initialNotificationsData);
-  const [attendanceLogs, setAttendanceLogs] = useState(initialAttendanceLogs);
-  const [payrolls, setPayrolls] = useState(initialPayrollsData);
-  const [disciplinaryCases, setDisciplinaryCases] = useState(initialCasesData);
-  const [userAccounts, setUserAccounts] = useState(initialUserAccounts);
+  const [notifications, setNotifications] = useState(mockData.initialNotificationsData);
+  const [attendanceLogs, setAttendanceLogs] = useState(mockData.initialAttendanceLogs);
+  const [payrolls, setPayrolls] = useState(mockData.initialPayrollsData);
+  const [disciplinaryCases, setDisciplinaryCases] = useState(mockData.initialCasesData);
+  const [userAccounts, setUserAccounts] = useState(mockData.initialUserAccounts);
   const [theme, setTheme] = useState('light');
+
+  const handleLogout = () => {
+    setCurrentUserId(null);
+    localStorage.removeItem('currentUserId');
+    navigate('/login');
+  };
 
   const appLevelHandlers = {
     savePosition: (formData, positionId) => {
@@ -130,6 +129,9 @@ function AppContent() {
         setEmployees(prev => [newEmployee, ...prev]);
       }
     },
+    deleteEmployee: (employeeId) => {
+      setEmployees(prev => prev.filter(emp => emp.id !== employeeId));
+    },
     deletePosition: (positionId) => {
       setPositions(prev => prev.filter(pos => pos.id !== positionId));
       setEmployees(prev => prev.map(emp => emp.positionId === positionId ? { ...emp, positionId: null } : emp));
@@ -153,6 +155,10 @@ function AppContent() {
     deleteSchedule: (dateToDelete) => {
       setSchedules(prev => prev.filter(s => s.date !== dateToDelete));
     },
+    deleteAttendanceForDate: (dateToDelete) => {
+        setSchedules(prev => prev.filter(s => s.date !== dateToDelete));
+        setAttendanceLogs(prev => prev.filter(log => log.date !== dateToDelete));
+    },
     createTemplate: (templateData, templateId) => {
       if (templateId) {
         setTemplates(prev => prev.map(t => t.id === templateId ? { ...t, ...templateData } : t));
@@ -161,12 +167,27 @@ function AppContent() {
         setTemplates(prev => [newTemplate, ...prev]);
       }
     },
+    deleteTemplate: (templateId) => {
+      setTemplates(prev => prev.filter(t => t.id !== templateId));
+    },
     createLeaveRequest: (leaveData) => {
         const newRequest = { ...leaveData, leaveId: `LVE${Date.now().toString().slice(-4)}`, status: 'Pending' };
         setLeaveRequests(prev => [newRequest, ...prev]);
     },
     updateLeaveStatus: (leaveId, newStatus) => {
         setLeaveRequests(prev => prev.map(req => req.leaveId === leaveId ? { ...req, status: newStatus } : req));
+    },
+    deleteLeaveRequest: (leaveId) => {
+      setLeaveRequests(prev => prev.filter(req => req.leaveId !== leaveId));
+    },
+    updateLeaveCredits: (employeeId, newCredits) => {
+      setEmployees(prevEmployees => 
+        prevEmployees.map(emp => 
+          emp.id === employeeId 
+            ? { ...emp, leaveCredits: { ...emp.leaveCredits, ...newCredits } } 
+            : emp
+        )
+      );
     },
     saveHoliday: (formData, holidayId) => {
         if (holidayId) {
@@ -221,6 +242,9 @@ function AppContent() {
         delete newApplicant.resumeFile;
         setApplicants(prev => [newApplicant, ...prev]);
     },
+    deleteApplicant: (applicantId) => {
+      setApplicants(prev => prev.filter(app => app.id !== applicantId));
+    },
     updateApplicantStatus: (applicantId, newStatus) => {
         setApplicants(prev => prev.map(app => 
             app.id === applicantId ? { ...app, status: newStatus, lastStatusUpdate: new Date().toISOString() } : app
@@ -259,6 +283,7 @@ function AppContent() {
             isTeamLeader: false,
             imageUrl: null,
             status: 'Active',
+            leaveCredits: { sick: 10, vacation: 10, personal: 3 }, // Default leave credits for new hire
         };
         setEmployees(prev => [newEmployee, ...prev]);
 
@@ -344,10 +369,11 @@ function AppContent() {
       setKpis(prev => prev.filter(kpi => kpi.kraId !== kraId));
     },
     saveEvaluation: (evaluationData, evalId) => {
+      const today = new Date().toISOString().split('T')[0];
       if (evalId) {
-        setEvaluations(prev => prev.map(e => e.id === evalId ? { ...e, ...evaluationData } : e));
+        setEvaluations(prev => prev.map(e => e.id === evalId ? { ...e, ...evaluationData, evaluationDate: today } : e));
       } else {
-        const newEval = { id: `EVAL${Date.now()}`, ...evaluationData };
+        const newEval = { id: `EVAL${Date.now()}`, ...evaluationData, evaluationDate: today };
         setEvaluations(prev => [...prev, newEval]);
       }
     },
@@ -386,6 +412,9 @@ function AppContent() {
             )
         })));
     },
+    deletePayrollRun: (runId) => {
+      setPayrolls(prev => prev.filter(run => run.runId !== runId));
+    },
     saveCase: (formData, caseId) => {
       if (caseId) {
         setDisciplinaryCases(prev => prev.map(c => c.caseId === caseId ? { ...c, ...formData } : c));
@@ -410,18 +439,45 @@ function AppContent() {
     deleteCase: (caseId) => {
       setDisciplinaryCases(prev => prev.filter(c => c.caseId !== caseId));
     },
+    resetSelectedData: (resetConfig) => {
+      if (resetConfig.employees) setEmployees(mockData.initialEmployeesData);
+      if (resetConfig.positions) setPositions(mockData.initialPositionsData);
+      if (resetConfig.schedules) {
+        setSchedules(mockData.initialSchedulesData);
+        setAttendanceLogs(mockData.initialAttendanceLogs);
+      }
+      if (resetConfig.leaveRequests) setLeaveRequests(mockData.initialLeaveRequests);
+      if (resetConfig.holidays) setHolidays(mockData.initialHolidaysData);
+      if (resetConfig.training) {
+        setTrainingPrograms(mockData.initialTrainingPrograms);
+        setEnrollments(mockData.initialEnrollments);
+      }
+      if (resetConfig.applicants) {
+        setJobOpenings(mockData.initialJobOpenings);
+        setApplicants(mockData.initialApplicants);
+      }
+      if (resetConfig.performance) {
+        setKras(mockData.initialKrasData);
+        setKpis(mockData.initialKpisData);
+        setEvaluationFactors(mockData.initialEvaluationFactors);
+        setEvaluations(initialEvaluationsData);
+      }
+      if (resetConfig.payrolls) setPayrolls(mockData.initialPayrollsData);
+      if (resetConfig.disciplinaryCases) setDisciplinaryCases(mockData.initialCasesData);
+      if (resetConfig.templates) setTemplates(mockData.initialTemplatesData);
+      if (resetConfig.userAccounts) {
+        setUserAccounts(mockData.initialUserAccounts);
+        handleLogout();
+      }
+      
+      alert("Selected data has been reset successfully.");
+    },
   };
 
   const handleLoginSuccess = (userId) => {
     setCurrentUserId(userId);
     localStorage.setItem('currentUserId', userId);
     navigate('/dashboard');
-  };
-
-  const handleLogout = () => {
-    setCurrentUserId(null);
-    localStorage.removeItem('currentUserId');
-    navigate('/login');
   };
   
   const { currentUser, userRole } = useMemo(() => {
@@ -481,7 +537,6 @@ function AppContent() {
             employees={employees} 
             positions={positions} 
             leaveRequests={leaveRequests} 
-            jobOpenings={jobOpenings}
             holidays={holidays}
             schedules={schedules}
             evaluations={evaluations}
@@ -495,16 +550,27 @@ function AppContent() {
           <>
             <Route path="employee-data" element={<EmployeeDataPage employees={employees} positions={positions} handlers={appLevelHandlers} />} />
             <Route path="positions" element={<PositionsPage employees={employees} positions={positions} handlers={appLevelHandlers} />} />
-            <Route path="attendance-management" element={<AttendancePage allSchedules={schedules} employees={employees} positions={positions} attendanceLogs={attendanceLogs} setAttendanceLogs={setAttendanceLogs} />} />
+            <Route path="attendance-management" element={<AttendancePage allSchedules={schedules} employees={employees} positions={positions} attendanceLogs={attendanceLogs} setAttendanceLogs={setAttendanceLogs} handlers={appLevelHandlers} />} />
             <Route path="schedule-management">
               <Route index element={<ScheduleManagementPage employees={employees} positions={positions} schedules={schedules} templates={templates} handlers={appLevelHandlers} />} />
               <Route path="create" element={<ScheduleBuilderPage employees={employees} positions={positions} handlers={appLevelHandlers} />} />
             </Route>
-            <Route path="leave-management" element={<LeaveManagementPage leaveRequests={leaveRequests} handlers={appLevelHandlers} />} />
+            <Route path="leave-management" element={<LeaveManagementPage employees={employees} leaveRequests={leaveRequests} handlers={appLevelHandlers} />} />
             
             <Route path="payroll" element={<PayrollPage />}>
                 <Route index element={<Navigate to="history" replace />} />
-                <Route path="history" element={<PayrollHistoryPage payrolls={payrolls} employees={employees} positions={positions} onUpdateRecord={appLevelHandlers.updatePayrollRecord} onSaveEmployee={appLevelHandlers.saveEmployee} />} />
+                <Route 
+                  path="history" 
+                  element={
+                    <PayrollHistoryPage 
+                      payrolls={payrolls} 
+                      employees={employees} 
+                      positions={positions} 
+                      handlers={appLevelHandlers} 
+                      allLeaveRequests={leaveRequests}
+                    />
+                  } 
+                />
                 <Route path="generate" element={
                     <PayrollGenerationPage 
                         employees={employees}
@@ -518,7 +584,7 @@ function AppContent() {
             </Route>
             
             <Route path="holiday-management" element={<HolidayManagementPage holidays={holidays} handlers={appLevelHandlers} />} />
-            <Route path="contributions-management" element={<ContributionsManagementPage employees={employees} positions={positions} />} />
+            <Route path="contributions-management" element={<ContributionsManagementPage employees={employees} positions={positions} payrolls={payrolls} />} />
             <Route path="performance" element={<PerformanceManagementPage kras={kras} kpis={kpis} positions={positions} employees={employees} evaluations={evaluations} handlers={appLevelHandlers} evaluationFactors={evaluationFactors} theme={theme} />} />
             <Route path="performance/evaluate" element={
               <EvaluationFormPage 
@@ -587,7 +653,17 @@ function AppContent() {
                 handlers={appLevelHandlers} 
               />
             } />
-            <Route path="my-leave" element={<MyLeavePage leaveRequests={leaveRequests.filter(r => r.empId === currentUser.id)} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} />} />
+            <Route 
+              path="my-leave" 
+              element={
+                <MyLeavePage 
+                  currentUser={currentUser}
+                  allLeaveRequests={leaveRequests} 
+                  createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} 
+                  updateLeaveStatus={appLevelHandlers.updateLeaveStatus}
+                />
+              } 
+            />
           </>
         )}
         {userRole === USER_ROLES.REGULAR_EMPLOYEE && (
@@ -617,7 +693,17 @@ function AppContent() {
                 handlers={appLevelHandlers} 
               />
             } />
-            <Route path="my-leave" element={<MyLeavePage leaveRequests={leaveRequests.filter(r => r.empId === currentUser.id)} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} />} />
+             <Route 
+              path="my-leave" 
+              element={
+                <MyLeavePage 
+                  currentUser={currentUser}
+                  allLeaveRequests={leaveRequests} 
+                  createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} 
+                  updateLeaveStatus={appLevelHandlers.updateLeaveStatus}
+                />
+              } 
+            />
           </>
         )}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

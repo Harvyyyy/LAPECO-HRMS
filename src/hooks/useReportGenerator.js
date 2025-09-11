@@ -1,3 +1,5 @@
+// src/hooks/useReportGenerator.js (UPDATED)
+
 import { useState } from 'react';
 import { createPdfDoc, addHeader } from '../utils/pdfUtils';
 import { generateChartAsImage } from '../utils/chartGenerator';
@@ -25,7 +27,9 @@ const useReportGenerator = () => {
       // 2. Add Header (except for payslip which has a custom layout)
       let startY = margin;
       if (reportId !== 'payslip') {
-        const reportConfig = (await import('../config/reports.config.js')).reportsConfig;
+        // Dynamically import config to avoid issues if it's not available server-side
+        const reportConfigModule = await import('../config/reports.config.js');
+        const reportConfig = reportConfigModule.reportsConfig;
         const title = reportConfig.find(r => r.id === reportId)?.title || "Report";
         startY = addHeader(doc, title, { pageWidth, margin });
       }
@@ -59,6 +63,7 @@ const useReportGenerator = () => {
       console.error("Error generating report:", e);
       setError(e.message);
     } finally {
+      // THE FIX: Ensure isLoading is always reset
       setIsLoading(false);
     }
   };
