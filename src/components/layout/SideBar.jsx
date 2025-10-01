@@ -1,5 +1,3 @@
-// src/components/layout/SideBar.jsx
-
 import React, { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Tooltip } from 'bootstrap';
@@ -19,6 +17,7 @@ const navItemsConfig = {
     { path: '/dashboard/holiday-management', icon: 'bi-flag-fill', label: 'Holidays' },
     { path: '/dashboard/contributions-management', icon: 'bi-file-earmark-ruled-fill', label: 'Contributions Management' },
     { path: '/dashboard/performance', icon: 'bi-graph-up-arrow', label: 'Performance Management' },
+    { path: '/dashboard/predictive-analytics', icon: 'bi-lightbulb-fill', label: 'Predictive Analytics' },
     { path: '/dashboard/training', icon: 'bi-mortarboard-fill', label: 'Training and Development' },
     { path: '/dashboard/case-management', icon: 'bi-briefcase-fill', label: 'Case Management' },
     { path: '/dashboard/recruitment', icon: 'bi-person-plus-fill', label: 'Recruitment' },

@@ -3,7 +3,7 @@ import Select from 'react-select';
 
 const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, trainingPrograms, payrolls }) => {
   const [params, setParams] = useState({});
-  const [dateRangeMode, setDateRangeMode] = useState('dateRange'); // 'allTime' or 'dateRange'
+  const [dateRangeMode, setDateRangeMode] = useState('dateRange');
   const [error, setError] = useState('');
 
   const optionalDateRangeParam = useMemo(() => 
@@ -12,12 +12,16 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
 
   useEffect(() => {
     if (show && reportConfig) {
+      const today = new Date().toISOString().split('T')[0];
       const initialParams = (reportConfig.parameters || []).reduce((acc, param) => {
         if (param.type === 'date-range') {
-          acc.startDate = new Date().toISOString().split('T')[0];
+          acc.startDate = today;
           if (param.labels.end) {
-            acc.endDate = new Date().toISOString().split('T')[0];
+            acc.endDate = today;
           }
+        }
+        if (param.type === 'as-of-date') {
+          acc.asOfDate = today;
         }
         if (param.type === 'program-selector') {
           acc.programId = null;
@@ -61,9 +65,10 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
     e.preventDefault();
     setError('');
 
-    if (dateRangeMode === 'dateRange') {
-      const dateParam = reportConfig.parameters.find(p => p.type === 'date-range');
-      if (dateParam && (!params.startDate || (dateParam.labels.end && !params.endDate))) {
+    // Date Range Validation
+    const dateParam = reportConfig.parameters.find(p => p.type === 'date-range');
+    if (dateParam && dateRangeMode === 'dateRange') {
+      if (!params.startDate || (dateParam.labels.end && !params.endDate)) {
         setError('Both start and end dates are required for a custom range.');
         return;
       }
@@ -71,6 +76,13 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
         setError('End date cannot be before the start date.');
         return;
       }
+    }
+
+    // As-Of Date Validation
+    const asOfDateParam = reportConfig.parameters.find(p => p.type === 'as-of-date');
+    if(asOfDateParam && !params.asOfDate) {
+        setError('An "As-Of" date is required.');
+        return;
     }
     
     const finalParams = { ...params };
@@ -120,6 +132,21 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
             </div>
           );
         
+        case 'as-of-date':
+          return (
+            <div key={param.id}>
+              <label htmlFor="asOfDate" className="form-label">{param.label}</label>
+              <input 
+                type="date" 
+                id="asOfDate" 
+                className="form-control" 
+                value={params.asOfDate || ''} 
+                onChange={(e) => handleParamChange('asOfDate', e.target.value)} 
+                required 
+              />
+            </div>
+          );
+
         case 'program-selector':
           return (
             <div key={param.id}>

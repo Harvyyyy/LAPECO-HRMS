@@ -1,3 +1,5 @@
+/* src/components/pages/Performance-Management/PerformanceManagement.css */
+
 /* ==========================================================================
    Main Page Tabs & Layout
    ========================================================================== */
@@ -16,6 +18,37 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+}
+
+.performance-dashboard-layout-revised .performance-controls-card {
+    padding: 1rem 1.5rem;
+    background-color: var(--bg-primary);
+}
+.performance-dashboard-layout-revised .performance-controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: flex-end;
+}
+.performance-dashboard-layout-revised .filter-group {
+    flex-grow: 1;
+}
+.performance-dashboard-layout-revised .filter-group label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+    display: block;
+}
+.performance-dashboard-layout-revised .filter-group .btn-group .btn {
+    font-weight: 500;
+}
+.dark-theme .performance-dashboard-layout-revised .filter-group .btn-outline-secondary {
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+}
+.dark-theme .performance-dashboard-layout-revised .filter-group .btn-outline-secondary:hover {
+    background-color: var(--bg-tertiary);
 }
 
 .stat-card-grid-revised {
@@ -56,67 +89,15 @@
     color: var(--text-secondary);
 }
 
-.analysis-grid {
+.analysis-grid-full-width {
     display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    grid-template-columns: 1fr;
     gap: 1.5rem;
     align-items: flex-start;
 }
-.analysis-grid .card-body {
+.analysis-grid-full-width .card-body {
     color: var(--text-primary);
 }
-
-.insight-card .card-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-.insight-avatar-list {
-    display: flex;
-    align-items: center;
-    margin-top: 0.75rem;
-}
-.insight-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--bg-primary);
-    margin-left: -12px;
-    transition: transform 0.2s ease;
-    cursor: pointer;
-}
-.insight-avatar:first-child {
-    margin-left: 0;
-}
-.insight-avatar:hover {
-    transform: translateY(-4px) scale(1.1);
-    z-index: 5;
-}
-.avatar-more-count {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: var(--bg-tertiary);
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: -12px;
-    border: 2px solid var(--bg-primary);
-}
-.insight-card.high-potentials {
-    background: linear-gradient(135deg, rgba(var(--app-success-rgb), 0.05), var(--bg-primary));
-    border-color: var(--app-success-color);
-}
-.insight-card.turnover-risks {
-    background: linear-gradient(135deg, rgba(var(--danger-rgb), 0.05), var(--bg-primary));
-    border-color: var(--danger-color);
-}
-.dark-theme .insight-card.high-potentials { background: rgba(var(--app-success-rgb), 0.1); }
-.dark-theme .insight-card.turnover-risks { background: rgba(var(--danger-rgb), 0.1); }
 
 .history-table-controls {
     display: flex;
@@ -173,8 +154,9 @@
 }
 
 @media (max-width: 992px) {
-    .analysis-grid {
-        grid-template-columns: 1fr;
+    .performance-dashboard-layout-revised .performance-controls-bar {
+        flex-direction: column;
+        align-items: stretch;
     }
 }
 

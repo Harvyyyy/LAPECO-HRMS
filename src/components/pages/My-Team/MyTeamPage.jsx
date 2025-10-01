@@ -82,16 +82,18 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
             {member.isTeamLeader ? 
                 <span className="leader-tag-card"><i className="bi bi-star-fill"></i> LEADER</span>
               :
-                <div className="card-actions">
-                  <div className="dropdown">
-                    <button className="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      <i className="bi bi-three-dots-vertical"></i>
-                    </button>
-                    <ul className="dropdown-menu dropdown-menu-end">
-                      {currentUser.isTeamLeader && <li><a className="dropdown-item" href="#">Evaluate</a></li>}
-                    </ul>
+                currentUser.isTeamLeader && (
+                  <div className="card-actions">
+                    <div className="dropdown">
+                      <button className="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i className="bi bi-three-dots-vertical"></i>
+                      </button>
+                      <ul className="dropdown-menu dropdown-menu-end">
+                        <li><Link className="dropdown-item" to="/dashboard/evaluate-team">Evaluate</Link></li>
+                      </ul>
+                    </div>
                   </div>
-                </div>
+                )
             }
           </div>
           <div className="card-bottom-section">
@@ -132,11 +134,11 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
                             <td>{member.email}</td>
                             <td>{member.contactNumber || 'N/A'}</td>
                             <td>
-                              {!member.isTeamLeader && (
+                              {!member.isTeamLeader && currentUser.isTeamLeader && (
                                 <div className="dropdown">
                                     <button className="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">Actions</button>
                                     <ul className="dropdown-menu dropdown-menu-end">
-                                        {currentUser.isTeamLeader && <li><a className="dropdown-item" href="#">Evaluate</a></li>}
+                                        <li><Link className="dropdown-item" to="/dashboard/evaluate-team">Evaluate</Link></li>
                                     </ul>
                                 </div>
                               )}

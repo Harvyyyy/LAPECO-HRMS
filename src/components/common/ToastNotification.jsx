@@ -1,14 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './ToastNotification.css';
 
-const ToastNotification = ({ message, type = 'success', onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose();
-    }, 4000); // Auto-dismiss after 4 seconds
+const ToastNotification = ({ toast, onClose }) => {
+  if (!toast || !toast.show) {
+    return null;
+  }
 
-    return () => clearTimeout(timer);
-  }, [onClose]);
+  const { message, type = 'success' } = toast;
 
   const iconMap = {
     success: 'bi-check-circle-fill',

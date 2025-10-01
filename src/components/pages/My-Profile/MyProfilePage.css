@@ -42,12 +42,14 @@
 .profile-header-info {
     flex-grow: 1;
 }
-.profile-name {
+
+.profile-page-header .profile-name {
     font-size: 2rem;
     font-weight: 600;
     margin-bottom: 0.1rem;
     color: #ffffff;
 }
+
 .profile-position {
     font-size: 1.1rem;
     color: #ffffff;

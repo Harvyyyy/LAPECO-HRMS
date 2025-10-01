@@ -71,7 +71,7 @@ const LeaveManagementPage = ({ employees, leaveRequests, handlers }) => {
             <LeaveCreditsTab 
               employees={employees}
               leaveRequests={leaveRequests}
-              onSaveCredits={handlers.updateLeaveCredits}
+              handlers={handlers}
             />
           )}
         </div>

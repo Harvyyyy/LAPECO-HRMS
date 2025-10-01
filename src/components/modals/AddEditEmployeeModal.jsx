@@ -27,7 +27,7 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
   useEffect(() => {
     if (show) {
       setIsViewMode(viewOnly);
-      if (isEditMode && employeeData) {
+      if (employeeData) {
         setFormData({
           firstName: employeeData.firstName || '',
           middleName: employeeData.middleName || '',
@@ -55,7 +55,7 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
       setActiveTab('personal');
       setFormErrors({});
     }
-  }, [employeeData, show, isEditMode, viewOnly]);
+  }, [employeeData, show, viewOnly]);
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -93,8 +93,11 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
     if (validateForm()) {
       const dataToSave = { ...formData };
       delete dataToSave.imagePreviewUrl;
-      onSave(dataToSave, employeeData?.id);
-      onClose();
+      const newEmployee = onSave(dataToSave, employeeData?.id);
+      
+      if (!isEditMode && newEmployee) { // Only close on successful creation
+        onClose();
+      }
     }
   };
 
@@ -104,9 +107,7 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
 
   const modalTitle = isViewMode ? 'View Employee Details' : (isEditMode ? 'Edit Employee Details' : 'Add New Employee');
   
-  const displayName = isViewMode || isEditMode 
-    ? [employeeData?.firstName, employeeData?.middleName, employeeData?.lastName].filter(Boolean).join(' ')
-    : 'New Employee';
+  const displayName = employeeData?.name || 'New Employee';
 
   return (
     <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
@@ -264,7 +265,7 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
                         className="btn btn-outline-secondary" 
                         onClick={onClose}
                     >
-                        Cancel
+                        {isEditMode ? 'Close' : 'Cancel'}
                     </button>
                     <button type="submit" className="btn btn-success">
                         {isEditMode ? 'Save Changes' : 'Add Employee'}

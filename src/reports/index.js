@@ -9,6 +9,7 @@ import { generatePositionsReport } from './positionsReport';
 import { generateRecruitmentActivityReport } from './recruitmentActivityReport';
 import { generateTrainingProgramReport } from './trainingProgramReport';
 import { generateContributionsReport } from './contributionsReport';
+import { generatePredictiveAnalyticsReport } from './predictiveAnalyticsReport';
 
 // Map report IDs from your config to their generator functions
 const reportGenerators = {
@@ -23,6 +24,7 @@ const reportGenerators = {
   recruitment_activity: generateRecruitmentActivityReport,
   training_program_summary: generateTrainingProgramReport,
   contributions_summary: generateContributionsReport,
+  predictive_analytics_summary: generatePredictiveAnalyticsReport,
 };
 
 export default reportGenerators;

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { startOfDay, endOfDay, subDays } from 'date-fns';
 import ReportCard from './ReportCard';
 import ReportConfigurationModal from '../../modals/ReportConfigurationModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
@@ -46,7 +47,80 @@ const ReportsPage = (props) => {
   };
 
   const handleRunReport = (reportId, params) => {
-    generateReport(reportId, params, props);
+    let dataSources = { ...props };
+    let finalParams = { ...params };
+
+    if (reportId === 'predictive_analytics_summary') {
+        const { evaluations = [], employees = [], positions = [], schedules = [], attendanceLogs = [] } = props;
+        const asOf = params.asOfDate ? endOfDay(new Date(params.asOfDate)) : endOfDay(new Date());
+        
+        // Data Processing Logic for Predictive Analytics
+        const RISK_WEIGHTS = { performance: 0.7, attendance: 0.3 };
+        const HIGH_PERFORMANCE_THRESHOLD = 90;
+        const LOW_PERFORMANCE_THRESHOLD = 50;
+        const GOOD_ATTENDANCE_MONTHLY_AVG = 1;
+        const BAD_ATTENDANCE_MONTHLY_AVG = 5;
+        const calculatePerformanceRisk = (latestScore) => Math.max(0, 100 - latestScore);
+        const calculateAttendanceRisk = (lates, absences) => Math.min((absences * 5) + (lates * 2), 100);
+        
+        const ninetyDaysBeforeAsOf = subDays(asOf, 90);
+        const relevantEvaluations = evaluations.filter(ev => new Date(ev.periodEnd) <= asOf);
+        const relevantAttendanceLogs = attendanceLogs.filter(log => {
+            const logDate = new Date(log.date);
+            return logDate >= ninetyDaysBeforeAsOf && logDate <= asOf;
+        });
+        const relevantSchedules = schedules.filter(sch => {
+            const schDate = new Date(sch.date);
+            return schDate >= ninetyDaysBeforeAsOf && schDate <= asOf;
+        });
+        const evaluationsByEmployee = relevantEvaluations.reduce((acc, ev) => {
+            (acc[ev.employeeId] = acc[ev.employeeId] || []).push(ev);
+            return acc;
+        }, {});
+        const attendanceByEmployee = employees.reduce((acc, emp) => {
+            const mySchedules = relevantSchedules.filter(s => s.empId === emp.id);
+            const myLogs = new Map(relevantAttendanceLogs.filter(l => l.empId === emp.id).map(l => [l.date, l]));
+            let lates = 0, absences = 0;
+            mySchedules.forEach(sch => {
+                const log = myLogs.get(sch.date);
+                if (log && log.signIn) { if (log.signIn > (sch.shift?.split(' - ')[0] || '00:00')) lates++; } else { absences++; }
+            });
+            acc[emp.id] = { lates, absences, monthlyAbsenceAvg: absences / 3 };
+            return acc;
+        }, {});
+    
+        const employeeData = employees.map(employee => {
+          const position = positions.find(p => p.id === employee.positionId);
+          if (!position) return null;
+          const empEvals = evaluationsByEmployee[employee.id];
+          const attendance = attendanceByEmployee[employee.id] || { lates: 0, absences: 0, monthlyAbsenceAvg: 0 };
+          let latestScore = null, trend = 'N/A', isHighPotential = false, isTurnoverRisk = false;
+          let riskScore;
+          if (empEvals && empEvals.length > 0) {
+            const sortedEvals = [...empEvals].sort((a, b) => new Date(a.periodEnd) - new Date(b.periodEnd));
+            const latestEval = sortedEvals[sortedEvals.length - 1];
+            const previousEval = sortedEvals[sortedEvals.length - 2];
+            latestScore = latestEval.overallScore;
+            trend = 'Stable';
+            if (previousEval) {
+              if (latestEval.overallScore > previousEval.overallScore + 2) trend = 'Improving';
+              if (latestEval.overallScore < previousEval.overallScore - 2) trend = 'Declining';
+            }
+            const performanceRisk = calculatePerformanceRisk(latestScore);
+            const attendanceRisk = calculateAttendanceRisk(attendance.lates, attendance.absences);
+            riskScore = performanceRisk * RISK_WEIGHTS.performance + attendanceRisk * RISK_WEIGHTS.attendance;
+            isHighPotential = latestScore >= HIGH_PERFORMANCE_THRESHOLD && attendance.monthlyAbsenceAvg <= GOOD_ATTENDANCE_MONTHLY_AVG;
+            isTurnoverRisk = latestScore < LOW_PERFORMANCE_THRESHOLD || attendance.monthlyAbsenceAvg > BAD_ATTENDANCE_MONTHLY_AVG || riskScore >= 60;
+          } else {
+            return null;
+          }
+          return { ...employee, positionTitle: position.title, latestScore, trend, riskScore, isHighPotential, isTurnoverRisk };
+        }).filter(Boolean);
+        
+        dataSources.employeeData = employeeData;
+    }
+
+    generateReport(reportId, finalParams, dataSources);
     setConfigModalState({ show: false, config: null });
     setShowPreview(true);
   };
@@ -65,7 +139,7 @@ const ReportsPage = (props) => {
     <div className="container-fluid p-0 page-module-container">
       <header className="page-header mb-4">
         <h1 className="page-main-title">Reports Center</h1>
-        <p className="text-muted">Select a category and generate report.</p>
+        <p className="text-muted">Select a category and generate a report.</p>
       </header>
       
       <div className="reports-category-filter">

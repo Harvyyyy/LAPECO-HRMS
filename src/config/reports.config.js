@@ -4,6 +4,7 @@ export const reportCategories = {
   ATTENDANCE: 'Attendance & Schedules',
   LEAVE: 'Leave Management',
   PERFORMANCE: 'Performance Management',
+  ANALYTICS: 'Analytics & Insights',
   CASE_MANAGEMENT: 'Case Management',
   TRAINING: 'Training & Development',
   RECRUITMENT: 'Recruitment',
@@ -67,6 +68,22 @@ export const reportsConfig = [
     ],
   },
 
+  // --- Analytics & Insights ---
+  {
+    id: 'predictive_analytics_summary',
+    title: 'Predictive Analytics Summary',
+    description: 'Generates a snapshot of the employee risk and potential analysis based on performance and attendance data as of a specific date.',
+    icon: 'bi-lightbulb-fill',
+    category: reportCategories.ANALYTICS,
+    parameters: [
+      { 
+        id: 'as_of_date_analytics', 
+        type: 'as-of-date', 
+        label: 'Analysis As-Of Date'
+      },
+    ],
+  },
+
   // --- Case Management ---
   {
     id: 'disciplinary_cases',
@@ -105,7 +122,7 @@ export const reportsConfig = [
   {
     id: 'contributions_summary',
     title: 'Contributions Summary by Pay Period',
-    description: 'Generates a consolidated PDF of SSS, PhilHealth, and Pag-IBIG contributions for a selected payroll period.', // Corrected Description
+    description: 'Generates a consolidated PDF of SSS, PhilHealth, and Pag-IBIG contributions for a selected payroll period.',
     icon: 'bi-file-earmark-ruled-fill',
     category: reportCategories.PAYROLL,
     parameters: [

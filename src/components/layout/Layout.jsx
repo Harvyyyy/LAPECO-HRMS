@@ -2,18 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import SideBar from './SideBar';
 import Header from './Header';
+import ToastNotification from '../common/ToastNotification';
 import './Layout.css';
 
 const MOBILE_BREAKPOINT = 992;
 
-const Layout = ({ onLogout, userRole, currentUser, notifications, appLevelHandlers, theme }) => {
-  // State for desktop sidebar (collapsed vs. expanded)
+const Layout = ({ onLogout, userRole, currentUser, notifications, appLevelHandlers, theme, toast, clearToast }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  
-  // State for mobile sidebar (off-canvas visibility)
   const [isMobileSidebarVisible, setIsMobileSidebarVisible] = useState(false);
-  
-  // State to track viewport size
   const [isMobileView, setIsMobileView] = useState(window.innerWidth < MOBILE_BREAKPOINT);
 
   useEffect(() => {
@@ -42,6 +38,15 @@ const Layout = ({ onLogout, userRole, currentUser, notifications, appLevelHandle
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (toast && toast.show) {
+      const timer = setTimeout(() => {
+        clearToast();
+      }, 4000); // Auto-dismiss after 4 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [toast, clearToast]);
 
   const handleToggleDesktopSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -87,6 +92,10 @@ const Layout = ({ onLogout, userRole, currentUser, notifications, appLevelHandle
         <main className="page-content">
           <Outlet />
         </main>
+      </div>
+
+      <div className="toast-notification-container">
+        <ToastNotification toast={toast} onClose={clearToast} />
       </div>
     </div>
   );

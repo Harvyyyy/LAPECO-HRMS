@@ -1,20 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import EditLeaveCreditsModal from '../../modals/EditLeaveCreditsModal';
-import LeaveHistoryModal from '../../modals/LeaveHistoryModal'; // <-- NEW IMPORT
+import LeaveHistoryModal from '../../modals/LeaveHistoryModal';
+import BulkAddLeaveCreditsModal from '../../modals/BulkAddLeaveCreditsModal';
 
-const LeaveCreditsTab = ({ employees, leaveRequests, onSaveCredits }) => {
+const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showBulkAddModal, setShowBulkAddModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
+
+  const activeEmployees = useMemo(() => employees.filter(emp => emp.status === 'Active'), [employees]);
 
   const employeeLeaveData = useMemo(() => {
     const currentYear = new Date().getFullYear();
     
-    const calculatedData = employees
-      .filter(emp => emp.status === 'Active')
-      .map(emp => {
+    const calculatedData = activeEmployees.map(emp => {
         const totalCredits = emp.leaveCredits || { sick: 0, vacation: 0, personal: 0 };
         const usedCredits = leaveRequests
           .filter(req => 
@@ -62,7 +64,7 @@ const LeaveCreditsTab = ({ employees, leaveRequests, onSaveCredits }) => {
       return 0;
     });
 
-  }, [employees, leaveRequests, searchTerm, sortConfig]);
+  }, [activeEmployees, leaveRequests, searchTerm, sortConfig]);
   
   const handleEditClick = (employee) => {
     setSelectedEmployee(employee);
@@ -75,8 +77,13 @@ const LeaveCreditsTab = ({ employees, leaveRequests, onSaveCredits }) => {
   };
   
   const handleSave = (employeeId, newCredits) => {
-    onSaveCredits(employeeId, newCredits);
+    handlers.updateLeaveCredits(employeeId, newCredits);
     setShowEditModal(false);
+  };
+
+  const handleBulkAdd = (creditsToAdd) => {
+    handlers.bulkAddLeaveCredits(creditsToAdd);
+    setShowBulkAddModal(false);
   };
   
   const requestSort = (key) => {
@@ -100,11 +107,14 @@ const LeaveCreditsTab = ({ employees, leaveRequests, onSaveCredits }) => {
 
   return (
     <>
-      <div className="mb-3" style={{ maxWidth: '400px' }}>
-        <div className="input-group">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="input-group" style={{ maxWidth: '400px' }}>
           <span className="input-group-text"><i className="bi bi-search"></i></span>
           <input type="text" className="form-control" placeholder="Search by employee name..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}/>
         </div>
+        <button className="btn btn-primary" onClick={() => setShowBulkAddModal(true)}>
+          <i className="bi bi-plus-circle-dotted me-2"></i>Add Credits to All
+        </button>
       </div>
       <div className="card data-table-card shadow-sm">
         <div className="table-responsive">
@@ -186,6 +196,13 @@ const LeaveCreditsTab = ({ employees, leaveRequests, onSaveCredits }) => {
           leaveHistory={selectedEmployee.leaveHistory}
         />
       )}
+
+      <BulkAddLeaveCreditsModal
+        show={showBulkAddModal}
+        onClose={() => setShowBulkAddModal(false)}
+        onConfirm={handleBulkAdd}
+        activeEmployeeCount={activeEmployees.length}
+      />
     </>
   );
 };

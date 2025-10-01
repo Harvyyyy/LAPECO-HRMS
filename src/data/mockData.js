@@ -604,31 +604,43 @@ export const initialEvaluationsData = [
     factorScores: { /* ... abbreviated for brevity ... */ },
     overallScore: 90.00,
   },
+    // --- NEW DATA POINT FOR DAVID GREEN (EMP004) ---
   {
-    id: 'EVAL05',
-    employeeId: 'EMP004',
-    evaluatorId: 'EMP002',
-    periodStart: '2025-07-01',
-    periodEnd: '2025-12-31',
-    status: 'Completed',
+    id: 'EVAL05', employeeId: 'EMP004', evaluatorId: 'EMP002', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed',
     factorScores: {
       'bhv_teamwork': { score: 2, comments: 'Has been working in isolation and is sometimes reluctant to assist others when asked.' },
-      'bhv_communication': { score: 3, comments: '' },
-      'bhv_professionalism': { score: 2, comments: 'Observed being dismissive of feedback during a safety briefing.' },
-      'wq_accuracy': { score: 4, comments: 'Still accurate when focused.' },
       'wq_efficiency': { score: 2, comments: 'Noticeable decrease in the speed of pallet movements. Often seems disengaged.' },
-      'pot_learning_agility': { score: 2, comments: 'Resistant to feedback regarding safety protocols.' },
-      'pot_ambition_drive': { score: 2, comments: 'Has not shown initiative for new tasks recently.' },
-      'pot_leadership': { score: 1, comments: '' },
-      'eng_role_satisfaction': { score: 2, comments: 'Appears less motivated than in previous periods.' },
-      'eng_growth_opportunity': { score: 2, comments: '' },
       'KPI03': { score: 2, comments: 'Involved in one minor, non-injury incident due to rushing.' },
       'KPI04': { score: 3, comments: 'Checks are completed, but sometimes hastily.' },
-      'factor_evaluator_summary': { value: "David's performance has seen a significant decline this period, particularly concerning safety compliance and overall efficiency. Immediate and sustained improvement is required." },
-      'factor_development_areas': { value: "Key Strengths: Still knowledgeable about the equipment when focused. Development Areas: Must recommit to all safety protocols without exception. Needs to improve time management and re-engage with the team." },
     },
     overallScore: 46.80,
   },
+  // --- NEW DATA ---
+  {
+    id: 'EVAL06', employeeId: 'EMP002', evaluatorId: 'EMP005', periodStart: '2024-07-01', periodEnd: '2024-12-31', status: 'Completed',
+    factorScores: { 'bhv_teamwork': { score: 4 }, 'wq_efficiency': { score: 4 }, 'KPI03': { score: 4 }, 'KPI04': { score: 4 } },
+    overallScore: 85.00,
+  },
+  {
+    id: 'EVAL07', employeeId: 'EMP002', evaluatorId: 'EMP005', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed',
+    factorScores: { 'bhv_teamwork': { score: 4 }, 'wq_efficiency': { score: 5 }, 'KPI03': { score: 4 }, 'KPI04': { score: 5 } },
+    overallScore: 88.00,
+  },
+  {
+    id: 'EVAL08', employeeId: 'EMP003', evaluatorId: 'EMP005', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed',
+    factorScores: { 'bhv_teamwork': { score: 5 }, 'wq_accuracy': { score: 5 }, 'KPI02': { score: 5 } },
+    overallScore: 91.00,
+  },
+  {
+    id: 'EVAL09', employeeId: 'EMP001', evaluatorId: 'EMP003', periodStart: '2024-01-01', periodEnd: '2024-06-30', status: 'Completed',
+    factorScores: { 'bhv_teamwork': { score: 4 }, 'wq_accuracy': { score: 4 }, 'KPI02': { score: 5 } },
+    overallScore: 88.50,
+  },
+  {
+    id: 'EVAL10', employeeId: 'EMP009', evaluatorId: 'EMP003', periodStart: '2024-07-01', periodEnd: '2024-12-31', status: 'Completed',
+    factorScores: { 'bhv_teamwork': { score: 4 }, 'wq_accuracy': { score: 4 }, 'KPI02': { score: 3 } },
+    overallScore: 82.00,
+  }
 ];
 
 // ============================================================================

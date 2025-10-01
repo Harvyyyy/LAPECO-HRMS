@@ -38,6 +38,7 @@ import AccountsPage from './components/pages/Accounts/AccountsPage';
 import MyProfilePage from './components/pages/My-Profile/MyProfilePage';
 import AccountSettingsPage from './components/pages/Account-Settings/AccountSettingsPage';
 import ContributionsManagementPage from './components/pages/Contributions-Management/ContributionsManagementPage';
+import PredictiveAnalyticsPage from './components/pages/Predictive-Analytics/PredictiveAnalyticsPage';
 
 // Constants & Assets
 import { USER_ROLES } from './constants/roles';
@@ -92,7 +93,15 @@ function AppContent() {
   const [disciplinaryCases, setDisciplinaryCases] = useState(mockData.initialCasesData);
   const [userAccounts, setUserAccounts] = useState(mockData.initialUserAccounts);
   const [theme, setTheme] = useState('light');
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+  };
+  const clearToast = () => {
+    setToast({ show: false, message: '', type: 'success' });
+  };
+  
   const handleLogout = () => {
     setCurrentUserId(null);
     localStorage.removeItem('currentUserId');
@@ -119,6 +128,7 @@ function AppContent() {
         setEmployees(prev => prev.map(emp => 
           emp.id === existingEmployeeId ? { ...emp, ...updatedFormData } : emp
         ));
+        showToast('Employee details have been updated successfully.');
       } else {
         const newEmployee = { 
           id: `EMP${Date.now().toString().slice(-4)}`, 
@@ -127,6 +137,8 @@ function AppContent() {
           ...updatedFormData 
         };
         setEmployees(prev => [newEmployee, ...prev]);
+        showToast('New employee has been added successfully.', 'success');
+        return newEmployee;
       }
     },
     deleteEmployee: (employeeId) => {
@@ -188,6 +200,27 @@ function AppContent() {
             : emp
         )
       );
+    },
+    bulkAddLeaveCredits: (creditsToAdd) => {
+        let updatedCount = 0;
+        setEmployees(prevEmployees =>
+            prevEmployees.map(emp => {
+                if (emp.status === 'Active') {
+                    updatedCount++;
+                    const currentCredits = emp.leaveCredits || { vacation: 0, sick: 0, personal: 0 };
+                    return {
+                        ...emp,
+                        leaveCredits: {
+                            vacation: (currentCredits.vacation || 0) + (creditsToAdd.vacation || 0),
+                            sick: (currentCredits.sick || 0) + (creditsToAdd.sick || 0),
+                            personal: (currentCredits.personal || 0) + (creditsToAdd.personal || 0),
+                        },
+                    };
+                }
+                return emp;
+            })
+        );
+        showToast(`${updatedCount} active employees have had their leave credits updated.`);
     },
     saveHoliday: (formData, holidayId) => {
         if (holidayId) {
@@ -470,7 +503,7 @@ function AppContent() {
         handleLogout();
       }
       
-      alert("Selected data has been reset successfully.");
+      showToast("Selected data has been reset successfully.", "info");
     },
   };
 
@@ -523,6 +556,8 @@ function AppContent() {
               notifications={notifications}
               appLevelHandlers={appLevelHandlers}
               theme={theme}
+              toast={toast}
+              clearToast={clearToast}
             />
           ) : (
             <Navigate to="/login" replace />
@@ -586,6 +621,19 @@ function AppContent() {
             <Route path="holiday-management" element={<HolidayManagementPage holidays={holidays} handlers={appLevelHandlers} />} />
             <Route path="contributions-management" element={<ContributionsManagementPage employees={employees} positions={positions} payrolls={payrolls} />} />
             <Route path="performance" element={<PerformanceManagementPage kras={kras} kpis={kpis} positions={positions} employees={employees} evaluations={evaluations} handlers={appLevelHandlers} evaluationFactors={evaluationFactors} theme={theme} />} />
+            <Route 
+              path="predictive-analytics" 
+              element={<PredictiveAnalyticsPage 
+                evaluations={evaluations} 
+                employees={employees} 
+                positions={positions} 
+                schedules={schedules} 
+                attendanceLogs={attendanceLogs}
+                handlers={appLevelHandlers}
+                trainingPrograms={trainingPrograms}
+                enrollments={enrollments}
+              />} 
+            />
             <Route path="performance/evaluate" element={
               <EvaluationFormPage 
                 currentUser={currentUser} 
