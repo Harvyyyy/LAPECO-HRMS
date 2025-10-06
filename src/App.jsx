@@ -39,6 +39,7 @@ import MyProfilePage from './components/pages/My-Profile/MyProfilePage';
 import AccountSettingsPage from './components/pages/Account-Settings/AccountSettingsPage';
 import ContributionsManagementPage from './components/pages/Contributions-Management/ContributionsManagementPage';
 import PredictiveAnalyticsPage from './components/pages/Predictive-Analytics/PredictiveAnalyticsPage';
+import LeaderboardsPage from './components/pages/Leaderboards/LeaderboardsPage'; // <-- NEW
 
 // Constants & Assets
 import { USER_ROLES } from './constants/roles';
@@ -583,6 +584,16 @@ function AppContent() {
         
         {userRole === USER_ROLES.HR_PERSONNEL && (
           <>
+            <Route path="leaderboards" element={
+              <LeaderboardsPage 
+                employees={employees}
+                positions={positions}
+                schedules={schedules}
+                attendanceLogs={attendanceLogs}
+                leaveRequests={leaveRequests}
+                evaluations={evaluations}
+              />
+            } />
             <Route path="employee-data" element={<EmployeeDataPage employees={employees} positions={positions} handlers={appLevelHandlers} />} />
             <Route path="positions" element={<PositionsPage employees={employees} positions={positions} handlers={appLevelHandlers} />} />
             <Route path="attendance-management" element={<AttendancePage allSchedules={schedules} employees={employees} positions={positions} attendanceLogs={attendanceLogs} setAttendanceLogs={setAttendanceLogs} handlers={appLevelHandlers} />} />

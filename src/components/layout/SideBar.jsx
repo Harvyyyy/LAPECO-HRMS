@@ -1,3 +1,5 @@
+// src/components/layout/SideBar.jsx
+
 import React, { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Tooltip } from 'bootstrap';
@@ -8,6 +10,7 @@ import { USER_ROLES } from '../../constants/roles';
 const navItemsConfig = {
   [USER_ROLES.HR_PERSONNEL]: [
     { path: '/dashboard', icon: 'bi-grid-1x2-fill', label: 'Dashboard', exact: true },
+    { path: '/dashboard/leaderboards', icon: 'bi-bar-chart-line-fill', label: 'Leaderboards' }, // <-- NEW
     { path: '/dashboard/employee-data', icon: 'bi-people-fill', label: 'Employee Data' },
     { path: '/dashboard/positions', icon: 'bi-diagram-3-fill', label: 'Positions' },
     { path: '/dashboard/attendance-management', icon: 'bi-calendar-check-fill', label: 'Attendance Management' },
