@@ -1,3 +1,5 @@
+// src/components/pages/Leave-Management/LeaveRequestTable.jsx
+
 import React, { useState, useMemo } from 'react';
 import ConfirmationModal from '../../modals/ConfirmationModal';
 import ViewReasonModal from '../../modals/ViewReasonModal';
@@ -6,6 +8,7 @@ import PaternityInfo from './PaternityInfo';
 import EditMaternityDetailsModal from '../../modals/EditMaternityDetailsModal';
 import EditPaternityDetailsModal from '../../modals/EditPaternityDetailsModal';
 import ViewAttachmentsModal from '../../modals/ViewAttachmentsModal';
+import ActionsDropdown from '../../common/ActionsDropdown';
 
 const LeaveRequestTable = ({ leaveRequests, handlers }) => {
   const [activeStatusFilter, setActiveStatusFilter] = useState('Pending');
@@ -164,19 +167,16 @@ const LeaveRequestTable = ({ leaveRequests, handlers }) => {
                       </div>
                     </td>
                     <td className="text-center">
-                      <div className="dropdown">
-                        <button className="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
-                        <ul className="dropdown-menu dropdown-menu-end">
-                          <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setRequestToView(req); }}><i className="bi bi-info-circle me-2"></i>View Reason</a></li>
-                          {hasAttachment && (<li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setViewingAttachmentsRequest(req); }}><i className="bi bi-paperclip me-2"></i>View Attachments</a></li>)}
-                          {req.status !== 'Canceled' && (<li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); openConfirmationModal(req); }}><i className="bi bi-pencil-square me-2"></i>Change Status</a></li>)}
-                          {req.maternityDetails && (<li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setEditingMaternityRequest(req); }}><i className="bi bi-pencil-fill me-2"></i>Edit Maternity Details</a></li>)}
-                          {req.paternityDetails && (<li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setEditingPaternityRequest(req); }}><i className="bi bi-pencil-fill me-2"></i>Edit Paternity Details</a></li>)}
-                          {req.extensionStatus === 'Pending' && (<><li><hr className="dropdown-divider" /></li><li><h6 className="dropdown-header">Extension Request</h6></li><li><a className="dropdown-item text-success" href="#" onClick={(e) => { e.preventDefault(); openExtensionActionModal(req, 'Approved'); }}><i className="bi bi-check-circle-fill me-2"></i>Approve Extension</a></li><li><a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); openExtensionActionModal(req, 'Declined'); }}><i className="bi bi-x-circle-fill me-2"></i>Decline Extension</a></li></>)}
-                          <li><hr className="dropdown-divider" /></li>
-                          <li><a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); setRequestToDelete(req); }}><i className="bi bi-trash me-2"></i>Delete Request</a></li>
-                        </ul>
-                      </div>
+                      <ActionsDropdown>
+                        <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setRequestToView(req); }}><i className="bi bi-info-circle me-2"></i>View Reason</a>
+                        {hasAttachment && (<a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setViewingAttachmentsRequest(req); }}><i className="bi bi-paperclip me-2"></i>View Attachments</a>)}
+                        {req.status !== 'Canceled' && (<a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); openConfirmationModal(req); }}><i className="bi bi-pencil-square me-2"></i>Change Status</a>)}
+                        {req.maternityDetails && (<a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setEditingMaternityRequest(req); }}><i className="bi bi-pencil-fill me-2"></i>Edit Maternity Details</a>)}
+                        {req.paternityDetails && (<a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setEditingPaternityRequest(req); }}><i className="bi bi-pencil-fill me-2"></i>Edit Paternity Details</a>)}
+                        {req.extensionStatus === 'Pending' && (<><div className="dropdown-divider"></div><h6 className="dropdown-header">Extension Request</h6><a className="dropdown-item text-success" href="#" onClick={(e) => { e.preventDefault(); openExtensionActionModal(req, 'Approved'); }}><i className="bi bi-check-circle-fill me-2"></i>Approve Extension</a><a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); openExtensionActionModal(req, 'Declined'); }}><i className="bi bi-x-circle-fill me-2"></i>Decline Extension</a></>)}
+                        <div className="dropdown-divider"></div>
+                        <a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); setRequestToDelete(req); }}><i className="bi bi-trash me-2"></i>Delete Request</a>
+                      </ActionsDropdown>
                     </td>
                   </tr>
                 )
