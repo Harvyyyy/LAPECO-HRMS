@@ -1,3 +1,5 @@
+// src/reports/index.js (UPDATED)
+
 import { generateAttendanceSummaryReport } from './attendanceSummaryReport';
 import { generateDisciplinaryCasesReport } from './disciplinaryCasesReport';
 import { generateEmployeeMasterlistReport } from './employeeMasterlistReport';
@@ -10,6 +12,7 @@ import { generateRecruitmentActivityReport } from './recruitmentActivityReport';
 import { generateTrainingProgramReport } from './trainingProgramReport';
 import { generateContributionsReport } from './contributionsReport';
 import { generatePredictiveAnalyticsReport } from './predictiveAnalyticsReport';
+import { viewAttachment } from './attachmentViewer';
 
 // Map report IDs from your config to their generator functions
 const reportGenerators = {
@@ -25,6 +28,7 @@ const reportGenerators = {
   training_program_summary: generateTrainingProgramReport,
   contributions_summary: generateContributionsReport,
   predictive_analytics_summary: generatePredictiveAnalyticsReport,
+  attachment_viewer: viewAttachment,
 };
 
 export default reportGenerators;

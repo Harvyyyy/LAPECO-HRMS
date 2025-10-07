@@ -17,7 +17,7 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
     const currentYear = new Date().getFullYear();
     
     const calculatedData = activeEmployees.map(emp => {
-        const totalCredits = emp.leaveCredits || { sick: 0, vacation: 0, personal: 0 };
+        const totalCredits = emp.leaveCredits || { sick: 0, vacation: 0, personal: 0, paternity: 0 };
         const usedCredits = leaveRequests
           .filter(req => 
             req.empId === emp.id && 
@@ -30,7 +30,7 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
               acc[type] = (acc[type] || 0) + req.days;
             }
             return acc;
-          }, { vacation: 0, sick: 0, personal: 0, unpaid: 0 });
+          }, { vacation: 0, sick: 0, personal: 0, unpaid: 0, paternity: 0 });
         
         const individualHistory = leaveRequests.filter(req => req.empId === emp.id);
 
@@ -43,6 +43,7 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
             vacation: (totalCredits.vacation || 0) - (usedCredits.vacation || 0),
             sick: (totalCredits.sick || 0) - (usedCredits.sick || 0),
             personal: (totalCredits.personal || 0) - (usedCredits.personal || 0),
+            paternity: (totalCredits.paternity || 0) - (usedCredits.paternity || 0),
           }
         };
       });
@@ -51,7 +52,7 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
 
     return [...filteredData].sort((a, b) => {
       let valA, valB;
-      if (['vacation', 'sick', 'personal', 'unpaid'].includes(sortConfig.key)) {
+      if (['vacation', 'sick', 'personal', 'paternity', 'unpaid'].includes(sortConfig.key)) {
         valA = sortConfig.key === 'unpaid' ? a.usedCredits.unpaid : a.remainingBalance[sortConfig.key];
         valB = sortConfig.key === 'unpaid' ? b.usedCredits.unpaid : b.remainingBalance[sortConfig.key];
       } else {
@@ -125,6 +126,7 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
                 <th className="sortable" onClick={() => requestSort('vacation')}>Vacation {getSortIcon('vacation')}</th>
                 <th className="sortable" onClick={() => requestSort('sick')}>Sick {getSortIcon('sick')}</th>
                 <th className="sortable" onClick={() => requestSort('personal')}>Personal {getSortIcon('personal')}</th>
+                <th className="sortable" onClick={() => requestSort('paternity')}>Paternity {getSortIcon('paternity')}</th>
                 <th className="sortable text-center" onClick={() => requestSort('unpaid')}>Unpaid {getSortIcon('unpaid')}</th>
                 <th>Actions</th>
               </tr>
@@ -135,14 +137,6 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
                 const vacationTotal = emp.totalCredits.vacation;
                 const vacationPercentage = vacationTotal > 0 ? (vacationRemaining / vacationTotal) * 100 : 0;
                 
-                const sickRemaining = emp.remainingBalance.sick;
-                const sickTotal = emp.totalCredits.sick;
-                const sickPercentage = sickTotal > 0 ? (sickRemaining / sickTotal) * 100 : 0;
-
-                const personalRemaining = emp.remainingBalance.personal;
-                const personalTotal = emp.totalCredits.personal;
-                const personalPercentage = personalTotal > 0 ? (personalRemaining / personalTotal) * 100 : 0;
-
                 return (
                   <tr key={emp.id}>
                     <td><div>{emp.name}</div><small className="text-muted">{emp.id}</small></td>
@@ -150,14 +144,9 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
                       <div className="balance-summary">{emp.usedCredits.vacation} of {vacationTotal} used</div>
                       <div className="progress" style={{height: '8px'}}><div className={`progress-bar ${getProgressBarVariant(vacationPercentage)}`} style={{width: `${vacationPercentage}%`}}></div></div>
                     </td>
-                    <td style={{minWidth: '200px'}}>
-                      <div className="balance-summary">{emp.usedCredits.sick} of {sickTotal} used</div>
-                      <div className="progress" style={{height: '8px'}}><div className={`progress-bar ${getProgressBarVariant(sickPercentage)}`} style={{width: `${sickPercentage}%`}}></div></div>
-                    </td>
-                    <td style={{minWidth: '200px'}}>
-                      <div className="balance-summary">{emp.usedCredits.personal} of {personalTotal} used</div>
-                      <div className="progress" style={{height: '8px'}}><div className={`progress-bar ${getProgressBarVariant(personalPercentage)}`} style={{width: `${personalPercentage}%`}}></div></div>
-                    </td>
+                    <td className="text-center">{emp.remainingBalance.sick} / {emp.totalCredits.sick}</td>
+                    <td className="text-center">{emp.remainingBalance.personal} / {emp.totalCredits.personal}</td>
+                    <td className="text-center">{emp.gender === 'Male' ? `${emp.remainingBalance.paternity} / ${emp.totalCredits.paternity}` : 'N/A'}</td>
                     <td className="text-center fw-bold">{emp.usedCredits.unpaid || 0}</td>
                     <td>
                         <div className="dropdown">
@@ -172,7 +161,7 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
                 );
               })}
               {employeeLeaveData.length === 0 && (
-                <tr><td colSpan="6" className="text-center p-4">No active employees found.</td></tr>
+                <tr><td colSpan="7" className="text-center p-4">No active employees found.</td></tr>
               )}
             </tbody>
           </table>

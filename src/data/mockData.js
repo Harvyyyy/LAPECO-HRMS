@@ -28,13 +28,13 @@ export const initialEmployeesData = [
     id: 'EMP001', firstName: 'Alice', middleName: 'Marie', lastName: 'Johnson', name: 'Alice Marie Johnson', positionId: 2, isTeamLeader: false, email: 'alice.j@example.com', joiningDate: '2022-03-15', gender: 'Female', birthday: '1993-02-18', sssNo: '34-456', tinNo: '321-654', pagIbigNo: '1213-1695-8596', philhealthNo: '1120-2485-8688', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 15, personal: 5 }
   },
   { 
-    id: 'EMP002', firstName: 'Bob', middleName: '', lastName: 'Smith', name: 'Bob Smith', positionId: 3, isTeamLeader: true, email: 'bob.s@example.com', joiningDate: '2021-07-01', gender: 'Male', birthday: '1989-08-25', sssNo: '34-789', tinNo: '987-654', pagIbigNo: '1210-6385-5854', philhealthNo: '0825-3830-9814', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 15, personal: 5 }
+    id: 'EMP002', firstName: 'Bob', middleName: '', lastName: 'Smith', name: 'Bob Smith', positionId: 3, isTeamLeader: true, email: 'bob.s@example.com', joiningDate: '2021-07-01', gender: 'Male', birthday: '1989-08-25', sssNo: '34-789', tinNo: '987-654', pagIbigNo: '1210-6385-5854', philhealthNo: '0825-3830-9814', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 15, personal: 5, paternity: 4 }
   },
   { 
     id: 'EMP003', firstName: 'Carol', middleName: '', lastName: 'White', name: 'Carol White', positionId: 2, isTeamLeader: true, email: 'carol.w@example.com', joiningDate: '2023-01-10', gender: 'Female', birthday: '1996-12-01', sssNo: '34-123', tinNo: '123-456', pagIbigNo: '1210-5865-0865', philhealthNo: '0802-6579-1208', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 15, personal: 5 }
   },
   { 
-    id: 'EMP004', firstName: 'David', middleName: '', lastName: 'Green', name: 'David Green', positionId: 3, isTeamLeader: false, email: 'david.g@example.com', joiningDate: '2023-05-20', gender: 'Male', birthday: '1999-04-30', sssNo: '34-101', tinNo: '777-888', pagIbigNo: '1215-1312-7883', philhealthNo: '0805-1312-7883', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 12, vacation: 12, personal: 4 }
+    id: 'EMP004', firstName: 'David', middleName: '', lastName: 'Green', name: 'David Green', positionId: 3, isTeamLeader: false, email: 'david.g@example.com', joiningDate: '2023-05-20', gender: 'Male', birthday: '1999-04-30', sssNo: '34-101', tinNo: '777-888', pagIbigNo: '1215-1312-7883', philhealthNo: '0805-1312-7883', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 12, vacation: 12, personal: 4, paternity: 4 }
   },
   { 
     id: 'EMP005', firstName: 'Grace', middleName: 'Anne', lastName: 'Field', name: 'Grace Anne Field', positionId: 1, isTeamLeader: false, email: 'grace.f@example.com', joiningDate: '2020-11-20', gender: 'Female', birthday: '1995-07-19', sssNo: '34-202', tinNo: '222-333', pagIbigNo: '1211-9050-5943', philhealthNo: '1908-9634-9159', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 20, personal: 5 }
@@ -43,30 +43,30 @@ export const initialEmployeesData = [
     id: 'EMP009', firstName: 'Ivy', middleName: '', lastName: 'Lee', name: 'Ivy Lee', positionId: 2, isTeamLeader: false, email: 'ivy.l@example.com', joiningDate: '2023-08-12', gender: 'Female', birthday: '2000-10-10', sssNo: '34-999', tinNo: '111-222', pagIbigNo: '1210-8451-2548', philhealthNo: '0902-5184-4185', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3 }
   },
   { 
-    id: 'EMP010', firstName: 'Frank', middleName: '', lastName: 'Black', name: 'Frank Black', positionId: null, isTeamLeader: false, email: 'frank.b@example.com', joiningDate: '2023-09-01', gender: 'Male', birthday: '1998-05-15', sssNo: '34-303', tinNo: '444-555', pagIbigNo: '1212-7582-7302', philhealthNo: '0820-1209-8037', status: 'Inactive', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 0, vacation: 0, personal: 0 }
+    id: 'EMP010', firstName: 'Frank', middleName: '', lastName: 'Black', name: 'Frank Black', positionId: null, isTeamLeader: false, email: 'frank.b@example.com', joiningDate: '2023-09-01', gender: 'Male', birthday: '1998-05-15', sssNo: '34-303', tinNo: '444-555', pagIbigNo: '1212-7582-7302', philhealthNo: '0820-1209-8037', status: 'Inactive', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 0, vacation: 0, personal: 0, paternity: 0 }
   },
 
   // --- NEW EMPLOYEES ---
-  { id: 'EMP101', firstName: 'Henry', middleName: '', lastName: 'Miller', name: 'Henry Miller', positionId: 4, isTeamLeader: true, email: 'henry.m@example.com', joiningDate: '2022-08-20', gender: 'Male', birthday: '1991-06-15', sssNo: '34-111', tinNo: '123-111', pagIbigNo: '1111-2222-3333', philhealthNo: '4444-5555-6666', status: 'Active', contactNumber: '9876543210', address: '456 Oak Ave, Sometown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 12, personal: 3 }},
-  { id: 'EMP102', firstName: 'Jack', middleName: 'Robert', lastName: 'Davis', name: 'Jack Robert Davis', positionId: 4, isTeamLeader: false, email: 'jack.d@example.com', joiningDate: '2023-02-18', gender: 'Male', birthday: '1998-09-22', sssNo: '34-222', tinNo: '123-222', pagIbigNo: '2222-3333-4444', philhealthNo: '5555-6666-7777', status: 'Active', contactNumber: '9876543211', address: '789 Pine St, Anothertown, USA', resumeUrl: null, leaveCredits: { sick: 8, vacation: 10, personal: 2 }},
+  { id: 'EMP101', firstName: 'Henry', middleName: '', lastName: 'Miller', name: 'Henry Miller', positionId: 4, isTeamLeader: true, email: 'henry.m@example.com', joiningDate: '2022-08-20', gender: 'Male', birthday: '1991-06-15', sssNo: '34-111', tinNo: '123-111', pagIbigNo: '1111-2222-3333', philhealthNo: '4444-5555-6666', status: 'Active', contactNumber: '9876543210', address: '456 Oak Ave, Sometown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 12, personal: 3, paternity: 4 }},
+  { id: 'EMP102', firstName: 'Jack', middleName: 'Robert', lastName: 'Davis', name: 'Jack Robert Davis', positionId: 4, isTeamLeader: false, email: 'jack.d@example.com', joiningDate: '2023-02-18', gender: 'Male', birthday: '1998-09-22', sssNo: '34-222', tinNo: '123-222', pagIbigNo: '2222-3333-4444', philhealthNo: '5555-6666-7777', status: 'Active', contactNumber: '9876543211', address: '789 Pine St, Anothertown, USA', resumeUrl: null, leaveCredits: { sick: 8, vacation: 10, personal: 2, paternity: 4 }},
   { id: 'EMP103', firstName: 'Karen', middleName: '', lastName: 'Wilson', name: 'Karen Wilson', positionId: 5, isTeamLeader: false, email: 'karen.w@example.com', joiningDate: '2021-11-05', gender: 'Female', birthday: '1994-03-12', sssNo: '34-333', tinNo: '123-333', pagIbigNo: '3333-4444-5555', philhealthNo: '6666-7777-8888', status: 'Active', contactNumber: '9876543212', address: '101 Maple Rd, Yourtown, USA', resumeUrl: null, leaveCredits: { sick: 12, vacation: 15, personal: 5 }},
-  { id: 'EMP104', firstName: 'Liam', middleName: '', lastName: 'Moore', name: 'Liam Moore', positionId: 5, isTeamLeader: false, email: 'liam.m@example.com', joiningDate: '2023-07-30', gender: 'Male', birthday: '2001-01-01', sssNo: '34-444', tinNo: '123-444', pagIbigNo: '4444-5555-6666', philhealthNo: '7777-8888-9999', status: 'Active', contactNumber: '9876543213', address: '212 Birch Ln, Mytown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3 }},
+  { id: 'EMP104', firstName: 'Liam', middleName: '', lastName: 'Moore', name: 'Liam Moore', positionId: 5, isTeamLeader: false, email: 'liam.m@example.com', joiningDate: '2023-07-30', gender: 'Male', birthday: '2001-01-01', sssNo: '34-444', tinNo: '123-444', pagIbigNo: '4444-5555-6666', philhealthNo: '7777-8888-9999', status: 'Active', contactNumber: '9876543213', address: '212 Birch Ln, Mytown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3, paternity: 4 }},
   { id: 'EMP105', firstName: 'Mia', middleName: 'Chloe', lastName: 'Taylor', name: 'Mia Chloe Taylor', positionId: 2, isTeamLeader: false, email: 'mia.t@example.com', joiningDate: '2022-09-14', gender: 'Female', birthday: '1997-11-30', sssNo: '34-555', tinNo: '123-555', pagIbigNo: '5555-6666-7777', philhealthNo: '8888-9999-0000', status: 'Active', contactNumber: '9876543214', address: '333 Cedar Dr, Ourtown, USA', resumeUrl: null, leaveCredits: { sick: 9, vacation: 11, personal: 4 }},
-  { id: 'EMP106', firstName: 'Noah', middleName: '', lastName: 'Anderson', name: 'Noah Anderson', positionId: 3, isTeamLeader: false, email: 'noah.a@example.com', joiningDate: '2023-01-25', gender: 'Male', birthday: '1999-07-07', sssNo: '34-666', tinNo: '123-666', pagIbigNo: '6666-7777-8888', philhealthNo: '9999-0000-1111', status: 'Active', contactNumber: '9876543215', address: '444 Spruce Ct, Theirtown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3 }},
+  { id: 'EMP106', firstName: 'Noah', middleName: '', lastName: 'Anderson', name: 'Noah Anderson', positionId: 3, isTeamLeader: false, email: 'noah.a@example.com', joiningDate: '2023-01-25', gender: 'Male', birthday: '1999-07-07', sssNo: '34-666', tinNo: '123-666', pagIbigNo: '6666-7777-8888', philhealthNo: '9999-0000-1111', status: 'Active', contactNumber: '9876543215', address: '444 Spruce Ct, Theirtown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3, paternity: 4 }},
   { id: 'EMP107', firstName: 'Olivia', middleName: '', lastName: 'Thomas', name: 'Olivia Thomas', positionId: 4, isTeamLeader: false, email: 'olivia.t@example.com', joiningDate: '2020-05-19', gender: 'Female', birthday: '1990-04-19', sssNo: '34-777', tinNo: '123-777', pagIbigNo: '7777-8888-9999', philhealthNo: '0000-1111-2222', status: 'Active', contactNumber: '9876543216', address: '555 Willow Way, Downtown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 18, personal: 5 }},
-  { id: 'EMP108', firstName: 'Peter', middleName: '', lastName: 'Jackson', name: 'Peter Jackson', positionId: 1, isTeamLeader: false, email: 'peter.j@example.com', joiningDate: '2023-06-01', gender: 'Male', birthday: '1996-08-14', sssNo: '34-888', tinNo: '123-888', pagIbigNo: '8888-9999-0000', philhealthNo: '1111-2222-3333', status: 'Active', contactNumber: '9876543217', address: '666 Elm Pl, Uptown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3 }},
+  { id: 'EMP108', firstName: 'Peter', middleName: '', lastName: 'Jackson', name: 'Peter Jackson', positionId: 1, isTeamLeader: false, email: 'peter.j@example.com', joiningDate: '2023-06-01', gender: 'Male', birthday: '1996-08-14', sssNo: '34-888', tinNo: '123-888', pagIbigNo: '8888-9999-0000', philhealthNo: '1111-2222-3333', status: 'Active', contactNumber: '9876543217', address: '666 Elm Pl, Uptown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3, paternity: 4 }},
   { id: 'EMP109', firstName: 'Quinn', middleName: '', lastName: 'Harris', name: 'Quinn Harris', positionId: 2, isTeamLeader: false, email: 'quinn.h@example.com', joiningDate: '2022-12-10', gender: 'Female', birthday: '1995-02-28', sssNo: '34-990', tinNo: '123-990', pagIbigNo: '9999-0000-1111', philhealthNo: '2222-3333-4444', status: 'Inactive', contactNumber: '9876543218', address: '777 Redwood Ave, Midtown, USA', resumeUrl: null, leaveCredits: { sick: 0, vacation: 0, personal: 0 }},
   { id: 'EMP110', firstName: 'Rachel', middleName: 'Grace', lastName: 'Martin', name: 'Rachel Grace Martin', positionId: 3, isTeamLeader: false, email: 'rachel.m@example.com', joiningDate: '2023-03-03', gender: 'Female', birthday: '2000-12-25', sssNo: '34-100', tinNo: '123-100', pagIbigNo: '0000-1111-2222', philhealthNo: '3333-4444-5555', status: 'Active', contactNumber: '9876543219', address: '888 Aspen Cir, Outoftown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3 }},
-  { id: 'EMP111', firstName: 'Sam', middleName: '', lastName: 'Garcia', name: 'Sam Garcia', positionId: 5, isTeamLeader: true, email: 'sam.g@example.com', joiningDate: '2021-04-11', gender: 'Male', birthday: '1988-10-05', sssNo: '35-111', tinNo: '124-111', pagIbigNo: '1111-2222-4444', philhealthNo: '4444-5555-7777', status: 'Active', contactNumber: '9112223330', address: '111 Main St, Sometown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 15, personal: 5 }},
+  { id: 'EMP111', firstName: 'Sam', middleName: '', lastName: 'Garcia', name: 'Sam Garcia', positionId: 5, isTeamLeader: true, email: 'sam.g@example.com', joiningDate: '2021-04-11', gender: 'Male', birthday: '1988-10-05', sssNo: '35-111', tinNo: '124-111', pagIbigNo: '1111-2222-4444', philhealthNo: '4444-5555-7777', status: 'Active', contactNumber: '9112223330', address: '111 Main St, Sometown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 15, personal: 5, paternity: 4 }},
   { id: 'EMP112', firstName: 'Tina', middleName: 'Fey', lastName: 'Rodriguez', name: 'Tina Fey Rodriguez', positionId: 5, isTeamLeader: false, email: 'tina.r@example.com', joiningDate: '2023-04-20', gender: 'Female', birthday: '1999-05-18', sssNo: '35-222', tinNo: '124-222', pagIbigNo: '2222-3333-5555', philhealthNo: '5555-6666-8888', status: 'Active', contactNumber: '9112223331', address: '222 Oak Ave, Mytown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3 }},
   { id: 'EMP113', firstName: 'Uma', middleName: '', lastName: 'Lee', name: 'Uma Lee', positionId: 4, isTeamLeader: false, email: 'uma.l@example.com', joiningDate: '2022-06-22', gender: 'Female', birthday: '1996-01-20', sssNo: '35-333', tinNo: '124-333', pagIbigNo: '3333-4444-6666', philhealthNo: '6666-7777-9999', status: 'Active', contactNumber: '9112223332', address: '333 Pine St, Yourtown, USA', resumeUrl: null, leaveCredits: { sick: 11, vacation: 13, personal: 4 }},
-  { id: 'EMP114', firstName: 'Victor', middleName: '', lastName: 'Walker', name: 'Victor Walker', positionId: 2, isTeamLeader: false, email: 'victor.w@example.com', joiningDate: '2023-08-01', gender: 'Male', birthday: '2000-08-08', sssNo: '35-444', tinNo: '124-444', pagIbigNo: '4444-5555-7777', philhealthNo: '7777-8888-0000', status: 'Active', contactNumber: '9112223333', address: '444 Maple Rd, Anothertown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3 }},
+  { id: 'EMP114', firstName: 'Victor', middleName: '', lastName: 'Walker', name: 'Victor Walker', positionId: 2, isTeamLeader: false, email: 'victor.w@example.com', joiningDate: '2023-08-01', gender: 'Male', birthday: '2000-08-08', sssNo: '35-444', tinNo: '124-444', pagIbigNo: '4444-5555-7777', philhealthNo: '7777-8888-0000', status: 'Active', contactNumber: '9112223333', address: '444 Maple Rd, Anothertown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3, paternity: 4 }},
   { id: 'EMP115', firstName: 'Wendy', middleName: '', lastName: 'Hall', name: 'Wendy Hall', positionId: 3, isTeamLeader: false, email: 'wendy.h@example.com', joiningDate: '2021-09-15', gender: 'Female', birthday: '1992-09-15', sssNo: '35-555', tinNo: '124-555', pagIbigNo: '5555-6666-8888', philhealthNo: '8888-9999-1111', status: 'Active', contactNumber: '9112223334', address: '555 Birch Ln, Theirtown, USA', resumeUrl: null, leaveCredits: { sick: 14, vacation: 16, personal: 5 }},
-  { id: 'EMP116', firstName: 'Xavier', middleName: '', lastName: 'Allen', name: 'Xavier Allen', positionId: 1, isTeamLeader: false, email: 'xavier.a@example.com', joiningDate: '2023-10-01', gender: 'Male', birthday: '1998-03-23', sssNo: '35-666', tinNo: '124-666', pagIbigNo: '6666-7777-9999', philhealthNo: '9999-0000-2222', status: 'Active', contactNumber: '9112223335', address: '666 Cedar Dr, Ourtown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3 }},
+  { id: 'EMP116', firstName: 'Xavier', middleName: '', lastName: 'Allen', name: 'Xavier Allen', positionId: 1, isTeamLeader: false, email: 'xavier.a@example.com', joiningDate: '2023-10-01', gender: 'Male', birthday: '1998-03-23', sssNo: '35-666', tinNo: '124-666', pagIbigNo: '6666-7777-9999', philhealthNo: '9999-0000-2222', status: 'Active', contactNumber: '9112223335', address: '666 Cedar Dr, Ourtown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3, paternity: 4 }},
   { id: 'EMP117', firstName: 'Yara', middleName: 'Sofia', lastName: 'Young', name: 'Yara Sofia Young', positionId: 4, isTeamLeader: false, email: 'yara.y@example.com', joiningDate: '2022-01-10', gender: 'Female', birthday: '1997-07-17', sssNo: '35-777', tinNo: '124-777', pagIbigNo: '7777-8888-0000', philhealthNo: '0000-1111-3333', status: 'Inactive', contactNumber: '9112223336', address: '777 Spruce Ct, Downtown, USA', resumeUrl: null, leaveCredits: { sick: 0, vacation: 0, personal: 0 }},
-  { id: 'EMP118', firstName: 'Zane', middleName: '', lastName: 'King', name: 'Zane King', positionId: 5, isTeamLeader: false, email: 'zane.k@example.com', joiningDate: '2023-11-20', gender: 'Male', birthday: '1999-11-11', sssNo: '35-888', tinNo: '124-888', pagIbigNo: '8888-9999-1111', philhealthNo: '1111-2222-4444', status: 'Active', contactNumber: '9112223337', address: '888 Willow Way, Uptown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3 }},
+  { id: 'EMP118', firstName: 'Zane', middleName: '', lastName: 'King', name: 'Zane King', positionId: 5, isTeamLeader: false, email: 'zane.k@example.com', joiningDate: '2023-11-20', gender: 'Male', birthday: '1999-11-11', sssNo: '35-888', tinNo: '124-888', pagIbigNo: '8888-9999-1111', philhealthNo: '1111-2222-4444', status: 'Active', contactNumber: '9112223337', address: '888 Willow Way, Uptown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3, paternity: 4 }},
   { id: 'EMP119', firstName: 'Ava', middleName: '', lastName: 'Wright', name: 'Ava Wright', positionId: 2, isTeamLeader: false, email: 'ava.w@example.com', joiningDate: '2022-02-02', gender: 'Female', birthday: '1993-02-02', sssNo: '35-999', tinNo: '124-999', pagIbigNo: '9999-0000-2222', philhealthNo: '2222-3333-5555', status: 'Active', contactNumber: '9112223338', address: '999 Elm Pl, Midtown, USA', resumeUrl: null, leaveCredits: { sick: 12, vacation: 14, personal: 4 }},
-  { id: 'EMP120', firstName: 'Ben', middleName: 'Carter', lastName: 'Hill', name: 'Ben Carter Hill', positionId: 3, isTeamLeader: false, email: 'ben.h@example.com', joiningDate: '2023-12-25', gender: 'Male', birthday: '2001-01-25', sssNo: '35-100', tinNo: '124-100', pagIbigNo: '0000-1111-3333', philhealthNo: '3333-4444-6666', status: 'Active', contactNumber: '9112223339', address: '121 Redwood Ave, Outoftown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3 }},
+  { id: 'EMP120', firstName: 'Ben', middleName: 'Carter', lastName: 'Hill', name: 'Ben Carter Hill', positionId: 3, isTeamLeader: false, email: 'ben.h@example.com', joiningDate: '2023-12-25', gender: 'Male', birthday: '2001-01-25', sssNo: '35-100', tinNo: '124-100', pagIbigNo: '0000-1111-3333', philhealthNo: '3333-4444-6666', status: 'Active', contactNumber: '9112223339', address: '121 Redwood Ave, Outoftown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3, paternity: 4 }},
 ];
 
 
@@ -198,6 +198,70 @@ export const initialAttendanceLogs = [
 // ============================================================================
 
 export const initialLeaveRequests = [
+  // --- NEW: Paternity Leave Example ---
+  { 
+    leaveId: 'LVE-PATERNITY-01', 
+    leaveType: 'Paternity Leave', 
+    empId: 'EMP102', 
+    name: 'Jack Davis', 
+    position: 'Picker', 
+    days: 7, 
+    dateFrom: '2025-07-10', 
+    dateTo: '2025-07-16', 
+    reason: 'Birth of my child.', 
+    status: 'Approved',
+    paternityDetails: {
+      childsDob: '2025-07-08',
+      isEligiblePaternity: true,
+      marriageCertName: 'marriage_cert_jd.pdf',
+      birthCertName: 'birth_cert_jd_child1.pdf',
+    }
+  },
+
+  // --- NEW: Maternity Leave with No Extension ---
+  {
+    leaveId: 'LVE-MATERNITY-02',
+    leaveType: 'Maternity Leave',
+    empId: 'EMP103',
+    name: 'Karen Wilson',
+    position: 'Mover',
+    days: 105,
+    dateFrom: '2025-03-01',
+    dateTo: '2025-06-13',
+    reason: 'Standard maternity leave.',
+    status: 'Approved',
+    maternityDetails: {
+      type: 'normal',
+      isSoloParent: false,
+      expectedDeliveryDate: '2025-03-10',
+      allocationDays: 0,
+      medicalDocumentName: 'medical_cert_kw.pdf',
+    }
+  },
+
+  // --- UPDATED MATERNITY LEAVE STRUCTURE ---
+  { 
+    leaveId: 'LVE-MATERNITY-01', 
+    leaveType: 'Maternity Leave', 
+    empId: 'EMP001', 
+    name: 'Alice Johnson', 
+    position: 'Packer', 
+    days: 113, // 120 (solo parent) - 7 (allocated) = 113
+    dateFrom: '2025-11-01', 
+    dateTo: '2026-02-21', // Recalculated end date for 113 days
+    reason: 'Scheduled maternity leave for upcoming delivery.', 
+    status: 'Approved',
+    maternityDetails: {
+      type: 'normal',
+      isSoloParent: true,
+      expectedDeliveryDate: '2025-11-10',
+      allocationDays: 7,
+      medicalDocumentName: 'medical_cert_alice.pdf',
+      soloParentDocumentName: 'solo_parent_id_alice.pdf'
+    },
+    extensionStatus: 'Pending',
+  },
+
   // --- PENDING REQUESTS ---
   { leaveId: 'LVE003', leaveType: 'Vacation', empId: 'EMP001', name: 'Alice Johnson', position: 'Packer', days: 5, dateFrom: '2025-09-15', dateTo: '2025-09-19', reason: 'Annual trip with family.', status: 'Pending' },
   { leaveId: 'LVE004', leaveType: 'Personal Leave', empId: 'EMP004', name: 'David Green', position: 'Lifter', days: 1, dateFrom: '2025-08-22', dateTo: '2025-08-22', reason: 'Appointment at a government office.', status: 'Pending' },

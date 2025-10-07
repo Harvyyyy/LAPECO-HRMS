@@ -1,5 +1,3 @@
-// src/components/modals/EditLeaveCreditsModal.jsx (UPDATED)
-
 import React, { useState, useEffect } from 'react';
 
 const EditLeaveCreditsModal = ({ show, onClose, onSave, employeeData }) => {
@@ -7,6 +5,7 @@ const EditLeaveCreditsModal = ({ show, onClose, onSave, employeeData }) => {
     sick: 0,
     vacation: 0,
     personal: 0,
+    paternity: 0,
   });
 
   useEffect(() => {
@@ -15,6 +14,7 @@ const EditLeaveCreditsModal = ({ show, onClose, onSave, employeeData }) => {
         sick: employeeData.leaveCredits.sick || 0,
         vacation: employeeData.leaveCredits.vacation || 0,
         personal: employeeData.leaveCredits.personal || 0,
+        paternity: employeeData.leaveCredits.paternity || 0,
       });
     }
   }, [employeeData]);
@@ -57,6 +57,12 @@ const EditLeaveCreditsModal = ({ show, onClose, onSave, employeeData }) => {
                 <label htmlFor="personal" className="form-label">Total Personal Leave Days</label>
                 <input type="number" id="personal" name="personal" className="form-control" value={credits.personal} onChange={handleChange} min="0" />
               </div>
+              {employeeData.gender === 'Male' && (
+                <div className="mb-3">
+                  <label htmlFor="paternity" className="form-label">Total Paternity Leave Days</label>
+                  <input type="number" id="paternity" name="paternity" className="form-control" value={credits.paternity} onChange={handleChange} min="0" />
+                </div>
+              )}
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-outline-secondary" onClick={onClose}>Cancel</button>

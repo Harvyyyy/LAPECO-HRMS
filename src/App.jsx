@@ -39,7 +39,7 @@ import MyProfilePage from './components/pages/My-Profile/MyProfilePage';
 import AccountSettingsPage from './components/pages/Account-Settings/AccountSettingsPage';
 import ContributionsManagementPage from './components/pages/Contributions-Management/ContributionsManagementPage';
 import PredictiveAnalyticsPage from './components/pages/Predictive-Analytics/PredictiveAnalyticsPage';
-import LeaderboardsPage from './components/pages/Leaderboards/LeaderboardsPage'; // <-- NEW
+import LeaderboardsPage from './components/pages/Leaderboards/LeaderboardsPage';
 
 // Constants & Assets
 import { USER_ROLES } from './constants/roles';
@@ -183,8 +183,19 @@ function AppContent() {
     deleteTemplate: (templateId) => {
       setTemplates(prev => prev.filter(t => t.id !== templateId));
     },
+    updateLeaveRequest: (updatedLeaveData) => {
+        setLeaveRequests(prev => prev.map(req => 
+            req.leaveId === updatedLeaveData.leaveId ? { ...req, ...updatedLeaveData } : req
+        ));
+        showToast("Leave request has been updated successfully.");
+    },
     createLeaveRequest: (leaveData) => {
-        const newRequest = { ...leaveData, leaveId: `LVE${Date.now().toString().slice(-4)}`, status: 'Pending' };
+        const newRequest = { 
+            ...leaveData, 
+            leaveId: `LVE${Date.now().toString().slice(-4)}`, 
+            status: 'Pending' 
+        };
+        delete newRequest.supportingDocument; 
         setLeaveRequests(prev => [newRequest, ...prev]);
     },
     updateLeaveStatus: (leaveId, newStatus) => {
@@ -192,6 +203,56 @@ function AppContent() {
     },
     deleteLeaveRequest: (leaveId) => {
       setLeaveRequests(prev => prev.filter(req => req.leaveId !== leaveId));
+    },
+    requestMaternityExtension: (leaveId) => {
+        setLeaveRequests(prev => prev.map(req => 
+            req.leaveId === leaveId ? { ...req, extensionStatus: 'Pending' } : req
+        ));
+        showToast("Maternity leave extension has been requested successfully.");
+    },
+    updateMaternityExtensionStatus: (leaveId, newStatus) => {
+        setLeaveRequests(prev => prev.map(req => {
+            if (req.leaveId === leaveId) {
+                if (newStatus === 'Approved') {
+                    const originalEndDate = new Date(req.dateTo + 'T00:00:00');
+                    originalEndDate.setDate(originalEndDate.getDate() + 30);
+                    const newEndDate = originalEndDate.toISOString().split('T')[0];
+                    return { 
+                        ...req, 
+                        extensionStatus: 'Approved', 
+                        dateTo: newEndDate, 
+                        days: req.days + 30 
+                    };
+                }
+                return { ...req, extensionStatus: newStatus }; // For 'Declined'
+            }
+            return req;
+        }));
+        showToast(`Maternity leave extension has been ${newStatus.toLowerCase()}.`);
+    },
+    updateMaternityDetails: (leaveId, updatedDetails, newDays, newEndDate) => {
+        setLeaveRequests(prev => prev.map(req => 
+            req.leaveId === leaveId 
+            ? { 
+                ...req, 
+                maternityDetails: updatedDetails,
+                days: newDays,
+                dateTo: newEndDate
+              } 
+            : req
+        ));
+        showToast("Maternity leave details have been updated successfully.");
+    },
+    updatePaternityDetails: (leaveId, updatedDetails) => {
+        setLeaveRequests(prev => prev.map(req => 
+            req.leaveId === leaveId 
+            ? { 
+                ...req, 
+                paternityDetails: updatedDetails,
+              } 
+            : req
+        ));
+        showToast("Paternity leave details have been updated successfully.");
     },
     updateLeaveCredits: (employeeId, newCredits) => {
       setEmployees(prevEmployees => 
@@ -208,13 +269,24 @@ function AppContent() {
             prevEmployees.map(emp => {
                 if (emp.status === 'Active') {
                     updatedCount++;
-                    const currentCredits = emp.leaveCredits || { vacation: 0, sick: 0, personal: 0 };
+                    const currentCredits = emp.leaveCredits || { vacation: 0, sick: 0, personal: 0, paternity: 0 };
+                    
+                    const newCredits = {
+                        vacation: (currentCredits.vacation || 0) + (creditsToAdd.vacation || 0),
+                        sick: (currentCredits.sick || 0) + (creditsToAdd.sick || 0),
+                        personal: (currentCredits.personal || 0) + (creditsToAdd.personal || 0),
+                    };
+
+                    // Conditionally add paternity leave only for male employees
+                    if (emp.gender === 'Male' && creditsToAdd.paternity > 0) {
+                        newCredits.paternity = (currentCredits.paternity || 0) + creditsToAdd.paternity;
+                    }
+
                     return {
                         ...emp,
                         leaveCredits: {
-                            vacation: (currentCredits.vacation || 0) + (creditsToAdd.vacation || 0),
-                            sick: (currentCredits.sick || 0) + (creditsToAdd.sick || 0),
-                            personal: (currentCredits.personal || 0) + (creditsToAdd.personal || 0),
+                            ...currentCredits, // Preserve existing credits not being updated
+                            ...newCredits,
                         },
                     };
                 }
@@ -720,6 +792,7 @@ function AppContent() {
                   allLeaveRequests={leaveRequests} 
                   createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} 
                   updateLeaveStatus={appLevelHandlers.updateLeaveStatus}
+                  handlers={appLevelHandlers}
                 />
               } 
             />
@@ -760,6 +833,7 @@ function AppContent() {
                   allLeaveRequests={leaveRequests} 
                   createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} 
                   updateLeaveStatus={appLevelHandlers.updateLeaveStatus}
+                  handlers={appLevelHandlers}
                 />
               } 
             />

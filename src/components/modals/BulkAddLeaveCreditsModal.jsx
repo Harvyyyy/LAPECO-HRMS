@@ -5,6 +5,7 @@ const BulkAddLeaveCreditsModal = ({ show, onClose, onConfirm, activeEmployeeCoun
     vacation: 0,
     sick: 0,
     personal: 0,
+    paternity: 0,
   });
 
   const handleChange = (e) => {
@@ -36,7 +37,7 @@ const BulkAddLeaveCreditsModal = ({ show, onClose, onConfirm, activeEmployeeCoun
               <div className="alert alert-info">
                 The credits you enter below will be <strong>added</strong> to the current balance of all <strong>{activeEmployeeCount} active employees</strong>.
               </div>
-              <p className="text-muted">This is useful for annual leave allocation. Enter the number of days to add for each leave type.</p>
+              <p className="text-muted">This is useful for annual leave allocation. Paternity leave credits will only be applied to male employees.</p>
               
               <div className="mb-3">
                 <label htmlFor="vacation" className="form-label">Vacation Leave Days to Add</label>
@@ -49,6 +50,10 @@ const BulkAddLeaveCreditsModal = ({ show, onClose, onConfirm, activeEmployeeCoun
               <div className="mb-3">
                 <label htmlFor="personal" className="form-label">Personal Leave Days to Add</label>
                 <input type="number" id="personal" name="personal" className="form-control" value={creditsToAdd.personal} onChange={handleChange} min="0" />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="paternity" className="form-label">Paternity Leave Days to Add (for Males)</label>
+                <input type="number" id="paternity" name="paternity" className="form-control" value={creditsToAdd.paternity} onChange={handleChange} min="0" />
               </div>
             </div>
             <div className="modal-footer">
