@@ -6,6 +6,7 @@ const EditAttendanceModal = ({ show, onClose, onSave, attendanceRecord }) => {
     breakOut: '',
     breakIn: '',
     signOut: '',
+    overtime_hours: 0,
   });
 
   useEffect(() => {
@@ -15,6 +16,7 @@ const EditAttendanceModal = ({ show, onClose, onSave, attendanceRecord }) => {
         breakOut: attendanceRecord.breakOut || '',
         breakIn: attendanceRecord.breakIn || '',
         signOut: attendanceRecord.signOut || '',
+        overtime_hours: attendanceRecord.overtime_hours || 0,
       });
     }
   }, [attendanceRecord]);
@@ -60,6 +62,11 @@ const EditAttendanceModal = ({ show, onClose, onSave, attendanceRecord }) => {
                 <div className="col-md-6 mb-3">
                   <label htmlFor="breakIn" className="form-label">Break In</label>
                   <input type="time" id="breakIn" name="breakIn" className="form-control" value={formData.breakIn} onChange={handleChange} />
+                </div>
+                <div className="col-12 mb-3">
+                    <label htmlFor="overtime_hours" className="form-label">Overtime (hrs)</label>
+                    <input type="number" step="0.1" min="0" id="overtime_hours" name="overtime_hours" className="form-control" value={formData.overtime_hours} onChange={handleChange} />
+                    <small className="form-text text-muted">Manually enter approved overtime hours.</small>
                 </div>
               </div>
             </div>

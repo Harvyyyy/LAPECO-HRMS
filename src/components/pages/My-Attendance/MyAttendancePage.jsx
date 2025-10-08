@@ -47,7 +47,7 @@ const MyAttendancePage = ({ currentUser, allSchedules, attendanceLogs }) => {
       let statusClass = 'scheduled';
 
       if (log && log.signIn) {
-        const shiftStartTime = schedule.shift?.split(' - ')[0] || '00:00';
+        const shiftStartTime = schedule.start_time || '00:00';
         status = log.signIn > shiftStartTime ? 'Late' : 'Present';
         statusClass = status.toLowerCase();
       } else {
@@ -57,9 +57,13 @@ const MyAttendancePage = ({ currentUser, allSchedules, attendanceLogs }) => {
         }
       }
 
+      const scheduleString = (schedule.start_time && schedule.end_time)
+        ? `${schedule.start_time} - ${schedule.end_time}`
+        : 'N/A';
+
       return {
         date: schedule.date,
-        schedule: schedule.shift,
+        schedule: scheduleString,
         signIn: log?.signIn || '---',
         signOut: log?.signOut || '---',
         breakOut: log?.breakOut || '---',

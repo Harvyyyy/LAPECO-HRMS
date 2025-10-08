@@ -1,9 +1,3 @@
-// src/data/mockData.js
-
-// Mock Data for Lapeco HRMS
-// This file contains all the initial mock data used throughout the application
-
-// Utility function for creating past dates
 const createPastDate = (daysAgo) => {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
@@ -11,11 +5,12 @@ const createPastDate = (daysAgo) => {
 };
 
 // Utility function for creating schedule entries
-const createScheduleEntry = (id, empId, date, shift = '08:00 - 17:00') => ({
+const createScheduleEntry = (id, empId, date, startTime = '08:00', endTime = '17:00') => ({
   scheduleId: id, 
   empId, 
   date: createPastDate(date), 
-  shift
+  start_time: startTime,
+  end_time: endTime
 });
 
 // ============================================================================
@@ -23,7 +18,6 @@ const createScheduleEntry = (id, empId, date, shift = '08:00 - 17:00') => ({
 // ============================================================================
 
 export const initialEmployeesData = [
-  // --- Original Employees ---
   { 
     id: 'EMP001', firstName: 'Alice', middleName: 'Marie', lastName: 'Johnson', name: 'Alice Marie Johnson', positionId: 2, isTeamLeader: false, email: 'alice.j@example.com', joiningDate: '2022-03-15', gender: 'Female', birthday: '1993-02-18', sssNo: '34-456', tinNo: '321-654', pagIbigNo: '1213-1695-8596', philhealthNo: '1120-2485-8688', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 15, personal: 5 }
   },
@@ -45,8 +39,6 @@ export const initialEmployeesData = [
   { 
     id: 'EMP010', firstName: 'Frank', middleName: '', lastName: 'Black', name: 'Frank Black', positionId: null, isTeamLeader: false, email: 'frank.b@example.com', joiningDate: '2023-09-01', gender: 'Male', birthday: '1998-05-15', sssNo: '34-303', tinNo: '444-555', pagIbigNo: '1212-7582-7302', philhealthNo: '0820-1209-8037', status: 'Inactive', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 0, vacation: 0, personal: 0, paternity: 0 }
   },
-
-  // --- NEW EMPLOYEES ---
   { id: 'EMP101', firstName: 'Henry', middleName: '', lastName: 'Miller', name: 'Henry Miller', positionId: 4, isTeamLeader: true, email: 'henry.m@example.com', joiningDate: '2022-08-20', gender: 'Male', birthday: '1991-06-15', sssNo: '34-111', tinNo: '123-111', pagIbigNo: '1111-2222-3333', philhealthNo: '4444-5555-6666', status: 'Active', contactNumber: '9876543210', address: '456 Oak Ave, Sometown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 12, personal: 3, paternity: 4 }},
   { id: 'EMP102', firstName: 'Jack', middleName: 'Robert', lastName: 'Davis', name: 'Jack Robert Davis', positionId: 4, isTeamLeader: false, email: 'jack.d@example.com', joiningDate: '2023-02-18', gender: 'Male', birthday: '1998-09-22', sssNo: '34-222', tinNo: '123-222', pagIbigNo: '2222-3333-4444', philhealthNo: '5555-6666-7777', status: 'Active', contactNumber: '9876543211', address: '789 Pine St, Anothertown, USA', resumeUrl: null, leaveCredits: { sick: 8, vacation: 10, personal: 2, paternity: 4 }},
   { id: 'EMP103', firstName: 'Karen', middleName: '', lastName: 'Wilson', name: 'Karen Wilson', positionId: 5, isTeamLeader: false, email: 'karen.w@example.com', joiningDate: '2021-11-05', gender: 'Female', birthday: '1994-03-12', sssNo: '34-333', tinNo: '123-333', pagIbigNo: '3333-4444-5555', philhealthNo: '6666-7777-8888', status: 'Active', contactNumber: '9876543212', address: '101 Maple Rd, Yourtown, USA', resumeUrl: null, leaveCredits: { sick: 12, vacation: 15, personal: 5 }},
@@ -97,35 +89,32 @@ export const initialPositionsData = [
 // ============================================================================
 
 export const initialSchedulesData = [
-  // Original Employees
   createScheduleEntry(1, 'EMP001', 0),
-  createScheduleEntry(2, 'EMP002', 0, '09:00 - 18:00'),
-  createScheduleEntry(3, 'EMP003', 0, '09:00 - 18:00'),
+  createScheduleEntry(2, 'EMP002', 0, '09:00', '18:00'),
+  createScheduleEntry(3, 'EMP003', 0, '09:00', '18:00'),
   createScheduleEntry(4, 'EMP004', 0),
   createScheduleEntry(5, 'EMP001', 1),
-  createScheduleEntry(6, 'EMP002', 1, '09:00 - 18:00'),
-  createScheduleEntry(7, 'EMP003', 1, '09:00 - 18:00'),
+  createScheduleEntry(6, 'EMP002', 1, '09:00', '18:00'),
+  createScheduleEntry(7, 'EMP003', 1, '09:00', '18:00'),
   createScheduleEntry(8, 'EMP004', 1),
   createScheduleEntry(9, 'EMP009', 1),
   createScheduleEntry(10, 'EMP001', 2),
-  createScheduleEntry(11, 'EMP002', 2, '09:00 - 18:00'), 
-  createScheduleEntry(12, 'EMP003', 2, '09:00 - 18:00'),
+  createScheduleEntry(11, 'EMP002', 2, '09:00', '18:00'), 
+  createScheduleEntry(12, 'EMP003', 2, '09:00', '18:00'),
   createScheduleEntry(13, 'EMP004', 2),
   createScheduleEntry(14, 'EMP009', 2),
   createScheduleEntry(15, 'EMP001', 3),
-  createScheduleEntry(16, 'EMP002', 3, '09:00 - 18:00'),
-  createScheduleEntry(17, 'EMP003', 3, '08:00 - 17:00'),
+  createScheduleEntry(16, 'EMP002', 3, '09:00', '18:00'),
+  createScheduleEntry(17, 'EMP003', 3, '08:00', '17:00'),
   createScheduleEntry(18, 'EMP004', 3),
-  createScheduleEntry(19, 'EMP002', 4, '09:00 - 18:00'),
+  createScheduleEntry(19, 'EMP002', 4, '09:00', '18:00'),
   createScheduleEntry(20, 'EMP004', 4),
-  createScheduleEntry(21, 'EMP009', 4, '09:00 - 18:00'),
+  createScheduleEntry(21, 'EMP009', 4, '09:00', '18:00'),
   createScheduleEntry(22, 'EMP001', 5),
-  createScheduleEntry(23, 'EMP002', 5, '09:00 - 18:00'),
+  createScheduleEntry(23, 'EMP002', 5, '09:00', '18:00'),
   createScheduleEntry(24, 'EMP003', 5),
   createScheduleEntry(25, 'EMP004', 5),
   createScheduleEntry(26, 'EMP009', 5),
-
-  // New Employees Schedules
   ...['EMP101', 'EMP102', 'EMP103', 'EMP104', 'EMP105', 'EMP106', 'EMP107', 'EMP108', 'EMP110', 'EMP111', 'EMP112', 'EMP113', 'EMP114', 'EMP115', 'EMP116', 'EMP118', 'EMP119', 'EMP120'].flatMap((empId, index) => [
     createScheduleEntry(100 + index * 5, empId, 0),
     createScheduleEntry(101 + index * 5, empId, 1),
@@ -140,56 +129,63 @@ export const initialSchedulesData = [
 // ============================================================================
 
 export const initialAttendanceLogs = [
-  // Original Employees
-  { empId: 'EMP001', date: createPastDate(0), signIn: '08:02', breakOut: '12:05', breakIn: '13:01', signOut: null },
-  { empId: 'EMP002', date: createPastDate(0), signIn: '08:58', breakOut: null, breakIn: null, signOut: null },
-  { empId: 'EMP003', date: createPastDate(0), signIn: '09:18', breakOut: '12:30', breakIn: null, signOut: null },
-  { empId: 'EMP001', date: createPastDate(1), signIn: '08:00', breakOut: '12:00', breakIn: '13:00', signOut: '17:00' },
-  { empId: 'EMP002', date: createPastDate(1), signIn: '08:55', breakOut: '12:10', breakIn: '13:05', signOut: '17:58' },
-  { empId: 'EMP003', date: createPastDate(1), signIn: '09:15', breakOut: '12:30', breakIn: '13:30', signOut: '18:10' },
-  { empId: 'EMP004', date: createPastDate(1), signIn: '08:05', breakOut: '12:00', breakIn: '13:00', signOut: '17:02' },
-  { empId: 'EMP009', date: createPastDate(1), signIn: '08:10', breakOut: '12:15', breakIn: '13:10', signOut: '17:15' },
-  { empId: 'EMP001', date: createPastDate(2), signIn: '08:05', breakOut: '12:01', breakIn: '12:59', signOut: '17:05' },
-  { empId: 'EMP003', date: createPastDate(2), signIn: '08:00', breakOut: '12:00', breakIn: '13:00', signOut: '17:00' },
-  { empId: 'EMP004', date: createPastDate(2), signIn: '09:30', breakOut: '12:30', breakIn: '13:30', signOut: '18:30' },
-  { empId: 'EMP009', date: createPastDate(2), signIn: '08:00', breakOut: '12:00', breakIn: '13:00', signOut: '17:03' },
-  { empId: 'EMP001', date: createPastDate(3), signIn: '07:58', breakOut: '11:55', breakIn: '12:55', signOut: '16:50' },
-  { empId: 'EMP002', date: createPastDate(3), signIn: '09:03', breakOut: '12:05', breakIn: '13:05', signOut: '18:01' },
-  { empId: 'EMP003', date: createPastDate(3), signIn: '08:01', breakOut: '12:02', breakIn: '13:01', signOut: '17:03' },
-  { empId: 'EMP004', date: createPastDate(3), signIn: '08:05', breakOut: '12:00', breakIn: '13:00', signOut: '17:02' },
-  { empId: 'EMP002', date: createPastDate(4), signIn: '08:45', breakOut: '12:00', breakIn: '13:00', signOut: '17:45' },
-  { empId: 'EMP004', date: createPastDate(4), signIn: '08:10', breakOut: '12:15', breakIn: '13:10', signOut: '17:15' },
-  { empId: 'EMP009', date: createPastDate(4), signIn: '09:05', breakOut: '12:00', breakIn: '13:00', signOut: '18:00' },
-  { empId: 'EMP001', date: createPastDate(5), signIn: '08:00', breakOut: '12:00', breakIn: '13:00', signOut: '17:00' },
-  { empId: 'EMP002', date: createPastDate(5), signIn: '08:59', breakOut: '12:00', breakIn: '13:00', signOut: '17:59' },
-  { empId: 'EMP003', date: createPastDate(5), signIn: '08:03', breakOut: '12:00', breakIn: '13:00', signOut: '17:00' },
-  { empId: 'EMP009', date: createPastDate(5), signIn: '08:00', breakOut: '12:00', breakIn: '13:00', signOut: '17:00' },
+  // --- Today's Logs (Day 0) ---
+  { empId: 'EMP001', date: createPastDate(0), signIn: '08:12', breakOut: '12:05', breakIn: null, signOut: null, overtimeHours: 0 }, // Late, on break
+  { empId: 'EMP002', date: createPastDate(0), signIn: '08:58', breakOut: null, breakIn: null, signOut: null, overtimeHours: 0 }, // On time
+  { empId: 'EMP003', date: createPastDate(0), signIn: '09:18', breakOut: '12:30', breakIn: '13:05', signOut: null, overtimeHours: 0 }, // Late, finished break
+  { empId: 'EMP103', date: createPastDate(0), signIn: '08:15', signOut: null, overtimeHours: 0 }, // Late today
+  { empId: 'EMP110', date: createPastDate(0), signIn: '08:00', signOut: null, overtimeHours: 0 }, // On time
 
-  // New Employees Attendance
-  { empId: 'EMP101', date: createPastDate(1), signIn: '08:01', signOut: '17:01' },
-  { empId: 'EMP101', date: createPastDate(2), signIn: '08:10', signOut: '17:05' },
-  { empId: 'EMP102', date: createPastDate(1), signIn: '08:00', signOut: '17:00' },
-  { empId: 'EMP102', date: createPastDate(3), signIn: '07:55', signOut: '17:02' },
-  { empId: 'EMP103', date: createPastDate(0), signIn: '08:15', signOut: null }, // Late today
-  { empId: 'EMP103', date: createPastDate(1), signIn: '08:00', signOut: '17:00' },
-  { empId: 'EMP104', date: createPastDate(2), signIn: '07:58', signOut: '17:03' },
-  // EMP105 is absent yesterday
-  { empId: 'EMP105', date: createPastDate(2), signIn: '08:02', signOut: '17:01' },
-  { empId: 'EMP106', date: createPastDate(1), signIn: '08:05', signOut: '17:10' },
-  { empId: 'EMP107', date: createPastDate(1), signIn: '07:59', signOut: '17:00' },
-  { empId: 'EMP108', date: createPastDate(1), signIn: '08:20', signOut: '17:20' }, // Late
-  { empId: 'EMP110', date: createPastDate(0), signIn: '08:00', signOut: null },
-  { empId: 'EMP110', date: createPastDate(1), signIn: '08:01', signOut: '17:00' },
-  { empId: 'EMP111', date: createPastDate(1), signIn: '08:00', signOut: '17:05' },
-  { empId: 'EMP112', date: createPastDate(1), signIn: '08:03', signOut: '17:01' },
-  // EMP113 is absent 2 days ago
-  { empId: 'EMP113', date: createPastDate(1), signIn: '08:00', signOut: '17:00' },
-  { empId: 'EMP114', date: createPastDate(1), signIn: '08:30', signOut: '17:30' }, // Late
-  { empId: 'EMP115', date: createPastDate(1), signIn: '07:58', signOut: '17:00' },
-  { empId: 'EMP116', date: createPastDate(1), signIn: '08:00', signOut: '17:00' },
-  { empId: 'EMP118', date: createPastDate(1), signIn: '08:01', signOut: '17:02' },
-  { empId: 'EMP119', date: createPastDate(1), signIn: '07:57', signOut: '17:00' },
-  { empId: 'EMP120', date: createPastDate(1), signIn: '08:00', signOut: '17:00' },
+  // --- Yesterday's Logs (Day 1) ---
+  { empId: 'EMP001', date: createPastDate(1), signIn: '08:00', breakOut: '12:00', breakIn: '13:00', signOut: '17:00', overtimeHours: 0 }, // Perfect
+  { empId: 'EMP002', date: createPastDate(1), signIn: '09:05', breakOut: '12:10', breakIn: '13:05', signOut: '18:02', overtimeHours: 0 }, // Late, stayed late
+  { empId: 'EMP003', date: createPastDate(1), signIn: '09:01', breakOut: '12:30', breakIn: '13:30', signOut: '16:55', overtimeHours: 0 }, // On time, undertime
+  { empId: 'EMP004', date: createPastDate(1), signIn: '08:05', breakOut: '12:00', breakIn: '13:00', signOut: '18:05', overtimeHours: 1 }, // Late, manual overtime
+  { empId: 'EMP009', date: createPastDate(1), signIn: '08:10', breakOut: '12:15', breakIn: '13:10', signOut: null, overtimeHours: 0 }, // Late, forgot to sign out
+  { empId: 'EMP101', date: createPastDate(1), signIn: '08:01', signOut: '17:01', overtimeHours: 0 },
+  { empId: 'EMP102', date: createPastDate(1), signIn: '08:00', signOut: '17:00', overtimeHours: 0 },
+  { empId: 'EMP103', date: createPastDate(1), signIn: '08:00', signOut: '17:00', overtimeHours: 0 },
+  { empId: 'EMP104', date: createPastDate(1), signIn: '08:00', breakOut: '12:00', breakIn: '13:00', signOut: '16:30', overtimeHours: 0 }, // Undertime
+  { empId: 'EMP106', date: createPastDate(1), signIn: '08:05', signOut: '17:10', overtimeHours: 0 }, // Late
+  { empId: 'EMP107', date: createPastDate(1), signIn: '07:59', signOut: '17:00', overtimeHours: 0 },
+  { empId: 'EMP108', date: createPastDate(1), signIn: '08:20', signOut: '17:20', overtimeHours: 0 }, // Late
+  { empId: 'EMP110', date: createPastDate(1), signIn: '08:01', signOut: '17:00', overtimeHours: 0 },
+  { empId: 'EMP111', date: createPastDate(1), signIn: '08:00', signOut: '17:05', overtimeHours: 0 },
+  { empId: 'EMP112', date: createPastDate(1), signIn: '08:03', signOut: '17:01', overtimeHours: 0 },
+  { empId: 'EMP113', date: createPastDate(1), signIn: '08:00', signOut: '17:00', overtimeHours: 0 },
+  { empId: 'EMP114', date: createPastDate(1), signIn: '08:30', signOut: '17:30', overtimeHours: 0 }, // Late
+  { empId: 'EMP115', date: createPastDate(1), signIn: '07:58', signOut: '17:00', overtimeHours: 0 },
+  { empId: 'EMP116', date: createPastDate(1), signIn: '08:00', signOut: '17:00', overtimeHours: 0 },
+  { empId: 'EMP118', date: createPastDate(1), signIn: '08:01', signOut: '17:02', overtimeHours: 0 },
+  { empId: 'EMP119', date: createPastDate(1), signIn: '07:57', signOut: '17:00', overtimeHours: 0 },
+  { empId: 'EMP120', date: createPastDate(1), signIn: '08:00', signOut: '17:00', overtimeHours: 0 },
+
+  // --- Day 2 Logs ---
+  { empId: 'EMP001', date: createPastDate(2), signIn: '08:05', breakOut: '12:01', breakIn: '12:59', signOut: '17:05', overtimeHours: 0 }, // Late
+  { empId: 'EMP003', date: createPastDate(2), signIn: '09:00', breakOut: '12:00', breakIn: '13:00', signOut: '18:00', overtimeHours: 0 },
+  { empId: 'EMP004', date: createPastDate(2), signIn: '09:30', signOut: '18:30', overtimeHours: 0 }, // Late, no break
+  { empId: 'EMP009', date: createPastDate(2), signIn: '08:00', breakOut: '12:00', breakIn: '13:00', signOut: '17:03', overtimeHours: 0 },
+  { empId: 'EMP101', date: createPastDate(2), signIn: '08:10', signOut: '17:05', overtimeHours: 0 }, // Late
+  { empId: 'EMP105', date: createPastDate(2), signIn: '08:02', signOut: '18:00', overtimeHours: 1 }, // Manual overtime
+  { empId: 'EMP104', date: createPastDate(2), signIn: '07:58', signOut: '17:03', overtimeHours: 0 },
+
+  // --- Day 3 Logs ---
+  { empId: 'EMP001', date: createPastDate(3), signIn: '07:58', breakOut: '11:55', breakIn: '12:55', signOut: '16:50', overtimeHours: 0 },
+  { empId: 'EMP002', date: createPastDate(3), signIn: '09:03', breakOut: '12:05', breakIn: '13:05', signOut: '18:01', overtimeHours: 0 },
+  { empId: 'EMP003', date: createPastDate(3), signIn: '08:01', breakOut: '12:02', breakIn: '13:01', signOut: '17:03', overtimeHours: 0 },
+  { empId: 'EMP004', date: createPastDate(3), signIn: '08:05', signOut: '17:02', overtimeHours: 0 }, // No break
+  { empId: 'EMP102', date: createPastDate(3), signIn: '07:55', signOut: '17:02', overtimeHours: 0 },
+
+  // --- Day 4 Logs ---
+  { empId: 'EMP002', date: createPastDate(4), signIn: '08:45', breakOut: '12:00', breakIn: '13:00', signOut: '17:45', overtimeHours: 0 }, // Very early
+  { empId: 'EMP004', date: createPastDate(4), signIn: '08:10', breakOut: '12:15', breakIn: '13:10', signOut: '17:15', overtimeHours: 0 },
+  { empId: 'EMP009', date: createPastDate(4), signIn: '09:05', breakOut: '12:00', breakIn: '13:00', signOut: '18:00', overtimeHours: 0 },
+
+  // --- Day 5 Logs ---
+  { empId: 'EMP001', date: createPastDate(5), signIn: '08:00', breakOut: '12:00', breakIn: '13:00', signOut: '17:00', overtimeHours: 0 },
+  { empId: 'EMP002', date: createPastDate(5), signIn: '08:59', signOut: '17:59', overtimeHours: 0 }, // No break
+  { empId: 'EMP003', date: createPastDate(5), signIn: '08:03', breakOut: '12:00', breakIn: '13:00', signOut: '17:00', overtimeHours: 0 },
+  { empId: 'EMP009', date: createPastDate(5), signIn: '08:00', signOut: '17:00', overtimeHours: 0 },
 ];
 
 
@@ -198,7 +194,6 @@ export const initialAttendanceLogs = [
 // ============================================================================
 
 export const initialLeaveRequests = [
-  // --- NEW: Paternity Leave Example ---
   { 
     leaveId: 'LVE-PATERNITY-01', 
     leaveType: 'Paternity Leave', 
@@ -246,9 +241,9 @@ export const initialLeaveRequests = [
     empId: 'EMP001', 
     name: 'Alice Johnson', 
     position: 'Packer', 
-    days: 113, // 120 (solo parent) - 7 (allocated) = 113
+    days: 113, 
     dateFrom: '2025-11-01', 
-    dateTo: '2026-02-21', // Recalculated end date for 113 days
+    dateTo: '2026-02-21',
     reason: 'Scheduled maternity leave for upcoming delivery.', 
     status: 'Approved',
     maternityDetails: {
@@ -317,9 +312,9 @@ export const initialHolidaysData = [
 // ============================================================================
 
 export const initialTemplatesData = [
-  { id: 'TPL01', name: 'Warehouse Day Shift', description: 'Standard 8-5 shift for warehouse personnel.', columns: ['shift', 'area_assignment'], applicablePositions: ['Packer', 'Picker', 'Mover'] },
-  { id: 'TPL02', name: 'Lifter Operations', description: 'Schedule for equipment operators.', columns: ['shift', 'equipment_id'], applicablePositions: ['Lifter'] },
-  { id: 'TPL03', name: 'Office Staff Schedule', description: 'Standard office hours.', columns: ['shift'], applicablePositions: ['HR Personnel'] },
+  { id: 'TPL01', name: 'Warehouse Day Shift', description: 'Standard 8-5 shift for warehouse personnel.', columns: ['start_time', 'end_time', 'ot_hours', 'area_assignment'], applicablePositions: ['Packer', 'Picker', 'Mover'] },
+  { id: 'TPL02', name: 'Lifter Operations', description: 'Schedule for equipment operators.', columns: ['start_time', 'end_time', 'ot_hours', 'equipment_id'], applicablePositions: ['Lifter'] },
+  { id: 'TPL03', name: 'Office Staff Schedule', description: 'Standard office hours.', columns: ['start_time', 'end_time', 'ot_hours'], applicablePositions: ['HR Personnel'] },
 ];
 
 // ============================================================================
@@ -398,7 +393,6 @@ export const initialEvaluationFactors = [
 ];
 
 export const initialEvaluationsData = [
-  // --- Original Data ---
   { id: 'EVAL01', employeeId: 'EMP001', evaluatorId: 'EMP003', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 92.50 },
   { id: 'EVAL02', employeeId: 'EMP009', evaluatorId: 'EMP003', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 78.00 },
   { id: 'EVAL03', employeeId: 'EMP004', evaluatorId: 'EMP002', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 88.75 },
@@ -409,8 +403,6 @@ export const initialEvaluationsData = [
   { id: 'EVAL08', employeeId: 'EMP003', evaluatorId: 'EMP005', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 91.00 },
   { id: 'EVAL09', employeeId: 'EMP001', evaluatorId: 'EMP003', periodStart: '2024-01-01', periodEnd: '2024-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 88.50 },
   { id: 'EVAL10', employeeId: 'EMP009', evaluatorId: 'EMP003', periodStart: '2024-07-01', periodEnd: '2024-12-31', status: 'Completed', factorScores: { /* ... */ }, overallScore: 82.00 },
-  
-  // --- New Data for New Employees ---
   { id: 'EVAL101', employeeId: 'EMP101', evaluatorId: 'EMP005', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 85.50, factorScores: {}},
   { id: 'EVAL102', employeeId: 'EMP102', evaluatorId: 'EMP101', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 91.20, factorScores: {}},
   { id: 'EVAL103', employeeId: 'EMP103', evaluatorId: 'EMP111', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 79.80, factorScores: {}},
@@ -459,7 +451,6 @@ export const initialPayrollsData = [
       { 
         payrollId: 'PAY004', empId: 'EMP003', employeeName: 'Carol White', period: 'Oct 16-31, 2023', paymentDate: '2023-11-05', payStartDate: '2023-10-16', payEndDate: '2023-10-31', earnings: [ { description: 'Regular Pay', hours: 88, amount: 9000.00 }, ], deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 }, otherDeductions: [], absences: [], leaveBalances: { vacation: 10, sick: 5, personal: 5 }, status: 'Pending'
       },
-      // New Employees in this run
       { payrollId: 'PAY101', empId: 'EMP101', employeeName: 'Henry Miller', earnings: [{amount: 9250}], deductions: {tax: 400}, status: 'Paid' },
       { payrollId: 'PAY102', empId: 'EMP102', employeeName: 'Jack Davis', earnings: [{amount: 9000}], deductions: {tax: 380}, status: 'Paid' },
     ]
@@ -477,7 +468,6 @@ export const initialPayrollsData = [
       },
     ]
   },
-  // Other payroll runs abbreviated for brevity
 ];
 
 // ============================================================================
@@ -503,8 +493,6 @@ export const initialUserAccounts = [
   { employeeId: 'EMP002', username: 'leader_bob', password: 'password123', status: 'Active' },
   { employeeId: 'EMP001', username: 'employee_alice', password: 'password123', status: 'Active' },
   { employeeId: 'EMP010', username: 'frank_black', password: 'disabledpassword', status: 'Deactivated' },
-
-  // --- New User Accounts ---
   { employeeId: 'EMP101', username: 'henry_p101', password: 'password123', status: 'Active' },
   { employeeId: 'EMP102', username: 'jack_p102', password: 'password123', status: 'Active' },
   { employeeId: 'EMP103', username: 'karen_p103', password: 'password123', status: 'Active' },

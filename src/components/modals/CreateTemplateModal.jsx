@@ -7,7 +7,11 @@ const CreateTemplateModal = ({ show, onClose, onSave, positions, templateData })
   const initialFormState = {
     name: '',
     description: '',
-    columns: [{ key: 'shift', name: 'Shift' }], 
+    columns: [
+      { key: 'start_time', name: 'Start Time' },
+      { key: 'end_time', name: 'End Time' },
+      { key: 'ot_hours', name: 'OT (Hours)' }
+    ], 
     applicablePositions: [],
   };
 
@@ -28,7 +32,7 @@ const CreateTemplateModal = ({ show, onClose, onSave, positions, templateData })
         setFormData({
           name: templateData.name || '',
           description: templateData.description || '',
-          columns: (templateData.columns || ['shift']).map(colKey => ({
+          columns: (templateData.columns || ['start_time', 'end_time']).map(colKey => ({
             key: colKey,
             name: colKey.charAt(0).toUpperCase() + colKey.slice(1).replace(/_/g, ' ')
           })),
@@ -69,8 +73,10 @@ const CreateTemplateModal = ({ show, onClose, onSave, positions, templateData })
   };
 
   const handleRemoveColumn = (keyToRemove) => {
-    if (keyToRemove === 'shift') {
-        alert("The 'Shift' column is required and cannot be removed.");
+    const permanentCols = ['start_time', 'end_time', 'ot_hours'];
+    if (permanentCols.includes(keyToRemove)) {
+        const colName = formData.columns.find(c => c.key === keyToRemove)?.name || keyToRemove;
+        alert(`The '${colName}' column is required and cannot be removed.`);
         return;
     }
     setFormData(prev => ({
@@ -141,7 +147,7 @@ const CreateTemplateModal = ({ show, onClose, onSave, positions, templateData })
                   {formData.columns.map(col => (
                     <span key={col.key} className="badge d-flex align-items-center bg-secondary">
                       {col.name}
-                      {col.key !== 'shift' && (
+                      {!['start_time', 'end_time', 'ot_hours'].includes(col.key) && (
                         <button type="button" className="btn-close btn-close-white ms-2" style={{fontSize: '0.6em'}} onClick={() => handleRemoveColumn(col.key)}></button>
                       )}
                     </span>

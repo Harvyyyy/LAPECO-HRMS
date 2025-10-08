@@ -6,7 +6,7 @@ import '../pages/Schedule-Management/ScheduleManagementPage.css';
 
 const EditScheduleModal = ({ show, onClose, onSave, scheduleDate, initialScheduleEntries, allEmployees, positions }) => {
   const [scheduleName, setScheduleName] = useState('');
-  const [columns, setColumns] = useState([{ key: 'shift', name: 'Shift' }]);
+  const [columns, setColumns] = useState([]);
   const [gridData, setGridData] = useState([]);
   const [showAddColumnModal, setShowAddColumnModal] = useState(false);
   const [editingHeaderKey, setEditingHeaderKey] = useState(null);
@@ -25,10 +25,10 @@ const EditScheduleModal = ({ show, onClose, onSave, scheduleDate, initialSchedul
     if (show && initialScheduleEntries) {
       setScheduleName(initialScheduleEntries[0]?.name || `Schedule for ${scheduleDate}`);
       
-      const existingColumns = new Set(['shift']);
+      const existingColumns = new Set(['start_time', 'end_time', 'ot_hours']); // Ensure OT is always a default
       initialScheduleEntries.forEach(entry => { 
         Object.keys(entry).forEach(key => { 
-          if(!['scheduleId', 'empId', 'date', 'name', 'shift', 'status'].includes(key)) { 
+          if(!['scheduleId', 'empId', 'date', 'name', 'shift', 'status', 'start_time', 'end_time'].includes(key)) { 
             existingColumns.add(key); 
           } 
         }); 
@@ -42,7 +42,13 @@ const EditScheduleModal = ({ show, onClose, onSave, scheduleDate, initialSchedul
       
       const initialGrid = initialScheduleEntries.map(entry => {
         const row = { empId: entry.empId };
-        dynamicColumns.forEach(col => { row[col.key] = entry[col.key] || ''; });
+        // Backward compatibility for old "shift" format
+        if (entry.shift && !entry.start_time && !entry.end_time) {
+            const [start, end] = entry.shift.split(' - ');
+            row.start_time = start || '';
+            row.end_time = end || '';
+        }
+        dynamicColumns.forEach(col => { row[col.key] = entry[col.key] || row[col.key] || ''; });
         return row;
       });
       setGridData(initialGrid);
@@ -74,8 +80,10 @@ const EditScheduleModal = ({ show, onClose, onSave, scheduleDate, initialSchedul
   };
 
   const handleDeleteColumn = (keyToDelete) => {
-    if (keyToDelete === 'shift') {
-      alert('The "Shift" column cannot be deleted.');
+    const permanentCols = ['start_time', 'end_time', 'ot_hours'];
+    if (permanentCols.includes(keyToDelete)) {
+      const colName = columns.find(c => c.key === keyToDelete)?.name;
+      alert(`The "${colName}" column cannot be deleted.`);
       return;
     }
     const columnName = columns.find(c => c.key === keyToDelete)?.name;
@@ -108,7 +116,8 @@ const EditScheduleModal = ({ show, onClose, onSave, scheduleDate, initialSchedul
   };
   
   const handleHeaderClick = (key) => {
-    if (key !== 'shift') {
+    const permanentCols = ['start_time', 'end_time', 'ot_hours'];
+    if (!permanentCols.includes(key)) {
       setEditingHeaderKey(key);
     }
   };
@@ -135,7 +144,8 @@ const EditScheduleModal = ({ show, onClose, onSave, scheduleDate, initialSchedul
         uniqueEmpIds.add(row.empId);
         
         const entryData = columns.reduce((acc, col) => { if(row[col.key] && String(row[col.key]).trim() !== '') acc[col.key] = row[col.key]; return acc; }, {});
-        if (Object.keys(entryData).length > 0 && entryData.shift && entryData.shift.trim() !== '' && entryData.shift.toUpperCase() !== 'OFF') {
+        const isOff = String(row.start_time || '').toUpperCase() === 'OFF';
+        if (Object.keys(entryData).length > 0 && (entryData.start_time || isOff)) {
           updatedScheduleEntries.push({ ...entryData, empId: row.empId, date: scheduleDate, name: scheduleName });
         }
       }
@@ -166,7 +176,7 @@ const EditScheduleModal = ({ show, onClose, onSave, scheduleDate, initialSchedul
                       <th className="employee-name-column">Employee Name</th>
                       <th className="position-column">Position</th>
                       {columns.map(col => (
-                        <th key={col.key} className={`text-center custom-column ${col.key !== 'shift' ? 'editable-header' : ''}`}>
+                        <th key={col.key} className={`text-center custom-column ${!['start_time', 'end_time', 'ot_hours'].includes(col.key) ? 'editable-header' : ''}`}>
                           {editingHeaderKey === col.key ? (
                             <input
                               type="text"
@@ -182,7 +192,7 @@ const EditScheduleModal = ({ show, onClose, onSave, scheduleDate, initialSchedul
                             </span>
                           )}
                           
-                          {col.key !== 'shift' && (
+                          {!['start_time', 'end_time', 'ot_hours'].includes(col.key) && (
                             <button
                               type="button"
                               className="btn btn-sm btn-outline-danger p-0 delete-column-btn"
@@ -210,7 +220,7 @@ const EditScheduleModal = ({ show, onClose, onSave, scheduleDate, initialSchedul
                             </div>
                           </td>
                           <td><input type="text" className="form-control form-control-sm readonly-input" value={positionTitle} readOnly disabled /></td>
-                          {columns.map(col => (<td key={col.key}><input type="text" className="form-control form-control-sm shift-input" value={row[col.key] || ''} onChange={e => handleGridChange(rowIndex, col.key, e.target.value)} /></td>))}
+                          {columns.map(col => (<td key={col.key}><input type={col.key.includes('time') ? 'time' : 'text'} className="form-control form-control-sm shift-input" value={row[col.key] || ''} onChange={e => handleGridChange(rowIndex, col.key, e.target.value)} /></td>))}
                           <td><button type="button" className="btn btn-sm btn-outline-danger" onClick={() => removeEmployeeRow(rowIndex)} title="Remove Row"><i className="bi bi-x-lg"></i></button></td>
                         </tr>
                       );

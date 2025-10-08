@@ -1,3 +1,5 @@
+// src/reports/attendanceSummaryReport.js
+
 import autoTable from 'jspdf-autotable';
 
 /**
@@ -33,8 +35,8 @@ export const generateAttendanceSummaryReport = async (doc, params, dataSources, 
     if (!log || !log.signIn) {
       stats.Absent++;
     } else {
-      if (sch.shift) {
-        const shiftStart = sch.shift.split(' - ')[0];
+      if (sch.start_time) {
+        const shiftStart = sch.start_time;
         if (log.signIn > shiftStart) {
           stats.Late++;
         } else {
@@ -66,14 +68,14 @@ export const generateAttendanceSummaryReport = async (doc, params, dataSources, 
 
   // 4. Prepare data for the main table
   const employeeMap = new Map(employees.map(e => [e.id, e]));
-  const tableColumns = ['ID', 'Name', 'Shift', 'Sign In', 'Sign Out', 'Status'];
+  const tableColumns = ['ID', 'Name', 'Start Time', 'End Time', 'Sign In', 'Break Out', 'Break In', 'Sign Out', 'OT (hrs)', 'Status'];
   const tableRows = schedulesForDate.map(sch => {
     const log = attendanceForDate.find(l => l.empId === sch.empId);
     const emp = employeeMap.get(sch.empId);
     let status = "Absent";
     if (log && log.signIn) {
-      if (sch.shift) {
-        const shiftStart = sch.shift.split(' - ')[0];
+      if (sch.start_time) {
+        const shiftStart = sch.start_time;
         status = log.signIn > shiftStart ? 'Late' : 'Present';
       } else {
         status = 'Present';
@@ -82,9 +84,13 @@ export const generateAttendanceSummaryReport = async (doc, params, dataSources, 
     return [
       sch.empId,
       emp?.name || 'N/A',
-      sch.shift || 'N/A',
+      sch.start_time || 'N/A',
+      sch.end_time || 'N/A',
       log?.signIn || '---',
+      log?.breakOut || '---',
+      log?.breakIn || '---',
       log?.signOut || '---',
+      log?.overtime_hours || '0',
       status
     ];
   });

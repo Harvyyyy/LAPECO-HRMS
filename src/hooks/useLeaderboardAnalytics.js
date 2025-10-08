@@ -20,7 +20,7 @@ export const useLeaderboardAnalytics = ({ employees, positions, schedules, atten
       let absences = 0, lates = 0, presentDays = 0;
       empSchedules.forEach(schedule => {
         const log = empLogs.get(schedule.date);
-        if (!log || !log.signIn) { absences++; } else { presentDays++; if (log.signIn > (schedule.shift?.split(' - ')[0] || '00:00')) { lates++; } }
+        if (!log || !log.signIn) { absences++; } else { presentDays++; if (log.signIn > (schedule.start_time || '00:00')) { lates++; } }
       });
       const attendanceScore = Math.max(0, 100 - (absences * 5) - (lates * 2));
       const latestPerformanceScore = empEvals.length > 0 ? empEvals[0].overallScore : 0;

@@ -13,7 +13,7 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
 
   const [scheduleDate] = useState(initialDate);
   const [scheduleName, setScheduleName] = useState('');
-  const [columns, setColumns] = useState([{ key: 'shift', name: 'Shift' }]);
+  const [columns, setColumns] = useState([]);
   const [gridData, setGridData] = useState([]);
   const [showAddColumnModal, setShowAddColumnModal] = useState(false);
   const [editingHeaderKey, setEditingHeaderKey] = useState(null);
@@ -36,29 +36,42 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
 
     let initialGrid = [];
     let initialName = `Schedule for ${initialDate}`;
-    let initialColumns = [{ key: 'shift', name: 'Shift' }];
+    let initialColumns = [
+      { key: 'start_time', name: 'Start Time' },
+      { key: 'end_time', name: 'End Time' },
+      { key: 'ot_hours', name: 'OT (Hours)' }
+    ];
 
     if (method === 'copy' && sourceData && Array.isArray(sourceData)) {
       initialName = `Copy of ${sourceData[0]?.name || `Schedule for ${sourceData[0]?.date}`}`;
-      const sourceColumns = new Set(['shift']);
+      const sourceColumns = new Set(['start_time', 'end_time']); 
       sourceData.forEach(entry => {
         Object.keys(entry).forEach(key => {
-          if (!['scheduleId', 'empId', 'date', 'name', 'shift', 'status'].includes(key)) {
+          if (!['scheduleId', 'empId', 'date', 'name', 'shift', 'status', 'start_time', 'end_time'].includes(key)) {
             sourceColumns.add(key);
           }
         });
       });
       initialColumns = Array.from(sourceColumns).map(key => ({ key, name: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ') }));
+      
       initialGrid = sourceData.map(sch => {
         const row = { empId: sch.empId };
+        
+        if (sch.shift && !sch.start_time && !sch.end_time) {
+            const [start, end] = sch.shift.split(' - ');
+            row.start_time = start || '';
+            row.end_time = end || '';
+        }
+
         initialColumns.forEach(col => {
-          row[col.key] = sch[col.key] || '';
+          row[col.key] = sch[col.key] || row[col.key] || ''; 
         });
         return row;
       });
+
     } else if (method === 'template' && sourceData) {
       initialName = `${sourceData.name} for ${initialDate}`;
-      const templateColumnKeys = sourceData.columns && sourceData.columns.length > 0 ? sourceData.columns : ['shift'];
+      const templateColumnKeys = sourceData.columns && sourceData.columns.length > 0 ? sourceData.columns : ['start_time', 'end_time'];
       initialColumns = templateColumnKeys.map(key => ({
         key,
         name: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
@@ -66,14 +79,15 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
       const applicableEmp = employees.filter(emp => sourceData.applicablePositions.includes(positionsMap.get(emp.positionId)));
       const emptyRow = initialColumns.reduce((acc, col) => ({ ...acc, [col.key]: '' }), {});
       initialGrid = applicableEmp.map(emp => ({ ...emptyRow, empId: emp.id }));
-    } else {
-      initialGrid = [{ empId: '', shift: '' }];
+    } else { // Create from scratch
+      const emptyRow = initialColumns.reduce((acc, col) => ({ ...acc, [col.key]: '' }), {});
+      initialGrid = [{ empId: '', ...emptyRow }];
     }
 
     setScheduleName(initialName);
     setColumns(initialColumns);
     setGridData(initialGrid);
-  }, [initialDate, method, sourceData, navigate, employees, positions, positionsMap]);
+  }, [initialDate, method, sourceData, navigate, employees, positionsMap]);
 
   const addEmployeeRow = () => {
     const newRow = columns.reduce((acc, col) => ({ ...acc, [col.key]: '' }), { empId: '' });
@@ -103,8 +117,10 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
   };
 
   const handleDeleteColumn = (keyToDelete) => {
-    if (keyToDelete === 'shift') {
-      alert("The 'Shift' column is required and cannot be deleted.");
+    const permanentCols = ['start_time', 'end_time', 'ot_hours'];
+    if (permanentCols.includes(keyToDelete)) {
+      const colName = columns.find(c => c.key === keyToDelete)?.name || keyToDelete;
+      alert(`The '${colName}' column is required and cannot be deleted.`);
       return;
     }
     const columnName = columns.find(c => c.key === keyToDelete)?.name;
@@ -137,7 +153,8 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
   };
 
   const handleHeaderClick = (key) => {
-    if (key !== 'shift') {
+    const permanentCols = ['start_time', 'end_time', 'ot_hours'];
+    if (!permanentCols.includes(key)) {
       setEditingHeaderKey(key);
     }
   };
@@ -176,7 +193,10 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
           if (row[col.key] && String(row[col.key]).trim() !== '') acc[col.key] = row[col.key];
           return acc;
         }, {});
-        if (Object.keys(entryData).length > 0 && entryData.shift && entryData.shift.trim() !== '' && entryData.shift.toUpperCase() !== 'OFF') {
+
+        const isOff = String(row.start_time || '').toUpperCase() === 'OFF';
+
+        if (Object.keys(entryData).length > 0 && (entryData.start_time || isOff)) {
           newScheduleEntries.push({ empId: row.empId, date: scheduleDate, name: scheduleName, ...entryData });
         }
       }
@@ -186,7 +206,7 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
       return;
     }
     if (newScheduleEntries.length === 0) {
-      alert("Please add at least one employee and assign a valid shift.");
+      alert("Please add at least one employee and assign a valid start time or 'OFF'.");
       return;
     }
     const success = handlers.createSchedules(newScheduleEntries);
@@ -222,7 +242,7 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
                   <th className="employee-name-column">Employee Name</th>
                   <th className="position-column">Position</th>
                   {columns.map(col => (
-                    <th key={col.key} className={`text-center custom-column ${col.key !== 'shift' ? 'editable-header' : ''}`}>
+                    <th key={col.key} className={`text-center custom-column ${!['start_time', 'end_time', 'ot_hours'].includes(col.key) ? 'editable-header' : ''}`}>
                       {editingHeaderKey === col.key ? (
                         <input
                           type="text"
@@ -238,7 +258,7 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
                         </span>
                       )}
                       
-                      {col.key !== 'shift' && (
+                      {!['start_time', 'end_time', 'ot_hours'].includes(col.key) && (
                         <button
                           type="button"
                           className="btn btn-sm btn-outline-danger p-0 delete-column-btn"
@@ -276,7 +296,7 @@ const ScheduleBuilderPage = ({ employees, positions, handlers }) => {
                       </td>
                       <td><input type="text" className="form-control form-control-sm readonly-input" value={positionTitle} readOnly disabled /></td>
                       {columns.map(col => (
-                        <td key={col.key}><input type="text" className="form-control form-control-sm shift-input" value={row[col.key] || ''} onChange={e => handleGridInputChange(rowIndex, col.key, e.target.value)} /></td>
+                        <td key={col.key}><input type={col.key.includes('time') ? 'time' : 'text'} className="form-control form-control-sm shift-input" value={row[col.key] || ''} onChange={e => handleGridInputChange(rowIndex, col.key, e.target.value)} /></td>
                       ))}
                       <td>
                         <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => removeEmployeeRow(rowIndex)} title="Remove Row">

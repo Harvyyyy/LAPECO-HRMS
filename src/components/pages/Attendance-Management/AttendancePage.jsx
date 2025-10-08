@@ -9,6 +9,31 @@ import ConfirmationModal from '../../modals/ConfirmationModal';
 import useReportGenerator from '../../../hooks/useReportGenerator';
 import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
 
+const calculateHoursWorked = (signIn, signOut, breakOut, breakIn) => {
+  if (!signIn || !signOut) return '0h 0m';
+
+  const signInTime = new Date(`1970-01-01T${signIn}:00`);
+  const signOutTime = new Date(`1970-01-01T${signOut}:00`);
+  
+  let totalMillis = signOutTime - signInTime;
+
+  if (breakOut && breakIn) {
+    const breakOutTime = new Date(`1970-01-01T${breakOut}:00`);
+    const breakInTime = new Date(`1970-01-01T${breakIn}:00`);
+    const breakMillis = breakInTime - breakOutTime;
+    if (breakMillis > 0) {
+      totalMillis -= breakMillis;
+    }
+  }
+
+  if (totalMillis < 0) totalMillis = 0;
+  
+  const hours = Math.floor(totalMillis / 3600000);
+  const minutes = Math.floor((totalMillis % 3600000) / 60000);
+
+  return `${hours}h ${minutes}m`;
+};
+
 const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, setAttendanceLogs, handlers }) => {
   const [activeView, setActiveView] = useState('daily');
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
@@ -41,13 +66,15 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
       const positionTitle = positionMap.get(employeeDetails.positionId) || 'Unassigned';
       let status = "Absent";
       if (attendance.signIn) {
-          const shiftStartTime = schedule.shift ? schedule.shift.split(' - ')[0] : '00:00';
+          const shiftStartTime = schedule.start_time || '00:00';
           status = attendance.signIn > shiftStartTime ? "Late" : "Present";
       }
       return {
-        ...employeeDetails, scheduleId: schedule.scheduleId, position: positionTitle, shift: schedule.shift,
+        ...employeeDetails, ...schedule, position: positionTitle,
         signIn: attendance.signIn || null, breakOut: attendance.breakOut || null, breakIn: attendance.breakIn || null, signOut: attendance.signOut || null,
-        workingHours: '0h 0m', status: status,
+        workingHours: calculateHoursWorked(attendance.signIn, attendance.signOut, attendance.breakOut, attendance.breakIn),
+        overtime_hours: attendance.overtime_hours || 0,
+        status: status,
       };
     }).filter(Boolean);
   }, [currentDate, allSchedules, employees, positions, attendanceLogs]);
@@ -86,7 +113,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
         const schedule = schedulesMap.get(scheduleKey);
         if (schedule && log.signIn) {
           history[log.date].present++;
-          const shiftStartTime = schedule.shift ? schedule.shift.split(' - ')[0] : '00:00';
+          const shiftStartTime = schedule.start_time || '00:00';
           if (log.signIn > shiftStartTime) {
             history[log.date].late++;
           }
@@ -123,7 +150,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
 
               let status = "Scheduled";
               if (log && log.signIn) {
-                  const shiftStartTime = schedule.shift ? schedule.shift.split(' - ')[0] : '00:00';
+                  const shiftStartTime = schedule.start_time || '00:00';
                   status = log.signIn > shiftStartTime ? "Late" : "Present";
               } else if (scheduleDate < today) {
                   status = "Absent";
@@ -182,11 +209,12 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
     const record = {
       id: employeeData.id,
       name: employeeData.name,
-      schedule: { date: currentDate, shift: employeeData.shift },
+      schedule: { date: currentDate, start_time: employeeData.start_time, end_time: employeeData.end_time },
       signIn: employeeData.signIn,
       signOut: employeeData.signOut,
       breakIn: employeeData.breakIn,
       breakOut: employeeData.breakOut,
+      overtime_hours: employeeData.overtime_hours,
     };
     setEditingAttendanceRecord(record);
     setShowEditModal(true);
@@ -204,6 +232,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
         signOut: updatedTimes.signOut || null,
         breakIn: updatedTimes.breakIn || null,
         breakOut: updatedTimes.breakOut || null,
+        overtime_hours: updatedTimes.overtime_hours || 0,
       };
       if (existingLogIndex > -1) {
         const updatedLogs = [...prevLogs];
@@ -220,9 +249,9 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
       return;
     }
     const dataToExport = sortedAndFilteredList.map(emp => ({
-      'Employee ID': emp.id, 'Name': emp.name, 'Position': emp.position, 'Shift': emp.shift,
+      'Employee ID': emp.id, 'Name': emp.name, 'Position': emp.position, 'Start Time': emp.start_time, 'End Time': emp.end_time,
       'Sign In': emp.signIn || '', 'Break Out': emp.breakOut || '', 'Break In': emp.breakIn || '',
-      'Sign Out': emp.signOut || '', 'Status': emp.status,
+      'Sign Out': emp.signOut || '', 'Overtime (hrs)': emp.overtime_hours || 0, 'Status': emp.status,
     }));
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
@@ -254,6 +283,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
             const logUpdate = {
               signIn: row['Sign In'] || null, signOut: row['Sign Out'] || null,
               breakIn: row['Break In'] || null, breakOut: row['Break Out'] || null,
+              overtime_hours: row['Overtime (hrs)'] || 0,
             };
             if (existingLogIndex > -1) { newLogs[existingLogIndex] = { ...newLogs[existingLogIndex], ...logUpdate };
             } else { newLogs.push({ empId, date: currentDate, ...logUpdate }); }
@@ -308,11 +338,11 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
                 <div className="card data-table-card shadow-sm">
                     <div className="table-responsive">
                         <table className="table data-table mb-0">
-                            <thead><tr><th>Date</th><th>Schedule</th><th>Sign In</th><th>Sign Out</th><th>Status</th></tr></thead>
+                            <thead><tr><th>Date</th><th>Start Time</th><th>End Time</th><th>Sign In</th><th>Sign Out</th><th>Status</th></tr></thead>
                             <tbody>
                                 {selectedEmployeeRecords.records.map(rec => (
                                     <tr key={rec.scheduleId || rec.date}>
-                                        <td>{rec.date}</td><td>{rec.shift}</td><td>{rec.signIn || '---'}</td><td>{rec.signOut || '---'}</td>
+                                        <td>{rec.date}</td><td>{rec.start_time}</td><td>{rec.end_time}</td><td>{rec.signIn || '---'}</td><td>{rec.signOut || '---'}</td>
                                         <td><span className={`status-badge status-${rec.status.toLowerCase()}`}>{rec.status}</span></td>
                                     </tr>
                                 ))}
@@ -396,23 +426,25 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
               <div className="filters-group"> <select className="form-select" value={positionFilter} onChange={(e) => setPositionFilter(e.target.value)}> {uniquePositions.map(pos => <option key={pos} value={pos === 'All Positions' ? '' : pos}>{pos}</option>)} </select> </div>
             </div>
             {sortedAndFilteredList.length > 0 ? (
-                <div className="card data-table-card shadow-sm"><div className="table-responsive">
-                  <table className="table data-table mb-0">
+                <div className="card data-table-card shadow-sm"><div className="card-body p-0"><div className="table-responsive">
+                    <table className="table data-table mb-0">
                       <thead><tr>
                           <th className="sortable" onClick={() => handleRequestSort('id')}>ID {getSortIcon('id')}</th>
                           <th className="sortable" onClick={() => handleRequestSort('name')}>Employee Name {getSortIcon('name')}</th>
-                          <th>Position</th><th className="sortable" onClick={() => handleRequestSort('shift')}>Shift {getSortIcon('shift')}</th>
+                          <th>Position</th>
                           <th className="sortable" onClick={() => handleRequestSort('signIn')}>Sign In {getSortIcon('signIn')}</th>
                           <th className="sortable" onClick={() => handleRequestSort('breakOut')}>Break Out {getSortIcon('breakOut')}</th>
                           <th className="sortable" onClick={() => handleRequestSort('breakIn')}>Break In {getSortIcon('breakIn')}</th>
                           <th className="sortable" onClick={() => handleRequestSort('signOut')}>Sign Out {getSortIcon('signOut')}</th>
                           <th className="sortable" onClick={() => handleRequestSort('workingHours')}>Hours {getSortIcon('workingHours')}</th>
+                          <th className="sortable" onClick={() => handleRequestSort('overtime_hours')}>OT (hrs) {getSortIcon('overtime_hours')}</th>
                           <th>Status</th><th>Actions</th>
                       </tr></thead>
                       <tbody>{sortedAndFilteredList.map((emp) => (
                           <tr key={emp.scheduleId}>
-                              <td>{emp.id}</td><td>{emp.name}</td><td>{emp.position}</td><td>{emp.shift}</td>
+                              <td>{emp.id}</td><td>{emp.name}</td><td>{emp.position}</td>
                               <td>{emp.signIn || '---'}</td><td>{emp.breakOut || '---'}</td><td>{emp.breakIn || '---'}</td><td>{emp.signOut || '---'}</td><td>{emp.workingHours}</td>
+                              <td>{emp.overtime_hours || '0'}</td>
                               <td><span className={`status-badge status-${emp.status.toLowerCase()}`}>{emp.status}</span></td>
                               <td>
                               <div className="dropdown">
@@ -433,7 +465,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
                           </tr>
                       ))}</tbody>
                   </table>
-                </div></div>
+                </div></div></div>
             ) : (
               <div className="text-center p-5 bg-light rounded d-flex flex-column justify-content-center" style={{minHeight: '300px'}}>
                   <i className="bi bi-calendar-check fs-1 text-muted mb-3 d-block"></i>

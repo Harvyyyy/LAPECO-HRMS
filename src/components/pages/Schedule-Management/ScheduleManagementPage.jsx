@@ -1,5 +1,3 @@
-// src/components/pages/Schedule-Management/ScheduleManagementPage.jsx
-
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ScheduleManagementPage.css';
@@ -121,7 +119,8 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
         'scheduleId', 'empId', 'date', 'name', 'position', 'id', 'positionId', 'isTeamLeader', 
         'email', 'joiningDate', 'birthday', 'gender', 'address', 'contactNumber', 'imageUrl', 
         'sssNo', 'tinNo', 'pagIbigNo', 'philhealthNo', 'resumeUrl', 'shift', 'status',
-        'leaveCredits', 'firstName', 'middleName', 'lastName'
+        'leaveCredits', 'firstName', 'middleName', 'lastName',
+        'start_time', 'end_time', 'ot_hours' // Exclude hardcoded columns
     ]);
     scheduledEmployeesForDate.forEach(schedule => Object.keys(schedule).forEach(key => !excludedKeys.has(key) && columnKeys.add(key)));
     return Array.from(columnKeys).map(key => ({ key, name: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ') }));
@@ -211,7 +210,7 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
                   <h5 className="mb-3">Template Structure</h5>
                   <div className="table-responsive">
                       <table className="table template-preview-table">
-                          <thead><tr>{(columnsForTable || []).map(key => <th key={key}>{key.charAt(0).toUpperCase() + key.slice(1)}</th>)}</tr></thead>
+                          <thead><tr>{(columnsForTable || []).map(key => <th key={key}>{key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}</th>)}</tr></thead>
                           <tbody><tr><td colSpan={(columnsForTable || []).length} className="text-center">This is a template. It defines columns but contains no employee data.</td></tr></tbody>
                       </table>
                   </div>
@@ -277,7 +276,9 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
                                 <th className="sortable" onClick={() => requestDailySort('id')}>ID {getSortIcon('id', dailySortConfig)}</th>
                                 <th className="sortable" onClick={() => requestDailySort('name')}>Employee Name {getSortIcon('name', dailySortConfig)}</th>
                                 <th>Position</th>
-                                <th className="sortable" onClick={() => requestDailySort('shift')}>Shift {getSortIcon('shift', dailySortConfig)}</th>
+                                <th className="sortable" onClick={() => requestDailySort('start_time')}>Start Time {getSortIcon('start_time', dailySortConfig)}</th>
+                                <th className="sortable" onClick={() => requestDailySort('end_time')}>End Time {getSortIcon('end_time', dailySortConfig)}</th>
+                                <th className="sortable" onClick={() => requestDailySort('ot_hours')}>OT (Hours) {getSortIcon('ot_hours', dailySortConfig)}</th>
                                 {dailyViewColumns.map(col => <th key={col.key}>{col.name}</th>)}
                             </tr>
                         </thead>
@@ -285,7 +286,9 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
                             {sortedAndFilteredDailyEmployees.map(emp => (
                                 <tr key={emp.scheduleId}>
                                     <td>{emp.id}</td><td>{emp.name}</td><td>{emp.position}</td>
-                                    <td><span className="badge bg-info">{emp.shift || '---'}</span></td>
+                                    <td>{emp.start_time || '---'}</td>
+                                    <td>{emp.end_time || '---'}</td>
+                                    <td>{emp.ot_hours || '---'}</td>
                                     {dailyViewColumns.map(col => <td key={col.key}>{emp[col.key] || '---'}</td>)}
                                 </tr>
                             ))}
@@ -359,7 +362,7 @@ const ScheduleManagementPage = ({ employees, positions, schedules, templates, ha
                         <div className="card-header"><h5 className="card-title">{tpl.name}</h5></div>
                         <div className="card-body">
                             <dl className="mb-0">
-                                <div className="template-info-section"><dt>Columns</dt><dd>{(tpl.columns || []).map(c => <span key={c} className="badge bg-secondary">{c.charAt(0).toUpperCase() + c.slice(1)}</span>)}</dd></div>
+                                <div className="template-info-section"><dt>Columns</dt><dd>{(tpl.columns || []).map(c => <span key={c} className="badge bg-secondary">{c.charAt(0).toUpperCase() + c.slice(1).replace(/_/g, ' ')}</span>)}</dd></div>
                                 <div className="template-info-section"><dt>Applies to Positions</dt><dd>{(tpl.applicablePositions || []).map(p => <span key={p} className="badge bg-dark">{p}</span>)}</dd></div>
                             </dl>
                         </div>
