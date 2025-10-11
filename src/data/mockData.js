@@ -1,3 +1,5 @@
+import { evaluationFactorsConfig } from '../config/evaluation.config';
+
 const createPastDate = (daysAgo) => {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
@@ -219,7 +221,6 @@ export const initialLeaveRequests = [
     }
   },
 
-  // --- NEW: Maternity Leave with No Extension ---
   {
     leaveId: 'LVE-MATERNITY-02',
     leaveType: 'Maternity Leave',
@@ -239,8 +240,6 @@ export const initialLeaveRequests = [
       medicalDocumentName: 'medical_cert_kw.pdf',
     }
   },
-
-  // --- UPDATED MATERNITY LEAVE STRUCTURE ---
   { 
     leaveId: 'LVE-MATERNITY-01', 
     leaveType: 'Maternity Leave', 
@@ -378,55 +377,33 @@ export const initialKpisData = [
   { id: 'KPI06', kraId: 'KRA03', title: 'Payroll Accuracy', description: 'Percentage of payroll runs with zero errors.', weight: 40, appliesToPositionIds: [1] },
 ];
 
-export const initialEvaluationFactors = [
-  { id: 'factor_behavior', title: 'Behavioral Competencies', type: 'rating_scale', items: [
-      { id: 'bhv_teamwork', name: 'Teamwork & Collaboration', description: 'Works effectively with others to achieve common goals; shares information and supports team members.', b_a_r_s: { 1: "Consistently works in isolation...", 2: "Rarely offers assistance...", 3: "Reliably participates...", 4: "Frequently and proactively offers help...", 5: "Acts as a role model..." }},
-      { id: 'bhv_communication', name: 'Communication', description: 'Clearly and effectively conveys information...' },
-      { id: 'bhv_professionalism', name: 'Professionalism & Integrity', description: 'Demonstrates a high standard of professional conduct...' }]},
-  { id: 'factor_work_quality', title: 'Work Quality', type: 'rating_scale', items: [
-      { id: 'wq_accuracy', name: 'Accuracy & Attention to Detail', description: 'Completes tasks with a high degree of precision...' },
-      { id: 'wq_efficiency', name: 'Efficiency & Time Management', description: 'Effectively manages time and resources...' }]},
-  { id: 'factor_potential', title: 'Potential & Growth', type: 'rating_scale', description: 'Forward-looking indicators of an employee\'s potential...', items: [
-      { id: 'pot_learning_agility', name: 'Learning Agility', description: 'Demonstrates the ability to learn quickly...' },
-      { id: 'pot_ambition_drive', name: 'Ambition & Drive', description: 'Shows initiative, seeks out new challenges...' },
-      { id: 'pot_leadership', name: 'Leadership Capability', description: 'Exhibits potential to lead others...' }]},
-  { id: 'factor_engagement', title: 'Engagement & Alignment', type: 'rating_scale', description: 'Measures job satisfaction and alignment...', items: [
-      { id: 'eng_role_satisfaction', name: 'Role Satisfaction', description: 'Appears energized and fulfilled by their day-to-day responsibilities.' },
-      { id: 'eng_growth_opportunity', name: 'Career Growth Opportunities', description: 'Sees a clear and viable path for advancement...' }]},
-  { id: 'factor_kpis', title: 'Key Performance Indicators (KPIs)', type: 'kpi_section' },
-  { id: 'factor_evaluator_summary', title: "Evaluator's Overall Summary", type: 'textarea', description: "Provide a holistic summary..." },
-  { id: 'factor_development_areas', title: "Key Strengths & Development Areas", type: 'textarea', description: "Identify 1-2 key strengths and development areas..." }
-];
+export const initialEvaluationFactors = evaluationFactorsConfig;
+
+const generateScores = () => {
+  const rateableFactors = evaluationFactorsConfig
+    .filter(f => f.type === 'criterion')
+    .flatMap(c => c.items);
+  
+  let totalScore = 0;
+  const factorScores = {};
+  
+  rateableFactors.forEach(factor => {
+    const score = Math.floor(Math.random() * 3) + 3; 
+    totalScore += score;
+    factorScores[factor.id] = { score };
+  });
+
+  const overallScore = (totalScore / rateableFactors.length / 5) * 100;
+
+  return { factorScores, overallScore };
+};
 
 export const initialEvaluationsData = [
-  { id: 'EVAL01', employeeId: 'EMP001', evaluatorId: 'EMP003', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 92.50 },
-  { id: 'EVAL02', employeeId: 'EMP009', evaluatorId: 'EMP003', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 78.00 },
-  { id: 'EVAL03', employeeId: 'EMP004', evaluatorId: 'EMP002', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 88.75 },
-  { id: 'EVAL04', employeeId: 'EMP001', evaluatorId: 'EMP003', periodStart: '2024-07-01', periodEnd: '2024-12-31', status: 'Completed', factorScores: { /* ... */ }, overallScore: 90.00 },
-  { id: 'EVAL05', employeeId: 'EMP004', evaluatorId: 'EMP002', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 46.80 },
-  { id: 'EVAL06', employeeId: 'EMP002', evaluatorId: 'EMP005', periodStart: '2024-07-01', periodEnd: '2024-12-31', status: 'Completed', factorScores: { /* ... */ }, overallScore: 85.00 },
-  { id: 'EVAL07', employeeId: 'EMP002', evaluatorId: 'EMP005', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 88.00 },
-  { id: 'EVAL08', employeeId: 'EMP003', evaluatorId: 'EMP005', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 91.00 },
-  { id: 'EVAL09', employeeId: 'EMP001', evaluatorId: 'EMP003', periodStart: '2024-01-01', periodEnd: '2024-06-30', status: 'Completed', factorScores: { /* ... */ }, overallScore: 88.50 },
-  { id: 'EVAL10', employeeId: 'EMP009', evaluatorId: 'EMP003', periodStart: '2024-07-01', periodEnd: '2024-12-31', status: 'Completed', factorScores: { /* ... */ }, overallScore: 82.00 },
-  { id: 'EVAL101', employeeId: 'EMP101', evaluatorId: 'EMP005', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 85.50, factorScores: {}},
-  { id: 'EVAL102', employeeId: 'EMP102', evaluatorId: 'EMP101', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 91.20, factorScores: {}},
-  { id: 'EVAL103', employeeId: 'EMP103', evaluatorId: 'EMP111', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 79.80, factorScores: {}},
-  { id: 'EVAL104', employeeId: 'EMP104', evaluatorId: 'EMP111', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 88.00, factorScores: {}},
-  { id: 'EVAL105', employeeId: 'EMP105', evaluatorId: 'EMP003', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 94.10, factorScores: {}},
-  { id: 'EVAL106', employeeId: 'EMP106', evaluatorId: 'EMP002', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 68.50, factorScores: {}},
-  { id: 'EVAL107', employeeId: 'EMP107', evaluatorId: 'EMP101', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 90.00, factorScores: {}},
-  { id: 'EVAL108', employeeId: 'EMP108', evaluatorId: 'EMP005', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 82.30, factorScores: {}},
-  { id: 'EVAL110', employeeId: 'EMP110', evaluatorId: 'EMP002', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 75.00, factorScores: {}},
-  { id: 'EVAL111', employeeId: 'EMP111', evaluatorId: 'EMP005', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 95.00, factorScores: {}},
-  { id: 'EVAL112', employeeId: 'EMP112', evaluatorId: 'EMP111', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 86.50, factorScores: {}},
-  { id: 'EVAL113', employeeId: 'EMP113', evaluatorId: 'EMP101', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 78.90, factorScores: {}},
-  { id: 'EVAL114', employeeId: 'EMP114', evaluatorId: 'EMP003', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 81.00, factorScores: {}},
-  { id: 'EVAL115', employeeId: 'EMP115', evaluatorId: 'EMP002', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 89.60, factorScores: {}},
-  { id: 'EVAL116', employeeId: 'EMP116', evaluatorId: 'EMP005', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 92.00, factorScores: {}},
-  { id: 'EVAL118', employeeId: 'EMP118', evaluatorId: 'EMP111', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 77.40, factorScores: {}},
-  { id: 'EVAL119', employeeId: 'EMP119', evaluatorId: 'EMP003', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 93.30, factorScores: {}},
-  { id: 'EVAL120', employeeId: 'EMP120', evaluatorId: 'EMP002', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', overallScore: 84.80, factorScores: {}},
+  { id: 'EVAL01', employeeId: 'EMP001', evaluatorId: 'EMP003', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', ...generateScores() },
+  { id: 'EVAL02', employeeId: 'EMP009', evaluatorId: 'EMP003', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', ...generateScores() },
+  { id: 'EVAL03', employeeId: 'EMP004', evaluatorId: 'EMP002', periodStart: '2025-01-01', periodEnd: '2025-06-30', status: 'Completed', ...generateScores() },
+  { id: 'EVAL04', employeeId: 'EMP001', evaluatorId: 'EMP003', periodStart: '2024-07-01', periodEnd: '2024-12-31', status: 'Completed', ...generateScores() },
+  { id: 'EVAL06', employeeId: 'EMP002', evaluatorId: 'EMP005', periodStart: '2024-07-01', periodEnd: '2024-12-31', status: 'Completed', ...generateScores() },
 ];
 
 // ============================================================================
@@ -446,7 +423,6 @@ export const initialNotificationsData = [
 // ============================================================================
 
 export const initialPayrollsData = [
-  // --- NEW PAYROLL DATA FOR 2023 ---
   {
     runId: 'RUN-2023-09-30',
     cutOff: '2023-09-16 to 2023-09-30',
@@ -466,7 +442,7 @@ export const initialPayrollsData = [
       { empId: 'EMP003', employeeName: 'Carol White', earnings: [{ description: 'Regular Pay', amount: 9000.00 }], deductions: { tax: 350, sss: 405, philhealth: 200, hdmf: 100 }, status: 'Paid' },
     ]
   },
-  // --- EXISTING DATA (for reference and backward compatibility) ---
+  
   {
     runId: 'RUN-2023-11-15',
     cutOff: '2023-11-01 to 2023-11-15',
@@ -491,7 +467,6 @@ export const initialPayrollsData = [
       { 
         payrollId: 'PAY004', empId: 'EMP003', employeeName: 'Carol White', period: 'Oct 16-31, 2023', paymentDate: '2023-11-05', payStartDate: '2023-10-16', payEndDate: '2023-10-31', earnings: [ { description: 'Regular Pay', hours: 88, amount: 9000.00 }, ], deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 }, otherDeductions: [], absences: [], leaveBalances: { vacation: 10, sick: 5, personal: 5 }, status: 'Pending'
       },
-      // --- DATA FIX: Added missing description property ---
       { payrollId: 'PAY101', empId: 'EMP101', employeeName: 'Henry Miller', earnings: [{ description: 'Regular Pay', amount: 9250 }], deductions: {tax: 400}, status: 'Paid' },
       { payrollId: 'PAY102', empId: 'EMP102', employeeName: 'Jack Davis', earnings: [{ description: 'Regular Pay', amount: 9000 }], deductions: {tax: 380}, status: 'Paid' },
       { 

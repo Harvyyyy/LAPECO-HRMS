@@ -485,32 +485,6 @@ function AppContent() {
     toggleTheme: () => {
       setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
     },
-    saveKraAndKpis: (kraData, kpiList) => {
-      let savedKraId = kraData.id;
-      if (savedKraId) {
-        setKras(prev => prev.map(k => k.id === savedKraId ? { ...k, ...kraData } : k));
-      } else {
-        const newKra = { ...kraData, id: `KRA${Date.now()}` };
-        savedKraId = newKra.id;
-        setKras(prev => [...prev, newKra]);
-      }
-      const modalKpiIds = new Set(kpiList.map(k => k.id).filter(Boolean));
-      const updatedKpis = kpis.filter(kpi => kpi.kraId !== savedKraId || modalKpiIds.has(kpi.id));
-      kpiList.forEach(kpi => {
-        const existingKpiIndex = updatedKpis.findIndex(uk => uk.id === kpi.id);
-        const kpiToSave = { ...kpi, kraId: savedKraId };
-        if (existingKpiIndex > -1) {
-          updatedKpis[existingKpiIndex] = kpiToSave;
-        } else {
-          updatedKpis.push({ ...kpiToSave, id: `KPI${Date.now()}${Math.random()}` });
-        }
-      });
-      setKpis(updatedKpis);
-    },
-    deleteKra: (kraId) => {
-      setKras(prev => prev.filter(k => k.id !== kraId));
-      setKpis(prev => prev.filter(kpi => kpi.kraId !== kraId));
-    },
     saveEvaluation: (evaluationData, evalId) => {
       const today = new Date().toISOString().split('T')[0];
       if (evalId) {
