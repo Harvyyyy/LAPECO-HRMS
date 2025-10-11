@@ -1,5 +1,3 @@
-// src/components/modals/PayrollAdjustmentModal.jsx
-
 import React, { useState, useEffect, useMemo } from 'react';
 import './PayrollAdjustmentModal.css';
 import ReportPreviewModal from './ReportPreviewModal';
@@ -8,25 +6,23 @@ import useReportGenerator from '../../hooks/useReportGenerator';
 const formatCurrency = (value) => Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const defaultEarnings = [
-    { description: 'Regular Hours', hours: 0, amount: 0 },
-    { description: 'Overtime Pay', hours: 0, amount: 0 },
-    { description: 'Night Differential', hours: 0, amount: 0 },
-    { description: 'Special Rate Pay Reg', hours: 0, amount: 0 },
-    { description: 'Special Rate Pay OT', hours: 0, amount: 0 },
-    { description: 'Holiday Pay Reg', hours: 0, amount: 0 },
-    { description: 'Holiday Pay OT', hours: 0, amount: 0 },
-    { description: 'Allowance', hours: '--', amount: 0 },
-    { description: 'Leave Pay', hours: '--', amount: 0 },
-    { description: 'Pay Adjustment', hours: '--', amount: 0 },
+    { description: 'Regular Hours', hours: 0, amount: 0, isDefault: true },
+    { description: 'Overtime Pay', hours: 0, amount: 0, isDefault: true },
+    { description: 'Night Differential', hours: 0, amount: 0, isDefault: true },
+    { description: 'Holiday Pay Reg', hours: 0, amount: 0, isDefault: true },
+    { description: 'Holiday Pay OT', hours: 0, amount: 0, isDefault: true },
+    { description: 'Allowance', hours: '--', amount: 0, isDefault: true },
+    { description: 'Leave Pay', hours: '--', amount: 0, isDefault: true },
+    { description: 'Pay Adjustment', hours: '--', amount: 0, isDefault: true },
 ];
 
 const OTHER_DEDUCTION_TYPES = [
-    'Cash Advance',
-    'Company Loan Repayment',
-    'Tardiness / Undertime',
-    'Damaged Equipment',
-    'Uniform',
-    'Other',
+    'Cash Advance', 'Company Loan Repayment', 'Tardiness / Undertime',
+    'Damaged Equipment', 'Uniform', 'Other',
+];
+
+const ADDITIONAL_EARNING_TYPES = [
+    'Incentive', 'Commission', 'Bonus', 'Other Adjustment',
 ];
 
 const InfoField = ({ label, children }) => (
@@ -42,12 +38,8 @@ const EditableStatutoryField = ({ label, fieldKey, value, originalValue, onChang
         <div className="input-group">
             <span className="input-group-text">₱</span>
             <input 
-                type="number" 
-                id={fieldKey} 
-                name={fieldKey}
-                className="form-control text-end" 
-                value={value} 
-                onChange={onChange}
+                type="number" id={fieldKey} name={fieldKey}
+                className="form-control text-end" value={value} onChange={onChange}
             />
         </div>
         <small className="form-text text-muted">System Calculated: ₱{formatCurrency(originalValue)}</small>
@@ -80,19 +72,20 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
         setAbsences(payrollData.absences || []);
         setStatutoryDeductions(payrollData.deductions || {});
         
-        const processedEarnings = defaultEarnings.map(defaultItem => {
-            const foundEarning = (payrollData.earnings || []).find(pde => {
-                const desc = defaultItem.description.toLowerCase();
-                const pdeDesc = pde.description.toLowerCase();
-                if (desc.includes('regular') && pdeDesc.includes('regular pay')) return true;
-                if (desc.includes('holiday') && pdeDesc.includes('holiday pay')) return true;
-                if (desc.includes('leave') && pdeDesc.includes('leave pay')) return true;
-                return pdeDesc === desc;
-            });
+        const existingEarnings = new Set((payrollData.earnings || []).map(e => e.description));
+        const combinedEarnings = defaultEarnings.map(defaultItem => {
+            const foundEarning = (payrollData.earnings || []).find(pde => defaultItem.description.toLowerCase().includes(pde.description.toLowerCase().replace(' pay', '')));
             return foundEarning ? { ...defaultItem, ...foundEarning, description: defaultItem.description } : { ...defaultItem };
         });
 
-        setEarnings(processedEarnings);
+        // Add any non-default earnings from the data
+        (payrollData.earnings || []).forEach(earning => {
+            if (!defaultEarnings.some(de => de.description.toLowerCase().includes(earning.description.toLowerCase().replace(' pay', '')))) {
+                combinedEarnings.push({ ...earning, isNew: true });
+            }
+        });
+
+        setEarnings(combinedEarnings);
         setOtherDeductions(payrollData.otherDeductions || []);
     }
   }, [payrollData, employeeDetails, show]);
@@ -154,8 +147,7 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
   }, [absences, leaveBalances, position]);
 
   const handleItemChange = (index, field, value, type) => {
-    let list;
-    let setter;
+    let list, setter;
     switch(type) {
         case 'earnings': list = [...earnings]; setter = setEarnings; break;
         case 'otherDeductions': list = [...otherDeductions]; setter = setOtherDeductions; break;
@@ -167,6 +159,9 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
   };
 
   const addItem = (type) => {
+    if (type === 'earnings') {
+      setEarnings(prev => [...prev, { tempId: Date.now(), description: ADDITIONAL_EARNING_TYPES[0], hours: '--', amount: 0, isNew: true }]);
+    }
     if (type === 'otherDeductions') {
         setOtherDeductions(prev => [...prev, { description: OTHER_DEDUCTION_TYPES[0], amount: 0 }]);
     }
@@ -201,12 +196,12 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
         return e;
       });
 
-      const finalEarnings = updatedEarningsWithLeave.filter(e => Number(e.amount) !== 0 || !defaultEarnings.some(de => de.description === e.description));
+      const finalEarnings = updatedEarningsWithLeave.filter(e => e.amount !== 0 || e.isDefault);
       const finalDeductions = otherDeductions.filter(d => d.description.trim() !== '' || Number(d.amount) !== 0);
       
       onSave(payrollData.payrollId, { 
           status, 
-          earnings: finalEarnings, 
+          earnings: finalEarnings.map(({isDefault, isNew, tempId, ...rest}) => rest), 
           otherDeductions: finalDeductions, 
           absences: absences, 
           deductions: statutoryDeductions,
@@ -289,37 +284,49 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
                 </div>}
 
                 {activeTab === 'earnings' && (
-                  <div role="grid" className="earnings-grid">
-                    <div role="row" className="grid-header">
-                      <div role="columnheader">Description</div>
-                      <div role="columnheader" className="text-center">Hours</div>
-                      <div role="columnheader" className="text-end">Amount (₱)</div>
+                  <div>
+                    <div role="grid" className="earnings-grid">
+                      <div role="row" className="grid-header">
+                        <div role="columnheader">Description</div>
+                        <div role="columnheader" className="text-center">Hours</div>
+                        <div role="columnheader" className="text-end">Amount (₱)</div>
+                        <div role="columnheader" className="action-col-header"></div>
+                      </div>
+                      {earnings.map((item, index) => (
+                          <div role="row" className="grid-row" key={item.tempId || index}>
+                              <div role="gridcell">
+                                {item.isNew ? (
+                                    <select className="form-select form-select-sm" value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value, 'earnings')}>
+                                        {ADDITIONAL_EARNING_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+                                    </select>
+                                ) : (
+                                    <input type="text" className="form-control form-control-inline" value={item.description} readOnly disabled />
+                                )}
+                              </div>
+                              <div role="gridcell">
+                                <input 
+                                  type={typeof item.hours === 'number' ? 'number' : 'text'} 
+                                  className="form-control form-control-inline text-center" 
+                                  value={item.hours} 
+                                  onChange={(e) => handleItemChange(index, 'hours', e.target.value, 'earnings')} 
+                                  readOnly={typeof item.hours !== 'number'} 
+                                />
+                              </div>
+                              <div role="gridcell">
+                                <input 
+                                  type="number" step="0.01" className="form-control form-control-inline text-end" 
+                                  value={item.amount} onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'earnings')} 
+                                />
+                              </div>
+                              <div role="gridcell" className="text-center">
+                                {item.isNew && (
+                                    <button className="btn btn-sm btn-remove-row" onClick={() => removeItem(index, 'earnings')} title="Remove Earning"><i className="bi bi-x"></i></button>
+                                )}
+                              </div>
+                          </div>
+                      ))}
                     </div>
-                    {earnings.map((item, index) => (
-                        <div role="row" className="grid-row" key={index}>
-                            <div role="gridcell">
-                              <input type="text" className="form-control form-control-inline" value={item.description} readOnly disabled />
-                            </div>
-                            <div role="gridcell">
-                              <input 
-                                type={typeof item.hours === 'number' ? 'number' : 'text'} 
-                                className="form-control form-control-inline text-center" 
-                                value={item.hours} 
-                                onChange={(e) => handleItemChange(index, 'hours', e.target.value, 'earnings')} 
-                                readOnly={typeof item.hours !== 'number'} 
-                              />
-                            </div>
-                            <div role="gridcell">
-                              <input 
-                                type="number" 
-                                step="0.01"
-                                className="form-control form-control-inline text-end" 
-                                value={item.amount} 
-                                onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'earnings')} 
-                              />
-                            </div>
-                        </div>
-                    ))}
+                    <button className="btn btn-sm btn-outline-secondary mt-2" onClick={() => addItem('earnings')}><i className="bi bi-plus-lg me-1"></i> Add Earning</button>
                   </div>
                 )}
 

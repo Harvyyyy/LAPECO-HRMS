@@ -1,5 +1,3 @@
-/* src/components/modals/PayrollAdjustmentModal.css */
-
 .payroll-adjustment-modal-dialog.modal-xl {
   max-width: 1200px;
 }
@@ -184,7 +182,7 @@ tr:hover .form-control-inline {
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
 }
-tr:hover .btn-remove-row, .deduction-item-row:hover .btn-remove-row {
+tr:hover .btn-remove-row, .deduction-item-row:hover .btn-remove-row, .grid-row:hover .btn-remove-row {
     opacity: 1;
 }
 
@@ -213,20 +211,20 @@ tr:hover .btn-remove-row, .deduction-item-row:hover .btn-remove-row {
 
 .grid-header, .grid-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 40px;
     gap: 1rem;
     align-items: center;
-    padding: 0 0.75rem; /* Horizontal padding */
+    padding: 0 0.75rem;
 }
 
 .grid-header {
     background-color: var(--bg-secondary);
     padding-top: 0.75rem;
-    padding-bottom: 0.75rem; /* Increased padding */
+    padding-bottom: 0.75rem;
     font-weight: 600;
     font-size: 0.85rem;
     color: var(--text-secondary);
-    border-bottom: 2px solid var(--border-color); /* Bolder separator */
+    border-bottom: 2px solid var(--border-color);
 }
 
 .grid-row {
@@ -243,7 +241,7 @@ tr:hover .btn-remove-row, .deduction-item-row:hover .btn-remove-row {
 
 .grid-row .form-control-inline {
     width: 100%;
-    padding: 0.5rem 0.5rem; /* Adjusted padding for better vertical alignment */
+    padding: 0.5rem 0.5rem;
     background-color: transparent;
     border: 1px solid transparent;
 }

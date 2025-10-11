@@ -20,6 +20,11 @@ const PayrollPage = () => {
             <i className="bi bi-calculator-fill me-2"></i>Payroll Generation
           </NavLink>
         </li>
+        <li className="nav-item">
+          <NavLink to="/dashboard/payroll/13th-month" className="nav-link">
+            <i className="bi bi-calendar-heart me-2"></i>13th Month Pay
+          </NavLink>
+        </li>
       </ul>
       
       <div className="payroll-tab-content">

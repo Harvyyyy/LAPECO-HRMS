@@ -26,6 +26,7 @@ import AttendancePage from './components/pages/Attendance-Management/AttendanceP
 import PayrollPage from './components/pages/Payroll-Management/PayrollPage';
 import PayrollGenerationPage from './components/pages/Payroll-Management/PayrollGenerationPage';
 import PayrollHistoryPage from './components/pages/Payroll-Management/PayrollHistoryPage';
+import ThirteenthMonthPage from './components/pages/Payroll-Management/ThirteenthMonthPage'; // --- NEW ---
 import MyPayrollLayout from './components/pages/My-Payroll/MyPayrollLayout';
 import MyPayrollProjectionPage from './components/pages/My-Payroll/MyPayrollProjectionPage';
 import MyPayrollHistoryPage from './components/pages/My-Payroll/MyPayrollHistoryPage';
@@ -38,15 +39,19 @@ import AccountSettingsPage from './components/pages/Account-Settings/AccountSett
 import ContributionsManagementPage from './components/pages/Contributions-Management/ContributionsManagementPage';
 import PredictiveAnalyticsPage from './components/pages/Predictive-Analytics/PredictiveAnalyticsPage';
 import LeaderboardsPage from './components/pages/Leaderboards/LeaderboardsPage';
+// --- NEW ---
 import MyResignationPage from './components/pages/My-Resignation/MyResignationPage';
 import ResignationManagementPage from './components/pages/Resignation-Management/ResignationManagementPage';
 import TerminatedEmployeesTab from './components/pages/Resignation-Management/TerminatedEmployeesTab';
 
+// Constants & Assets
 import { USER_ROLES } from './constants/roles';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
+// Import all mock data from centralized file
 import * as mockData from './data/mockData';
 
+// Add evaluationDate to mock data
 const initialEvaluationsData = mockData.initialEvaluationsData.map((ev, index) => {
     const periodEndDate = new Date(ev.periodEnd);
     const evaluationDate = new Date(periodEndDate.setDate(periodEndDate.getDate() + (index % 2 === 0 ? 5 : 8)));
@@ -91,14 +96,17 @@ function AppContent() {
   const [payrolls, setPayrolls] = useState(mockData.initialPayrollsData);
   const [disciplinaryCases, setDisciplinaryCases] = useState(mockData.initialCasesData);
   const [userAccounts, setUserAccounts] = useState(mockData.initialUserAccounts);
+  // --- NEW ---
   const [resignations, setResignations] = useState(mockData.initialResignationsData);
   const [terminations, setTerminations] = useState(mockData.initialTerminationData);
   const [theme, setTheme] = useState('light');
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
+    // --- NEW: useEffect for automatic offboarding ---
   useEffect(() => {
     const todayISO = new Date().toISOString().split('T')[0];
 
+    // Find employee IDs whose approved resignation is effective today or in the past
     const employeeIdsToOffboard = new Set(
         resignations
             .filter(r => r.status === 'Approved' && r.effectiveDate <= todayISO)
@@ -106,11 +114,12 @@ function AppContent() {
     );
 
     if (employeeIdsToOffboard.size === 0) {
-        return;
+        return; // No one to process, exit early
     }
 
     let needsUpdate = false;
     const updatedEmployees = employees.map(emp => {
+        // If employee is marked for offboarding AND their status is not already 'Resigned'
         if (employeeIdsToOffboard.has(emp.id) && emp.status !== 'Resigned') {
             needsUpdate = true;
             return { ...emp, status: 'Resigned' };
@@ -313,7 +322,7 @@ function AppContent() {
                     return {
                         ...emp,
                         leaveCredits: {
-                            ...currentCredits,
+                            ...currentCredits, // Preserve existing credits not being updated
                             ...newCredits,
                         },
                     };
@@ -417,7 +426,7 @@ function AppContent() {
             isTeamLeader: false,
             imageUrl: null,
             status: 'Active',
-            leaveCredits: { sick: 10, vacation: 10, personal: 3 }, 
+            leaveCredits: { sick: 10, vacation: 10, personal: 3 }, // Default leave credits for new hire
         };
         setEmployees(prev => [newEmployee, ...prev]);
 
@@ -838,6 +847,11 @@ function AppContent() {
                         onGenerate={appLevelHandlers.generatePayrollRun}
                     />
                 } />
+                {/* --- NEW ROUTE --- */}
+                <Route 
+                  path="13th-month"
+                  element={<ThirteenthMonthPage employees={employees} payrolls={payrolls} />}
+                />
             </Route>
             
             <Route path="holiday-management" element={<HolidayManagementPage holidays={holidays} handlers={appLevelHandlers} />} />

@@ -53,11 +53,11 @@
     justify-content: space-between; 
     align-items: center; 
     gap: 1rem; 
-    flex-wrap: wrap; /* Added for responsiveness */
+    flex-wrap: wrap;
 }
 .payroll-history-controls .input-group { 
     max-width: 400px;
-    flex-grow: 1; /* Added for responsiveness */
+    flex-grow: 1; 
 }
 .payroll-history-controls .btn-group .btn { 
     font-weight: 500; 
@@ -78,6 +78,7 @@
     flex-direction: column;
     transition: all 0.2s ease-in-out;
     cursor: pointer;
+    overflow: hidden;
 }
 .payroll-run-card:hover {
     transform: translateY(-4px);
@@ -167,4 +168,82 @@
 
 .dark-theme .payroll-generation-container .card-title {
     color: var(--text-primary);
+}
+
+/* === 13th Month Page Styles === */
+.thirteenth-month-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.summary-card-13th {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    padding: 1.25rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+.summary-card-13th .summary-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+}
+.summary-card-13th .summary-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.card-header.thirteenth-month-controls {
+    background-color: var(--bg-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+}
+.thirteenth-month-controls .controls-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+.thirteenth-month-controls .input-group {
+    max-width: 350px;
+}
+.thirteenth-month-controls .year-selector-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.thirteenth-month-controls .year-selector-group .form-label {
+    margin-bottom: 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+.thirteenth-month-controls .year-selector-group .form-select {
+    width: 120px;
+}
+
+.status-select {
+    font-weight: 600;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius);
+}
+.status-select.status-select-pending {
+    background-color: var(--warning-color);
+    color: var(--text-primary);
+}
+.status-select.status-select-paid {
+    background-color: var(--app-success-color);
+    color: var(--text-on-success);
+}
+
+.thirteenth-month-container .data-table {
+    table-layout: fixed;
+    width: 100%;
 }

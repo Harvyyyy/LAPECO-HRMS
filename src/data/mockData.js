@@ -13,14 +13,6 @@ const createScheduleEntry = (id, empId, date, startTime = '08:00', endTime = '17
   end_time: endTime
 });
 
-// ============================================================================
-// EMPLOYEE DATA
-// ============================================================================
-
-// ============================================================================
-// EMPLOYEE DATA
-// ============================================================================
-
 export const initialEmployeesData = [
   { 
     id: 'EMP001', firstName: 'Alice', middleName: 'Marie', lastName: 'Johnson', name: 'Alice Marie Johnson', positionId: 2, isTeamLeader: false, email: 'alice.j@example.com', joiningDate: '2022-03-15', gender: 'Female', birthday: '1993-02-18', sssNo: '34-456', tinNo: '321-654', pagIbigNo: '1213-1695-8596', philhealthNo: '1120-2485-8688', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 15, personal: 5 }
@@ -42,7 +34,6 @@ export const initialEmployeesData = [
   },
   {
     id: 'EMP007', firstName: 'Jack', middleName: '', lastName: 'Reacher', name: 'Jack Reacher', 
-    // --- UPDATED DATA ---
     positionId: 5, 
     isTeamLeader: false, email: 'jack.r@example.com', joiningDate: '2021-05-10', gender: 'Male', birthday: '1985-10-29', sssNo: '34-707', tinNo: '777-000', pagIbigNo: '1214-1234-1234', philhealthNo: '0809-9876-5432', status: 'Terminated', contactNumber: '9129876543', address: 'Unknown', resumeUrl: null, 
     leaveCredits: { sick: 0, vacation: 3, personal: 0, paternity: 0 }
@@ -454,11 +445,28 @@ export const initialNotificationsData = [
 // PAYROLL DATA
 // ============================================================================
 
-// ============================================================================
-// PAYROLL DATA
-// ============================================================================
-
 export const initialPayrollsData = [
+  // --- NEW PAYROLL DATA FOR 2023 ---
+  {
+    runId: 'RUN-2023-09-30',
+    cutOff: '2023-09-16 to 2023-09-30',
+    records: [
+      { empId: 'EMP001', employeeName: 'Alice Johnson', earnings: [{ description: 'Regular Pay', amount: 9000.00 }], deductions: { tax: 350, sss: 405, philhealth: 200, hdmf: 100 }, status: 'Paid' },
+      { empId: 'EMP002', employeeName: 'Bob Smith', earnings: [{ description: 'Regular Pay', amount: 11000.00 }], deductions: { tax: 650, sss: 495, philhealth: 275, hdmf: 100 }, status: 'Paid' },
+      { empId: 'EMP003', employeeName: 'Carol White', earnings: [{ description: 'Regular Pay', amount: 9000.00 }], deductions: { tax: 350, sss: 405, philhealth: 200, hdmf: 100 }, status: 'Paid' },
+      { empId: 'EMP004', employeeName: 'David Green', earnings: [{ description: 'Regular Pay', amount: 11000.00 }], deductions: { tax: 650, sss: 495, philhealth: 275, hdmf: 100 }, status: 'Paid' },
+    ]
+  },
+  {
+    runId: 'RUN-2023-09-15',
+    cutOff: '2023-09-01 to 2023-09-15',
+    records: [
+      { empId: 'EMP001', employeeName: 'Alice Johnson', earnings: [{ description: 'Regular Pay', amount: 8950.00 }], deductions: { tax: 340, sss: 405, philhealth: 200, hdmf: 100 }, status: 'Paid' },
+      { empId: 'EMP002', employeeName: 'Bob Smith', earnings: [{ description: 'Regular Pay', amount: 11000.00 }], deductions: { tax: 650, sss: 495, philhealth: 275, hdmf: 100 }, status: 'Paid' },
+      { empId: 'EMP003', employeeName: 'Carol White', earnings: [{ description: 'Regular Pay', amount: 9000.00 }], deductions: { tax: 350, sss: 405, philhealth: 200, hdmf: 100 }, status: 'Paid' },
+    ]
+  },
+  // --- EXISTING DATA (for reference and backward compatibility) ---
   {
     runId: 'RUN-2023-11-15',
     cutOff: '2023-11-01 to 2023-11-15',
@@ -483,9 +491,9 @@ export const initialPayrollsData = [
       { 
         payrollId: 'PAY004', empId: 'EMP003', employeeName: 'Carol White', period: 'Oct 16-31, 2023', paymentDate: '2023-11-05', payStartDate: '2023-10-16', payEndDate: '2023-10-31', earnings: [ { description: 'Regular Pay', hours: 88, amount: 9000.00 }, ], deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 }, otherDeductions: [], absences: [], leaveBalances: { vacation: 10, sick: 5, personal: 5 }, status: 'Pending'
       },
-      { payrollId: 'PAY101', empId: 'EMP101', employeeName: 'Henry Miller', earnings: [{amount: 9250}], deductions: {tax: 400}, status: 'Paid' },
-      { payrollId: 'PAY102', empId: 'EMP102', employeeName: 'Jack Davis', earnings: [{amount: 9000}], deductions: {tax: 380}, status: 'Paid' },
-      // --- NEW PAYROLL RECORD FOR FRANK BLACK ---
+      // --- DATA FIX: Added missing description property ---
+      { payrollId: 'PAY101', empId: 'EMP101', employeeName: 'Henry Miller', earnings: [{ description: 'Regular Pay', amount: 9250 }], deductions: {tax: 400}, status: 'Paid' },
+      { payrollId: 'PAY102', empId: 'EMP102', employeeName: 'Jack Davis', earnings: [{ description: 'Regular Pay', amount: 9000 }], deductions: {tax: 380}, status: 'Paid' },
       { 
         payrollId: 'PAY010', empId: 'EMP010', employeeName: 'Frank Black', period: 'Oct 16-31, 2023', paymentDate: '2023-11-05', payStartDate: '2023-10-16', payEndDate: '2023-10-31', earnings: [ { description: 'Regular Pay', hours: 88, amount: 9000.00 } ], deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 }, otherDeductions: [], absences: [], leaveBalances: { vacation: 5, sick: 2, personal: 1 }, status: 'Paid'
       },
@@ -505,6 +513,7 @@ export const initialPayrollsData = [
     ]
   },
 ];
+
 
 // ============================================================================
 // CASE MANAGEMENT DATA
@@ -635,7 +644,7 @@ export const initialResignationsData = [
     status: 'Approved',
     hrComments: 'Approved. Offboarding process will begin shortly.',
   },
-  // --- NEW RECORD FOR FRANK BLACK ---
+
   {
     id: 'RES006',
     employeeId: 'EMP010',
