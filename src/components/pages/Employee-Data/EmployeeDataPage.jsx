@@ -7,6 +7,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import placeholderImage from '../../../assets/placeholder-profile.jpg';
 import useReportGenerator from '../../../hooks/useReportGenerator';
 import ConfirmationModal from '../../modals/ConfirmationModal';
+import TerminateEmployeeModal from '../../modals/TerminateEmployeeModal';
 
 const EmployeeDataPage = ({ employees, positions, handlers }) => {
   const [activeTab, setActiveTab] = useState('all');
@@ -24,12 +25,19 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
   
   const [showReportPreview, setShowReportPreview] = useState(false);
   const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
+  
+  const [showTerminateModal, setShowTerminateModal] = useState(false);
+  const [employeeToTerminate, setEmployeeToTerminate] = useState(null);
+
+  const activeAndInactiveEmployees = useMemo(() => {
+    return employees.filter(emp => emp.status === 'Active' || emp.status === 'Inactive');
+  }, [employees]);
 
   const positionMap = useMemo(() => new Map(positions.map(p => [p.id, p.title])), [positions]);
   const uniquePositions = useMemo(() => ['All Positions', ...new Set(positions.map(p => p.title).sort())], [positions]);
   
   const filteredAndSortedEmployees = useMemo(() => {
-    let records = employees.map(emp => ({
+    let records = activeAndInactiveEmployees.map(emp => ({
         ...emp,
         positionTitle: positionMap.get(emp.positionId) || 'Unassigned',
     }));
@@ -55,7 +63,7 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
       });
     }
     return records;
-  }, [searchTerm, positionFilter, statusFilter, sortConfig, employees, positionMap]);
+  }, [searchTerm, positionFilter, statusFilter, sortConfig, activeAndInactiveEmployees, positionMap]);
   
   const requestSort = (key) => {
     let direction = 'ascending';
@@ -132,11 +140,21 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
     );
     setShowReportPreview(true);
   };
+  
+  const handleOpenTerminateModal = (e, employee) => {
+    e.stopPropagation();
+    setEmployeeToTerminate(employee);
+    setShowTerminateModal(true);
+  };
+
+  const handleConfirmTermination = (employeeId, details) => {
+    handlers.terminateEmployee(employeeId, details);
+  };
 
   const isFiltered = searchTerm || positionFilter || statusFilter;
   const countText = isFiltered 
-    ? `Showing ${filteredAndSortedEmployees.length} of ${employees.length} employees` 
-    : `${employees.length} total employees`;
+    ? `Showing ${filteredAndSortedEmployees.length} of ${activeAndInactiveEmployees.length} employees` 
+    : `${activeAndInactiveEmployees.length} total employees`;
   
   const renderCardView = () => (
     <div className="employee-grid-container">
@@ -154,7 +172,7 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
               </button>
               <ul className="dropdown-menu dropdown-menu-end">
                 <li><a className="dropdown-item" href="#" onClick={(e) => handleOpenEditModal(e, emp)}>Edit</a></li>
-                <li><a className="dropdown-item text-danger" href="#" onClick={(e) => handleOpenDeleteConfirm(e, emp)}>Delete</a></li>
+                <li><a className="dropdown-item text-danger" href="#" onClick={(e) => handleOpenTerminateModal(e, emp)}>Terminate</a></li>
               </ul>
             </div>
           </div>
@@ -213,6 +231,7 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
                   <ul className="dropdown-menu dropdown-menu-end">
                     <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleOpenViewModal(emp);}}><i className="bi bi-eye-fill me-2"></i>View Details</a></li>
                     <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleOpenEditModal(e, emp);}}><i className="bi bi-pencil-fill me-2"></i>Edit</a></li>
+                    <li><a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); handleOpenTerminateModal(e, emp);}}><i className="bi bi-slash-circle-fill me-2"></i>Terminate</a></li>
                     <li><hr className="dropdown-divider" /></li>
                     <li><a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); handleOpenDeleteConfirm(e, emp);}}><i className="bi bi-trash-fill me-2"></i>Delete</a></li>
                   </ul>
@@ -271,12 +290,12 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
                 </div>
             </div>
           </div>
-          {filteredAndSortedEmployees.length > 0 ? (viewMode === 'card' ? renderCardView() : renderTableView()) : (<div className="text-center p-5 bg-light rounded"><i className="bi bi-people-fill fs-1 text-muted mb-3 d-block"></i><h4 className="text-muted">{employees.length === 0 ? "No employees in the system." : "No employees match criteria."}</h4></div>)}
+          {filteredAndSortedEmployees.length > 0 ? (viewMode === 'card' ? renderCardView() : renderTableView()) : (<div className="w-100 text-center p-5 bg-light rounded"><i className="bi bi-people-fill fs-1 text-muted mb-3 d-block"></i><h4 className="text-muted">{employees.length === 0 ? "No employees in the system." : "No employees match criteria."}</h4></div>)}
         </>
       )}
 
       {activeTab === 'requirements' && (
-        <RequirementsChecklist employees={employees} />
+        <RequirementsChecklist employees={activeAndInactiveEmployees} />
       )}
       
       {showModal && ( 
@@ -289,6 +308,15 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
           viewOnly={isViewOnlyMode}
           onSwitchToEdit={handleSwitchToEditMode}
         /> 
+      )}
+
+      {showTerminateModal && (
+            <TerminateEmployeeModal 
+                show={showTerminateModal}
+                onClose={() => setShowTerminateModal(false)}
+                onConfirm={handleConfirmTermination}
+                employee={employeeToTerminate}
+            />
       )}
 
       {(isLoading || pdfDataUri) && (

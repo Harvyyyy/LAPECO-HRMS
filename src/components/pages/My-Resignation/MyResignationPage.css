@@ -1,0 +1,49 @@
+.resignation-status-view {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.status-card {
+    border-left-width: 4px;
+}
+.status-card.status-pending { border-left-color: var(--warning-color); }
+.status-card.status-approved { border-left-color: var(--app-success-color); }
+.status-card.status-declined { border-left-color: var(--danger-color); }
+
+.status-card-header {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.status-card-header .status-badge {
+    font-size: 0.9rem;
+    padding: 0.5em 0.8em;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.detail-item .detail-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+.detail-item .detail-value {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.resignation-letter-content {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    white-space: pre-wrap;
+    font-family: monospace;
+}

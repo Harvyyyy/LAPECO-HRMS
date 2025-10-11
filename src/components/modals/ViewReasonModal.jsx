@@ -1,6 +1,11 @@
 import React from 'react';
 
-const ViewReasonModal = ({ show, onClose, request }) => {
+const ViewReasonModal = ({ 
+    show, 
+    onClose, 
+    request, 
+    title = "Leave Request Reason" 
+}) => {
   if (!show || !request) {
     return null;
   }
@@ -10,12 +15,14 @@ const ViewReasonModal = ({ show, onClose, request }) => {
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">Leave Request Reason</h5>
+            <h5 className="modal-title">{title}</h5>
             <button type="button" className="btn-close" onClick={onClose} aria-label="Close"></button>
           </div>
           <div className="modal-body">
             <p className="mb-1"><strong>Employee:</strong> {request.name} ({request.empId})</p>
-            <p><strong>Leave Type:</strong> {request.leaveType}</p>
+            {request.leaveType !== 'Resignation' && (
+              <p><strong>Leave Type:</strong> {request.leaveType}</p>
+            )}
             <hr />
             <p className="text-muted">{request.reason || "No reason provided."}</p>
           </div>

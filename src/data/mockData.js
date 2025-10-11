@@ -17,6 +17,10 @@ const createScheduleEntry = (id, empId, date, startTime = '08:00', endTime = '17
 // EMPLOYEE DATA
 // ============================================================================
 
+// ============================================================================
+// EMPLOYEE DATA
+// ============================================================================
+
 export const initialEmployeesData = [
   { 
     id: 'EMP001', firstName: 'Alice', middleName: 'Marie', lastName: 'Johnson', name: 'Alice Marie Johnson', positionId: 2, isTeamLeader: false, email: 'alice.j@example.com', joiningDate: '2022-03-15', gender: 'Female', birthday: '1993-02-18', sssNo: '34-456', tinNo: '321-654', pagIbigNo: '1213-1695-8596', philhealthNo: '1120-2485-8688', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 15, personal: 5 }
@@ -33,11 +37,22 @@ export const initialEmployeesData = [
   { 
     id: 'EMP005', firstName: 'Grace', middleName: 'Anne', lastName: 'Field', name: 'Grace Anne Field', positionId: 1, isTeamLeader: false, email: 'grace.f@example.com', joiningDate: '2020-11-20', gender: 'Female', birthday: '1995-07-19', sssNo: '34-202', tinNo: '222-333', pagIbigNo: '1211-9050-5943', philhealthNo: '1908-9634-9159', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 15, vacation: 20, personal: 5 }
   },
+{ 
+    id: 'EMP006', firstName: 'Ethan', middleName: '', lastName: 'Hunt', name: 'Ethan Hunt', positionId: null, isTeamLeader: false, email: 'ethan.h@example.com', joiningDate: '2022-01-15', gender: 'Male', birthday: '1994-08-11', sssNo: '34-606', tinNo: '666-777', pagIbigNo: '1213-8482-9191', philhealthNo: '0808-1234-5678', status: 'Resigned', contactNumber: '9123456789', address: '456 Side St, Sometown, USA', resumeUrl: null, leaveCredits: { sick: 5, vacation: 8, personal: 2, paternity: 7 }
+  },
+  {
+    id: 'EMP007', firstName: 'Jack', middleName: '', lastName: 'Reacher', name: 'Jack Reacher', 
+    // --- UPDATED DATA ---
+    positionId: 5, 
+    isTeamLeader: false, email: 'jack.r@example.com', joiningDate: '2021-05-10', gender: 'Male', birthday: '1985-10-29', sssNo: '34-707', tinNo: '777-000', pagIbigNo: '1214-1234-1234', philhealthNo: '0809-9876-5432', status: 'Terminated', contactNumber: '9129876543', address: 'Unknown', resumeUrl: null, 
+    leaveCredits: { sick: 0, vacation: 3, personal: 0, paternity: 0 }
+  },
   { 
     id: 'EMP009', firstName: 'Ivy', middleName: '', lastName: 'Lee', name: 'Ivy Lee', positionId: 2, isTeamLeader: false, email: 'ivy.l@example.com', joiningDate: '2023-08-12', gender: 'Female', birthday: '2000-10-10', sssNo: '34-999', tinNo: '111-222', pagIbigNo: '1210-8451-2548', philhealthNo: '0902-5184-4185', status: 'Active', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 10, personal: 3 }
   },
   { 
-    id: 'EMP010', firstName: 'Frank', middleName: '', lastName: 'Black', name: 'Frank Black', positionId: null, isTeamLeader: false, email: 'frank.b@example.com', joiningDate: '2023-09-01', gender: 'Male', birthday: '1998-05-15', sssNo: '34-303', tinNo: '444-555', pagIbigNo: '1212-7582-7302', philhealthNo: '0820-1209-8037', status: 'Inactive', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, leaveCredits: { sick: 0, vacation: 0, personal: 0, paternity: 0 }
+    id: 'EMP010', firstName: 'Frank', middleName: '', lastName: 'Black', name: 'Frank Black', positionId: null, isTeamLeader: false, email: 'frank.b@example.com', joiningDate: '2023-09-01', gender: 'Male', birthday: '1998-05-15', sssNo: '34-303', tinNo: '444-555', pagIbigNo: '1212-7582-7302', philhealthNo: '0820-1209-8037', status: 'Resigned', contactNumber: '9123456789', address: '123 Main St, Anytown, USA', resumeUrl: null, 
+    leaveCredits: { sick: 2, vacation: 5, personal: 1, paternity: 0 }
   },
   { id: 'EMP101', firstName: 'Henry', middleName: '', lastName: 'Miller', name: 'Henry Miller', positionId: 4, isTeamLeader: true, email: 'henry.m@example.com', joiningDate: '2022-08-20', gender: 'Male', birthday: '1991-06-15', sssNo: '34-111', tinNo: '123-111', pagIbigNo: '1111-2222-3333', philhealthNo: '4444-5555-6666', status: 'Active', contactNumber: '9876543210', address: '456 Oak Ave, Sometown, USA', resumeUrl: null, leaveCredits: { sick: 10, vacation: 12, personal: 3, paternity: 4 }},
   { id: 'EMP102', firstName: 'Jack', middleName: 'Robert', lastName: 'Davis', name: 'Jack Robert Davis', positionId: 4, isTeamLeader: false, email: 'jack.d@example.com', joiningDate: '2023-02-18', gender: 'Male', birthday: '1998-09-22', sssNo: '34-222', tinNo: '123-222', pagIbigNo: '2222-3333-4444', philhealthNo: '5555-6666-7777', status: 'Active', contactNumber: '9876543211', address: '789 Pine St, Anothertown, USA', resumeUrl: null, leaveCredits: { sick: 8, vacation: 10, personal: 2, paternity: 4 }},
@@ -439,7 +454,24 @@ export const initialNotificationsData = [
 // PAYROLL DATA
 // ============================================================================
 
+// ============================================================================
+// PAYROLL DATA
+// ============================================================================
+
 export const initialPayrollsData = [
+  {
+    runId: 'RUN-2023-11-15',
+    cutOff: '2023-11-01 to 2023-11-15',
+    payrollType: 'Semi-monthly',
+    records: [
+      { 
+        payrollId: 'PAY005', empId: 'EMP001', employeeName: 'Alice Johnson', earnings: [{ description: 'Regular Pay', amount: 9000.00 }], deductions: { tax: 351, sss: 405, philhealth: 200, hdmf: 100 }, status: 'Paid'
+      },
+      { 
+        payrollId: 'PAY006', empId: 'EMP006', employeeName: 'Ethan Hunt', earnings: [{ description: 'Regular Pay', amount: 9250.00 }], deductions: { tax: 400, sss: 416.25, philhealth: 205, hdmf: 100 }, status: 'Paid'
+      }
+    ]
+  },
   {
     runId: 'RUN-2023-10-31',
     cutOff: '2023-10-16 to 2023-10-31',
@@ -453,6 +485,10 @@ export const initialPayrollsData = [
       },
       { payrollId: 'PAY101', empId: 'EMP101', employeeName: 'Henry Miller', earnings: [{amount: 9250}], deductions: {tax: 400}, status: 'Paid' },
       { payrollId: 'PAY102', empId: 'EMP102', employeeName: 'Jack Davis', earnings: [{amount: 9000}], deductions: {tax: 380}, status: 'Paid' },
+      // --- NEW PAYROLL RECORD FOR FRANK BLACK ---
+      { 
+        payrollId: 'PAY010', empId: 'EMP010', employeeName: 'Frank Black', period: 'Oct 16-31, 2023', paymentDate: '2023-11-05', payStartDate: '2023-10-16', payEndDate: '2023-10-31', earnings: [ { description: 'Regular Pay', hours: 88, amount: 9000.00 } ], deductions: { tax: 351.36, sss: 405, philhealth: 200, hdmf: 100 }, otherDeductions: [], absences: [], leaveBalances: { vacation: 5, sick: 2, personal: 1 }, status: 'Paid'
+      },
     ]
   },
   {
@@ -531,5 +567,95 @@ export const initialArchivedContributions = [
     columns: [ { key: 'no', label: 'No.' }, { key: 'philhealthNo', label: 'PhilHealth Number' }, { key: 'lastName', label: 'Last Name' }, { key: 'firstName', label: 'First Name' }, { key: 'middleName', label: 'Middle Name' }, { key: 'employeeContribution', label: 'EE Share' }, { key: 'employerContribution', label: 'ER Share' }, { key: 'totalContribution', label: 'Total' } ],
     rows: [ { no: 1, philhealthNo: '1120-2485-8688', lastName: 'Johnson', firstName: 'Alice', middleName: '', employeeContribution: 200, employerContribution: 200, totalContribution: 400 }, { no: 2, philhealthNo: '0825-3830-9814', lastName: 'Smith', firstName: 'Bob', middleName: '', employeeContribution: 220, employerContribution: 220, totalContribution: 440 } ],
     headerData: { 'Employer Name': 'Lapeco Group of Companies', 'Contribution Month': 'October 2023' }
+  }
+];
+
+// ============================================================================
+// RESIGNATION DATA (NEW)
+// ============================================================================
+
+export const initialResignationsData = [
+  {
+    id: 'RES001',
+    employeeId: 'EMP004',
+    employeeName: 'David Green',
+    position: 'Lifter',
+    submissionDate: createPastDate(10),
+    lastDayOfWork: new Date(new Date().setDate(new Date().getDate() + 20)).toISOString().split('T')[0],
+    effectiveDate: new Date(new Date(createPastDate(10)).setDate(new Date(createPastDate(10)).getDate() + 30)).toISOString().split('T')[0],
+    reason: 'I have received an offer for a position that I believe will further my career goals. Thank you for the opportunity.',
+    status: 'Pending',
+    hrComments: null,
+  },
+  {
+    id: 'RES002',
+    employeeId: 'EMP107',
+    employeeName: 'Olivia Thomas',
+    position: 'Picker',
+    submissionDate: createPastDate(45),
+    lastDayOfWork: createPastDate(15),
+    effectiveDate: createPastDate(15), 
+    reason: 'I am resigning due to personal reasons that require me to relocate. It has been a pleasure working here.',
+    status: 'Approved',
+    hrComments: 'Offboarding process initiated.',
+  },
+  {
+    id: 'RES003',
+    employeeId: 'EMP005',
+    employeeName: 'Grace Field',
+    position: 'HR Personnel',
+    submissionDate: createPastDate(2), // Submitted 2 days ago
+    lastDayOfWork: new Date(new Date().setDate(new Date().getDate() + 28)).toISOString().split('T')[0],
+    effectiveDate: new Date(new Date().setDate(new Date().getDate() + 28)).toISOString().split('T')[0],
+    reason: 'Moving to another country for family reasons. It has been a wonderful experience working with the team.',
+    status: 'Pending',
+    hrComments: null,
+  },
+  {
+    id: 'RES004',
+    employeeId: 'EMP006',
+    employeeName: 'Ethan Hunt',
+    position: 'Picker',
+    submissionDate: createPastDate(50),
+    lastDayOfWork: createPastDate(20),
+    effectiveDate: createPastDate(20),
+    reason: 'Resigning to pursue further education.',
+    status: 'Approved',
+    hrComments: 'Cleared for final pay processing.',
+  },
+  {
+    id: 'RES005',
+    employeeId: 'EMP009',
+    employeeName: 'Ivy Lee',
+    position: 'Packer',
+    submissionDate: createPastDate(5), // Submitted 5 days ago
+    lastDayOfWork: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0],
+    effectiveDate: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0], // Effective in 15 days
+    reason: 'Found a new opportunity closer to my home. Thank you for everything.',
+    status: 'Approved',
+    hrComments: 'Approved. Offboarding process will begin shortly.',
+  },
+  // --- NEW RECORD FOR FRANK BLACK ---
+  {
+    id: 'RES006',
+    employeeId: 'EMP010',
+    employeeName: 'Frank Black',
+    position: 'Packer',
+    submissionDate: createPastDate(60),
+    lastDayOfWork: createPastDate(30),
+    effectiveDate: createPastDate(30),
+    reason: 'Voluntary resignation to explore other opportunities.',
+    status: 'Approved',
+    hrComments: 'Employee has been cleared.',
+  },
+];
+
+export const initialTerminationData = [
+  {
+    id: 'TERM001',
+    employeeId: 'EMP007',
+    date: '2023-08-30',
+    reason: 'Job Abandonment',
+    comments: 'Employee did not report for work for 5 consecutive days without any official leave or notification.'
   }
 ];

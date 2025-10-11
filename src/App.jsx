@@ -1,5 +1,3 @@
-// src/App.jsx
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
@@ -40,15 +38,15 @@ import AccountSettingsPage from './components/pages/Account-Settings/AccountSett
 import ContributionsManagementPage from './components/pages/Contributions-Management/ContributionsManagementPage';
 import PredictiveAnalyticsPage from './components/pages/Predictive-Analytics/PredictiveAnalyticsPage';
 import LeaderboardsPage from './components/pages/Leaderboards/LeaderboardsPage';
+import MyResignationPage from './components/pages/My-Resignation/MyResignationPage';
+import ResignationManagementPage from './components/pages/Resignation-Management/ResignationManagementPage';
+import TerminatedEmployeesTab from './components/pages/Resignation-Management/TerminatedEmployeesTab';
 
-// Constants & Assets
 import { USER_ROLES } from './constants/roles';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-// Import all mock data from centralized file
 import * as mockData from './data/mockData';
 
-// Add evaluationDate to mock data
 const initialEvaluationsData = mockData.initialEvaluationsData.map((ev, index) => {
     const periodEndDate = new Date(ev.periodEnd);
     const evaluationDate = new Date(periodEndDate.setDate(periodEndDate.getDate() + (index % 2 === 0 ? 5 : 8)));
@@ -93,8 +91,38 @@ function AppContent() {
   const [payrolls, setPayrolls] = useState(mockData.initialPayrollsData);
   const [disciplinaryCases, setDisciplinaryCases] = useState(mockData.initialCasesData);
   const [userAccounts, setUserAccounts] = useState(mockData.initialUserAccounts);
+  const [resignations, setResignations] = useState(mockData.initialResignationsData);
+  const [terminations, setTerminations] = useState(mockData.initialTerminationData);
   const [theme, setTheme] = useState('light');
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  useEffect(() => {
+    const todayISO = new Date().toISOString().split('T')[0];
+
+    const employeeIdsToOffboard = new Set(
+        resignations
+            .filter(r => r.status === 'Approved' && r.effectiveDate <= todayISO)
+            .map(r => r.employeeId)
+    );
+
+    if (employeeIdsToOffboard.size === 0) {
+        return;
+    }
+
+    let needsUpdate = false;
+    const updatedEmployees = employees.map(emp => {
+        if (employeeIdsToOffboard.has(emp.id) && emp.status !== 'Resigned') {
+            needsUpdate = true;
+            return { ...emp, status: 'Resigned' };
+        }
+        return emp;
+    });
+
+    if (needsUpdate) {
+        setEmployees(updatedEmployees);
+        console.log(`Automatically offboarded ${Array.from(employeeIdsToOffboard).join(', ')}.`);
+    }
+  }, [resignations]);
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -285,7 +313,7 @@ function AppContent() {
                     return {
                         ...emp,
                         leaveCredits: {
-                            ...currentCredits, // Preserve existing credits not being updated
+                            ...currentCredits,
                             ...newCredits,
                         },
                     };
@@ -389,7 +417,7 @@ function AppContent() {
             isTeamLeader: false,
             imageUrl: null,
             status: 'Active',
-            leaveCredits: { sick: 10, vacation: 10, personal: 3 }, // Default leave credits for new hire
+            leaveCredits: { sick: 10, vacation: 10, personal: 3 }, 
         };
         setEmployees(prev => [newEmployee, ...prev]);
 
@@ -545,6 +573,106 @@ function AppContent() {
     deleteCase: (caseId) => {
       setDisciplinaryCases(prev => prev.filter(c => c.caseId !== caseId));
     },
+    // --- NEW RESIGNATION HANDLERS ---
+    submitResignation: (formData) => {
+        const submissionDate = new Date();
+        const effectiveDate = new Date(submissionDate);
+        effectiveDate.setDate(submissionDate.getDate() + 30);
+
+        const newResignation = {
+            id: `RES${Date.now().toString().slice(-4)}`,
+            ...formData,
+            submissionDate: submissionDate.toISOString().split('T')[0],
+            effectiveDate: effectiveDate.toISOString().split('T')[0],
+            status: 'Pending',
+            hrComments: null,
+        };
+        setResignations(prev => [newResignation, ...prev]);
+        showToast("Your resignation has been submitted successfully.");
+    },
+    updateResignationStatus: (resignationId, newStatus, comments) => {
+        let employeeIdToUpdate = null;
+        setResignations(prev => prev.map(res => {
+            if (res.id === resignationId) {
+                if (newStatus === 'Approved') {
+                    employeeIdToUpdate = res.employeeId;
+                }
+                return { ...res, status: newStatus, hrComments: comments };
+            }
+            return res;
+        }));
+
+        if (employeeIdToUpdate) {
+            setEmployees(prev => prev.map(emp => 
+                emp.id === employeeIdToUpdate ? { ...emp, status: 'Resigned' } : emp
+            ));
+        }
+
+        showToast(`Resignation has been ${newStatus.toLowerCase()}.`);
+    },
+
+    updateResignationEffectiveDate: (resignationId, newDate) => {
+        setResignations(prev => prev.map(res => 
+            res.id === resignationId 
+            ? { ...res, effectiveDate: newDate } 
+            : res
+        ));
+        showToast("Resignation effective date has been updated.");
+    },
+
+    terminateEmployee: (employeeId, details) => {
+        const newTerminationRecord = {
+            id: `TERM${Date.now().toString().slice(-4)}`,
+            employeeId,
+            ...details
+        };
+        setTerminations(prev => [newTerminationRecord, ...prev]);
+
+        setEmployees(prev => prev.map(emp =>
+            emp.id === employeeId
+            ? { ...emp, status: 'Terminated' } // Remove terminationDetails from here
+            : emp
+        ));
+        setUserAccounts(prev => prev.map(acc =>
+            acc.employeeId === employeeId
+            ? { ...acc, status: 'Deactivated' }
+            : acc
+        ));
+        showToast("Employee has been terminated and their account deactivated.", "info");
+    },
+
+    deleteResignationRequest: (resignationId) => {
+        setResignations(prev => prev.filter(r => r.id !== resignationId));
+        showToast("Resignation request has been deleted.", "info");
+    },
+
+    deleteAllResignedEmployees: () => {
+        const resignedEmployeeIds = new Set(
+            employees.filter(e => e.status === 'Resigned').map(e => e.id)
+        );
+        if (resignedEmployeeIds.size === 0) return;
+
+        setEmployees(prev => prev.filter(e => e.status !== 'Resigned'));
+        setUserAccounts(prev => prev.filter(acc => !resignedEmployeeIds.has(acc.employeeId)));
+        
+        showToast(`${resignedEmployeeIds.size} resigned employee records have been permanently deleted.`, 'info');
+    },
+
+    // --- NEW REHIRE HANDLER ---
+    rehireEmployee: (employeeId) => {
+        const today = new Date().toISOString().split('T')[0];
+        setEmployees(prev => prev.map(emp =>
+            emp.id === employeeId 
+            ? { ...emp, status: 'Active', joiningDate: today } 
+            : emp
+        ));
+        setUserAccounts(prev => prev.map(acc =>
+            acc.employeeId === employeeId
+            ? { ...acc, status: 'Active' }
+            : acc
+        ));
+        showToast("Employee has been successfully rehired and their account reactivated.");
+    },
     resetSelectedData: (resetConfig) => {
       if (resetConfig.employees) setEmployees(mockData.initialEmployeesData);
       if (resetConfig.positions) setPositions(mockData.initialPositionsData);
@@ -553,6 +681,8 @@ function AppContent() {
         setAttendanceLogs(mockData.initialAttendanceLogs);
       }
       if (resetConfig.leaveRequests) setLeaveRequests(mockData.initialLeaveRequests);
+      // --- NEW ---
+      if (resetConfig.resignations) setResignations(mockData.initialResignationsData);
       if (resetConfig.holidays) setHolidays(mockData.initialHolidaysData);
       if (resetConfig.training) {
         setTrainingPrograms(mockData.initialTrainingPrograms);
@@ -654,6 +784,15 @@ function AppContent() {
         <Route path="my-profile" element={<MyProfilePage currentUser={currentUser} userRole={userRole} positions={positions} employees={employees} handlers={appLevelHandlers} />} />
         <Route path="account-settings" element={<AccountSettingsPage currentUser={currentUser} userRole={userRole} handlers={appLevelHandlers} theme={theme} />} />
         
+        {/* --- NEW --- */}
+        <Route path="my-resignation" element={
+            <MyResignationPage
+                currentUser={currentUser}
+                resignations={resignations}
+                handlers={appLevelHandlers}
+            />
+        } />
+
         {userRole === USER_ROLES.HR_PERSONNEL && (
           <>
             <Route path="leaderboards" element={
@@ -733,6 +872,19 @@ function AppContent() {
               <Route path=":programId" element={<ProgramDetailPage employees={employees} trainingPrograms={trainingPrograms} enrollments={enrollments} handlers={appLevelHandlers} />} />
             </Route>
             <Route path="case-management" element={<CaseManagementPage cases={disciplinaryCases} employees={employees} handlers={appLevelHandlers} />} />
+            
+            {/* --- NEW --- */}
+            <Route path="resignation-management" element={
+                <ResignationManagementPage
+                    resignations={resignations}
+                    terminations={terminations}
+                    employees={employees}
+                    positions={positions}
+                    handlers={appLevelHandlers}
+                    payrolls={payrolls} // <-- Pass payrolls data
+                />
+            } />
+
             <Route path="recruitment" element={<RecruitmentPage jobOpenings={jobOpenings} applicants={applicants} positions={positions} handlers={appLevelHandlers} />} />
             <Route path="accounts" element={<AccountsPage userAccounts={userAccounts} employees={employees} handlers={appLevelHandlers} />} />
             <Route path="reports" element={
