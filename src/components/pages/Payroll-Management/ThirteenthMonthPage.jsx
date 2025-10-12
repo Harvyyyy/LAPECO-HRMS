@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+import useReportGenerator from '../../../hooks/useReportGenerator';
+import ReportPreviewModal from '../../modals/ReportPreviewModal';
 
 const formatCurrency = (value) => {
     if (typeof value !== 'number') return '0.00';
@@ -13,6 +15,9 @@ const ThirteenthMonthPage = ({ employees = [], payrolls = [] }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
     const [statuses, setStatuses] = useState({});
+
+    const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
+    const [showReportPreview, setShowReportPreview] = useState(false);
 
     const uniqueYears = useMemo(() => {
         const years = new Set(payrolls.map(run => run.cutOff.split(' to ')[0].substring(0, 4)));
@@ -130,6 +135,25 @@ const ThirteenthMonthPage = ({ employees = [], payrolls = [] }) => {
         saveAs(data, `13th_Month_Pay_Report_${year}.xlsx`);
     };
 
+    const handleGenerateReport = () => {
+        const reportData = {
+            year,
+            totalPayout: calculationResults.totalPayout,
+            eligibleCount: calculationResults.eligibleCount,
+            records: filteredAndSortedDetails.map(emp => ({ ...emp, status: statuses[emp.id] || 'Pending' })),
+        };
+        generateReport('thirteenth_month_pay', { year }, { thirteenthMonthPayData: reportData });
+        setShowReportPreview(true);
+    };
+
+    const handleClosePreview = () => {
+        setShowReportPreview(false);
+        if (pdfDataUri) {
+            URL.revokeObjectURL(pdfDataUri);
+        }
+        setPdfDataUri('');
+    };
+
     return (
         <div className="thirteenth-month-container">
             <div className="thirteenth-month-summary-grid">
@@ -163,9 +187,12 @@ const ThirteenthMonthPage = ({ employees = [], payrolls = [] }) => {
                             </select>
                         </div>
                     </div>
-                    <div className="controls-right">
+                    <div className="controls-right d-flex gap-2">
                         <button className="btn btn-sm btn-outline-secondary" onClick={handleExport} disabled={filteredAndSortedDetails.length === 0}>
-                            <i className="bi bi-download me-2"></i>Export
+                            <i className="bi bi-download me-2"></i>Export Excel
+                        </button>
+                        <button className="btn btn-sm btn-outline-secondary" onClick={handleGenerateReport} disabled={isLoading || filteredAndSortedDetails.length === 0}>
+                            <i className="bi bi-file-earmark-text-fill me-2"></i>Generate Report
                         </button>
                     </div>
                 </div>
@@ -224,6 +251,14 @@ const ThirteenthMonthPage = ({ employees = [], payrolls = [] }) => {
                     </table>
                 </div>
             </div>
+            {(isLoading || pdfDataUri) && (
+                <ReportPreviewModal
+                    show={showReportPreview}
+                    onClose={handleClosePreview}
+                    pdfDataUri={pdfDataUri}
+                    reportTitle={`13th Month Pay Report for ${year}`}
+                />
+            )}
         </div>
     );
 };

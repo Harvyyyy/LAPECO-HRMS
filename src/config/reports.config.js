@@ -68,6 +68,18 @@ export const reportsConfig = [
     ],
   },
 
+  // --- Offboarding ---
+  {
+    id: 'offboarding_summary',
+    title: 'Offboarding Summary Report',
+    description: 'Generates a summary of all resigned and terminated employees within a specified date range.',
+    icon: 'bi-person-x-fill',
+    category: reportCategories.EMPLOYEE_DATA,
+    parameters: [
+      { id: 'date_range_offboarding', type: 'date-range', labels: { start: 'Start Date', end: 'End Date' } },
+    ],
+  },
+
   // --- Analytics & Insights ---
   {
     id: 'predictive_analytics_summary',
@@ -119,6 +131,19 @@ export const reportsConfig = [
       { id: 'payroll_run_selector', type: 'payroll-run-selector', label: 'Select Payroll Run' }
     ],
   },
+
+    //13th Month Pay Report
+    {
+    id: 'thirteenth_month_pay',
+    title: '13th Month Pay Report',
+    description: 'Generates a detailed summary of the calculated 13th-month pay for all eligible employees for a selected year.',
+    icon: 'bi-calendar-heart-fill',
+    category: reportCategories.PAYROLL,
+    parameters: [
+      { id: 'year_selector', type: 'year-selector', label: 'Select Year' }
+    ],
+  },
+
   {
     id: 'contributions_summary',
     title: 'Contributions Summary by Pay Period',

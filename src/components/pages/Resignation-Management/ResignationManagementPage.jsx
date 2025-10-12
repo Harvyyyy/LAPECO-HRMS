@@ -8,7 +8,11 @@ import OffboardedEmployeesTab from './OffboardedEmployeesTab';
 import AddEditEmployeeModal from '../../modals/AddEditEmployeeModal';
 import FinalPayModal from '../../modals/FinalPayModal';
 import TerminatedEmployeesTab from './TerminatedEmployeesTab';
+import ReportConfigurationModal from '../../modals/ReportConfigurationModal';
+import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import { calculateFinalPay } from '../../../hooks/payrollUtils';
+import { reportsConfig } from '../../../config/reports.config';
+import useReportGenerator from '../../../hooks/useReportGenerator';
 import './ResignationManagementPage.css';
 
 const STATUS_ORDER = { 'Pending': 1, 'Approved': 2, 'Declined': 3 };
@@ -29,6 +33,12 @@ const ResignationManagementPage = ({ resignations, terminations, employees, posi
     const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
     const [viewingEmployee, setViewingEmployee] = useState(null);
     const [finalPayDetails, setFinalPayDetails] = useState(null);
+
+    // Report states
+    const [showReportConfigModal, setShowReportConfigModal] = useState(false);
+    const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
+    const [showReportPreview, setShowReportPreview] = useState(false);
+    const offboardingReportConfig = useMemo(() => reportsConfig.find(r => r.id === 'offboarding_summary'), []);
 
     const employeeMap = useMemo(() => new Map(employees.map(e => [e.id, e])), [employees]);
     const positionMap = useMemo(() => new Map(positions.map(p => [p.id, p.title])), [positions]);
@@ -165,10 +175,33 @@ const ResignationManagementPage = ({ resignations, terminations, employees, posi
         }
     };
 
+    const handleRunReport = (reportId, params) => {
+        generateReport(
+            reportId, 
+            params, 
+            { resignations, terminations, employees }
+        );
+        setShowReportConfigModal(false);
+        setShowReportPreview(true);
+    };
+
+    const handleClosePreview = () => {
+        setShowReportPreview(false);
+        if (pdfDataUri) {
+            URL.revokeObjectURL(pdfDataUri);
+        }
+        setPdfDataUri('');
+    };
+
     return (
         <div className="container-fluid p-0 page-module-container">
-            <header className="page-header mb-4">
+            <header className="page-header d-flex justify-content-between align-items-center mb-4">
                 <h1 className="page-main-title">Resignation Management</h1>
+                <div className="d-flex gap-2">
+                    <button className="btn btn-outline-secondary" onClick={() => setShowReportConfigModal(true)}>
+                        <i className="bi bi-file-earmark-pdf-fill me-2"></i>Generate Report
+                    </button>
+                </div>
             </header>
 
             <ul className="nav nav-tabs resignation-tabs">
@@ -280,6 +313,22 @@ const ResignationManagementPage = ({ resignations, terminations, employees, posi
             </div>
 
             {/* Modals */}
+            <ReportConfigurationModal
+                show={showReportConfigModal}
+                onClose={() => setShowReportConfigModal(false)}
+                onRunReport={handleRunReport}
+                reportConfig={offboardingReportConfig}
+            />
+
+            {(isLoading || pdfDataUri) && (
+                <ReportPreviewModal
+                    show={showReportPreview}
+                    onClose={handleClosePreview}
+                    pdfDataUri={pdfDataUri}
+                    reportTitle={offboardingReportConfig?.title || "Report"}
+                />
+            )}
+
             {requestToAction && (
                 <ConfirmationModal
                     show={!!requestToAction}

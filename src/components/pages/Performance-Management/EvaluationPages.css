@@ -1,6 +1,11 @@
+/* src/components/pages/Performance-Management/EvaluationPages.css */
+
+/* ==========================================================================
+   Main Evaluation Form Page Layout
+   ========================================================================== */
 .evaluation-form-page {
     background-color: var(--bg-secondary);
-    padding-bottom: 100px;
+    padding-bottom: 100px; /* Space for the sticky footer */
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -105,18 +110,21 @@
 /* ==========================================================================
    Rating Scale Row (Card) & Star Rating
    ========================================================================== */
-.rating-scale-row.card {
+.rating-scale-row {
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.75rem;
     align-items: center;
     padding: 1rem 1.25rem;
-    border: 1px solid var(--border-color);
-    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.rating-scale-row:last-of-type {
+    border-bottom: none;
 }
 
 @media (min-width: 768px) {
-    .rating-scale-row.card {
+    .rating-scale-row {
         grid-template-columns: minmax(0, 1fr) 200px 300px;
         gap: 1.5rem;
     }
@@ -167,4 +175,18 @@
 
 .star-rating i.bi-star-fill {
     color: var(--warning-color);
+}
+
+/* --- Dark Mode Contrast Fixes --- */
+.dark-theme .evaluation-form-page .card-header {
+    background-color: var(--bg-tertiary);
+}
+
+.dark-theme .rating-scale-row {
+    border-bottom-color: var(--border-color);
+}
+
+.dark-theme .star-rating i,
+.dark-theme .star-rating i:hover ~ i {
+    color: var(--border-color);
 }

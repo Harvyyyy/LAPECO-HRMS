@@ -1,4 +1,4 @@
-// src/hooks/useReportGenerator.js (UPDATED)
+// src/hooks/useReportGenerator.js
 
 import { useState } from 'react';
 import { createPdfDoc, addHeader } from '../utils/pdfUtils';

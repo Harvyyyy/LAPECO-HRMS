@@ -65,7 +65,7 @@
 
 .payroll-run-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
 }
 
@@ -105,42 +105,73 @@
     font-family: monospace;
 }
 .payroll-run-card .card-body {
-    padding: 1rem;
+    padding: 1rem 1.25rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    align-items: center;
 }
-.stats-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+.body-column.financials {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    border-right: 1px solid var(--border-color);
+    padding-right: 1.5rem;
 }
-.stats-list .stat-item {
+.financial-item {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
 }
-.stats-list dt {
+.financial-label {
     font-size: 0.85rem;
     color: var(--text-secondary);
 }
-.stats-list dd {
-    font-size: 0.9rem;
+.financial-value {
     font-weight: 500;
     color: var(--text-primary);
-    margin: 0;
 }
-.stats-list .net-payout {
-    font-size: 1.2rem;
+.net-payout {
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.5rem;
+    margin-top: 0.25rem;
+}
+.net-payout .financial-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+.net-payout .financial-value {
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--app-success-color);
+}
+.body-column.details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.detail-item {
+    display: flex;
+    flex-direction: column;
+}
+.detail-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 0.1rem;
+}
+.detail-value {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
 }
 .payroll-run-card .card-footer {
     padding: 0.75rem 1rem;
     background-color: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
     gap: 0.5rem;
 }
 

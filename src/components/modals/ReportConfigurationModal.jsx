@@ -9,6 +9,13 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
   const optionalDateRangeParam = useMemo(() => 
     reportConfig?.parameters?.find(p => p.type === 'date-range' && p.optional)
   , [reportConfig]);
+  
+  const availableYears = useMemo(() => {
+    if (!payrolls) return [new Date().getFullYear()];
+    const years = new Set(payrolls.map(run => new Date(run.cutOff.split(' to ')[0]).getFullYear()));
+    years.add(new Date().getFullYear());
+    return Array.from(years).sort((a, b) => b - a);
+  }, [payrolls]);
 
   useEffect(() => {
     if (show && reportConfig) {
@@ -28,6 +35,9 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
         }
         if (param.type === 'payroll-run-selector') {
           acc.runId = null;
+        }
+        if (param.type === 'year-selector') {
+          acc.year = new Date().getFullYear();
         }
         return acc;
       }, {});
@@ -65,7 +75,7 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
     e.preventDefault();
     setError('');
 
-    // Date Range Validation
+    // Validation
     const dateParam = reportConfig.parameters.find(p => p.type === 'date-range');
     if (dateParam && dateRangeMode === 'dateRange') {
       if (!params.startDate || (dateParam.labels.end && !params.endDate)) {
@@ -77,8 +87,13 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
         return;
       }
     }
+    
+    const yearParam = reportConfig.parameters.find(p => p.type === 'year-selector');
+    if (yearParam && !params.year) {
+        setError('A year must be selected.');
+        return;
+    }
 
-    // As-Of Date Validation
     const asOfDateParam = reportConfig.parameters.find(p => p.type === 'as-of-date');
     if(asOfDateParam && !params.asOfDate) {
         setError('An "As-Of" date is required.');
@@ -99,7 +114,7 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
       switch (param.type) {
         case 'date-range':
           return (
-            <div key={param.id}>
+            <div key={param.id} className="mb-3">
               {param.optional ? (
                 <>
                   <div className="form-check mb-2">
@@ -134,7 +149,7 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
         
         case 'as-of-date':
           return (
-            <div key={param.id}>
+            <div key={param.id} className="mb-3">
               <label htmlFor="asOfDate" className="form-label">{param.label}</label>
               <input 
                 type="date" 
@@ -149,7 +164,7 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
 
         case 'program-selector':
           return (
-            <div key={param.id}>
+            <div key={param.id} className="mb-3">
               <label htmlFor="programId" className="form-label">{param.label}</label>
               <Select id="programId" options={programOptions} onChange={(option) => handleParamChange('programId', option ? option.value : null)} isClearable className="react-select-container" classNamePrefix="react-select" required />
             </div>
@@ -157,9 +172,27 @@ const ReportConfigurationModal = ({ show, onClose, onRunReport, reportConfig, tr
         
         case 'payroll-run-selector':
           return (
-            <div key={param.id}>
+            <div key={param.id} className="mb-3">
               <label htmlFor="runId" className="form-label">{param.label}</label>
               <Select id="runId" options={payrollRunOptions} onChange={(option) => handleParamChange('runId', option ? option.value : null)} isClearable placeholder="Select a generated payroll run..." className="react-select-container" classNamePrefix="react-select" required />
+            </div>
+          );
+        
+        case 'year-selector':
+          return (
+            <div key={param.id} className="mb-3">
+              <label htmlFor="year" className="form-label">{param.label}</label>
+              <select
+                id="year"
+                className="form-select"
+                value={params.year || ''}
+                onChange={(e) => handleParamChange('year', e.target.value)}
+                required
+              >
+                {availableYears.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
             </div>
           );
 
