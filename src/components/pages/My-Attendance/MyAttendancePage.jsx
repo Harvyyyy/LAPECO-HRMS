@@ -43,6 +43,7 @@ const MyAttendancePage = ({ currentUser, allSchedules, attendanceLogs }) => {
       const today = new Date(); today.setHours(0,0,0,0);
       const scheduleDate = new Date(schedule.date); scheduleDate.setHours(0,0,0,0);
 
+      // --- FIX: Initialize status to 'Scheduled' ---
       let status = 'Scheduled';
       let statusClass = 'scheduled';
 
@@ -88,7 +89,7 @@ const MyAttendancePage = ({ currentUser, allSchedules, attendanceLogs }) => {
     const year = currentDate.getFullYear();
     
     const recordsThisMonth = myAttendanceData.filter(d => {
-      const recordDate = new Date(d.date);
+      const recordDate = new Date(d.date + 'T00:00:00');
       return recordDate.getMonth() === month && recordDate.getFullYear() === year;
     });
 
@@ -102,10 +103,12 @@ const MyAttendancePage = ({ currentUser, allSchedules, attendanceLogs }) => {
   
   const recordsForSelectedMonth = useMemo(() => (
       myAttendanceData.filter(d => {
-        const recordDate = new Date(d.date);
+        const recordDate = new Date(d.date + 'T00:00:00');
         return recordDate.getMonth() === currentDate.getMonth() && recordDate.getFullYear() === currentDate.getFullYear();
       }).sort((a,b) => new Date(b.date) - new Date(a.date))
   ), [currentDate, myAttendanceData]);
+  
+  const displayedMonthYear = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
   return (
     <div className="container-fluid p-0 page-module-container">
@@ -114,10 +117,22 @@ const MyAttendancePage = ({ currentUser, allSchedules, attendanceLogs }) => {
       </header>
 
       <div className="my-attendance-stats-bar">
-        <div className="stat-card"><span className="stat-value">{monthlyStats.scheduled}</span><span className="stat-label">Days Scheduled</span></div>
-        <div className="stat-card"><span className="stat-value text-success">{monthlyStats.worked}</span><span className="stat-label">Days Worked</span></div>
-        <div className="stat-card"><span className="stat-value text-warning">{monthlyStats.late}</span><span className="stat-label">Late Arrivals</span></div>
-        <div className="stat-card"><span className="stat-value text-danger">{monthlyStats.absent}</span><span className="stat-label">Days Absent</span></div>
+        <div className="stat-card">
+          <span className="stat-value">{monthlyStats.scheduled}</span>
+          <span className="stat-label">Days Scheduled in {displayedMonthYear}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value text-success">{monthlyStats.worked}</span>
+          <span className="stat-label">Days Worked</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value text-warning">{monthlyStats.late}</span>
+          <span className="stat-label">Late Arrivals</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value text-danger">{monthlyStats.absent}</span>
+          <span className="stat-label">Days Absent</span>
+        </div>
       </div>
       
       <div className="my-attendance-grid">
@@ -133,7 +148,7 @@ const MyAttendancePage = ({ currentUser, allSchedules, attendanceLogs }) => {
         </div>
         <div className="log-container card">
           <div className="card-header">
-            <h6 className="mb-0">Daily Logs for {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h6>
+            <h6 className="mb-0">Daily Logs for {displayedMonthYear}</h6>
           </div>
           <div className="table-responsive">
             <table className="table data-table mb-0">
@@ -156,7 +171,13 @@ const MyAttendancePage = ({ currentUser, allSchedules, attendanceLogs }) => {
                     <td>{log.hoursWorked}</td>
                   </tr>
                 )) : (
-                  <tr><td colSpan="5" className="text-center p-4 text-muted">No schedule found for this month.</td></tr>
+                  <tr>
+                    <td colSpan="5">
+                      <div className="text-center p-4 text-muted">
+                        No schedule found for this month.
+                      </div>
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>

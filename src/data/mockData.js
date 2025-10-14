@@ -6,6 +6,14 @@ const createPastDate = (daysAgo) => {
   return date.toISOString().split('T')[0];
 };
 
+// --- NEW HELPER FUNCTION ---
+const createFutureDate = (daysAhead) => {
+  const date = new Date();
+  date.setDate(date.getDate() + daysAhead);
+  return date.toISOString().split('T')[0];
+};
+
+
 // Utility function for creating schedule entries
 const createScheduleEntry = (id, empId, date, startTime = '08:00', endTime = '17:00') => ({
   scheduleId: id, 
@@ -96,7 +104,17 @@ export const initialPositionsData = [
 // SCHEDULES DATA
 // ============================================================================
 
+// --- NEW: Future schedule data for EMP001 to test My Attendance page ---
+const futureSchedulesForAlice = [
+  { scheduleId: 501, empId: 'EMP001', date: createFutureDate(1), start_time: '08:00', end_time: '17:00' },
+  { scheduleId: 502, empId: 'EMP001', date: createFutureDate(2), start_time: '08:00', end_time: '17:00' },
+  { scheduleId: 503, empId: 'EMP001', date: createFutureDate(3), start_time: '08:00', end_time: '17:00' },
+  { scheduleId: 504, empId: 'EMP001', date: createFutureDate(4), start_time: '08:00', end_time: '17:00' },
+  { scheduleId: 505, empId: 'EMP001', date: createFutureDate(5), start_time: '08:00', end_time: '17:00' },
+];
+
 export const initialSchedulesData = [
+  ...futureSchedulesForAlice, // --- ADDED NEW DATA HERE ---
   createScheduleEntry(1, 'EMP001', 0),
   createScheduleEntry(2, 'EMP002', 0, '09:00', '18:00'),
   createScheduleEntry(3, 'EMP003', 0, '09:00', '18:00'),
