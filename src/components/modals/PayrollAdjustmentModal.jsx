@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { addDays } from 'date-fns';
 import './PayrollAdjustmentModal.css';
 import ReportPreviewModal from './ReportPreviewModal';
 import useReportGenerator from '../../hooks/useReportGenerator';
@@ -47,7 +48,7 @@ const EditableStatutoryField = ({ label, fieldKey, value, originalValue, onChang
 );
 
 
-const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, payrollData, employeeDetails, positions, allLeaveRequests, employees }) => {
+const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, payrollData, employeeDetails, positions, allLeaveRequests, employees, theme }) => {
   const [activeTab, setActiveTab] = useState('summary');
   const [status, setStatus] = useState('');
   const [earnings, setEarnings] = useState([]);
@@ -57,7 +58,7 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
   const [statutoryDeductions, setStatutoryDeductions] = useState({});
   
   const [showPayslipPreview, setShowPayslipPreview] = useState(false);
-  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
+  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator(theme);
 
   const position = useMemo(() => {
     if (!employeeDetails || !positions) return null;
@@ -72,15 +73,15 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
         setAbsences(payrollData.absences || []);
         setStatutoryDeductions(payrollData.deductions || {});
         
-        const existingEarnings = new Set((payrollData.earnings || []).map(e => e.description));
-        const combinedEarnings = defaultEarnings.map(defaultItem => {
+        const defaultEarningsCopy = JSON.parse(JSON.stringify(defaultEarnings));
+
+        const combinedEarnings = defaultEarningsCopy.map(defaultItem => {
             const foundEarning = (payrollData.earnings || []).find(pde => defaultItem.description.toLowerCase().includes(pde.description.toLowerCase().replace(' pay', '')));
             return foundEarning ? { ...defaultItem, ...foundEarning, description: defaultItem.description } : { ...defaultItem };
         });
 
-        // Add any non-default earnings from the data
         (payrollData.earnings || []).forEach(earning => {
-            if (!defaultEarnings.some(de => de.description.toLowerCase().includes(earning.description.toLowerCase().replace(' pay', '')))) {
+            if (!defaultEarningsCopy.some(de => de.description.toLowerCase().includes(earning.description.toLowerCase().replace(' pay', '')))) {
                 combinedEarnings.push({ ...earning, isNew: true });
             }
         });
@@ -126,12 +127,15 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
       const dailyRate = position.hourlyRate * 8;
       const excusedAbsences = absences.filter(a => a.description === 'Excused').length;
       if (excusedAbsences === 0) return { breakdown: [], total: 0 };
-      let tempBalances = { ...leaveBalances };
+      
+      let tempVacation = leaveBalances.vacation.remaining;
+      let tempPersonal = leaveBalances.personal.remaining;
+      let tempSick = leaveBalances.sick.remaining;
+      
       let breakdown = [];
       let daysToPay = excusedAbsences;
-      const consumptionOrder = ['vacation', 'personal', 'sick'];
-      for (const type of consumptionOrder) {
-          const available = tempBalances[type].remaining;
+      
+      const consumeLeave = (type, available) => {
           if (daysToPay > 0 && available > 0) {
               const daysConsumed = Math.min(daysToPay, available);
               breakdown.push({
@@ -141,7 +145,12 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
               });
               daysToPay -= daysConsumed;
           }
-      }
+      };
+      
+      consumeLeave('vacation', tempVacation);
+      consumeLeave('personal', tempPersonal);
+      consumeLeave('sick', tempSick);
+
       const total = breakdown.reduce((sum, item) => sum + item.amount, 0);
       return { breakdown, total };
   }, [absences, leaveBalances, position]);
@@ -213,17 +222,31 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
   
   const handleGeneratePayslip = async () => {
     const fullEmployeeDetails = {
-      ...employees.find(e => e.id === payrollData.empId),
+      ...(employees.find(e => e.id === payrollData.empId) || {}),
       ...employeeDetails,
       positionTitle: position ? position.title : 'Unassigned'
     };
+    
+    // Derive missing date fields from the cutOff string if they don't exist
+    const [start, end] = payrollData.cutOff.split(' to ');
+    const calculatedPaymentDate = addDays(new Date(end), 5).toISOString().split('T')[0];
 
     const currentPayslipData = { 
       ...payrollData,
       earnings: earnings,
       otherDeductions: otherDeductions,
       absences: absences,
-      deductions: statutoryDeductions
+      deductions: statutoryDeductions,
+      // Ensure date fields exist, falling back to derived values
+      payStartDate: payrollData.payStartDate ?? start,
+      payEndDate: payrollData.payEndDate ?? end,
+      paymentDate: payrollData.paymentDate ?? calculatedPaymentDate,
+      period: payrollData.period ?? payrollData.cutOff,
+      leaveBalances: {
+          vacation: leaveBalances.vacation.total,
+          sick: leaveBalances.sick.total,
+          personal: leaveBalances.personal.total
+      },
     };
     
     await generateReport('payslip', {}, { payslipData: currentPayslipData, employeeDetails: fullEmployeeDetails });
@@ -276,191 +299,191 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
                 <li className="nav-item"><button className={`nav-link ${activeTab === 'leave' ? 'active' : ''}`} onClick={() => setActiveTab('leave')}>Leave Balances</button></li>
                 <li className="nav-item"><button className={`nav-link ${activeTab === 'info' ? 'active' : ''}`} onClick={() => setActiveTab('info')}>Employee Info</button></li>
               </ul>
-              <div className="tab-content">
-                {activeTab === 'summary' && <div className="summary-section">
-                  <div className="summary-row"><span className="label">Total Gross Earnings</span><span className="value value-positive">₱{formatCurrency(totals.totalGrossPay)}</span></div>
-                  <div className="summary-row"><span className="label">Total Deductions</span><span className="value value-negative">- ₱{formatCurrency(totals.totalDeductions)}</span></div>
-                  <div className="summary-row net-pay"><span className="label">Net Pay</span><span className="value">₱{formatCurrency(totals.netPay)}</span></div>
-                </div>}
+<div className="tab-content">
+  {activeTab === 'summary' && <div className="summary-section">
+    <div className="summary-row"><span className="label">Total Gross Earnings</span><span className="value value-positive">₱{formatCurrency(totals.totalGrossPay)}</span></div>
+    <div className="summary-row"><span className="label">Total Deductions</span><span className="value value-negative">- ₱{formatCurrency(totals.totalDeductions)}</span></div>
+    <div className="summary-row net-pay"><span className="label">Net Pay</span><span className="value">₱{formatCurrency(totals.netPay)}</span></div>
+  </div>}
 
-                {activeTab === 'earnings' && (
-                  <div>
-                    <div role="grid" className="earnings-grid">
-                      <div role="row" className="grid-header">
-                        <div role="columnheader">Description</div>
-                        <div role="columnheader" className="text-center">Hours</div>
-                        <div role="columnheader" className="text-end">Amount (₱)</div>
-                        <div role="columnheader" className="action-col-header"></div>
+  {activeTab === 'earnings' && (
+    <div>
+      <div role="grid" className="earnings-grid">
+        <div role="row" className="grid-header">
+          <div role="columnheader">Description</div>
+          <div role="columnheader" className="text-center">Hours</div>
+          <div role="columnheader" className="text-end">Amount (₱)</div>
+          <div role="columnheader" className="action-col-header"></div>
+        </div>
+        {earnings.map((item, index) => (
+            <div role="row" className="grid-row" key={item.tempId || index}>
+                <div role="gridcell">
+                  {item.isNew ? (
+                      <select className="form-select form-select-sm" value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value, 'earnings')}>
+                          {ADDITIONAL_EARNING_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+                      </select>
+                  ) : (
+                      <input type="text" className="form-control form-control-inline" value={item.description} readOnly disabled />
+                  )}
+                </div>
+                <div role="gridcell">
+                  <input 
+                    type={typeof item.hours === 'number' ? 'number' : 'text'} 
+                    className="form-control form-control-inline text-center" 
+                    value={item.hours} 
+                    onChange={(e) => handleItemChange(index, 'hours', e.target.value, 'earnings')} 
+                    readOnly={typeof item.hours !== 'number'} 
+                  />
+                </div>
+                <div role="gridcell">
+                  <input 
+                    type="number" step="0.01" className="form-control form-control-inline text-end" 
+                    value={item.amount} onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'earnings')} 
+                  />
+                </div>
+                <div role="gridcell" className="text-center">
+                  {item.isNew && (
+                      <button type="button" className="btn btn-sm btn-remove-row" onClick={() => removeItem(index, 'earnings')} title="Remove Earning"><i className="bi bi-x"></i></button>
+                  )}
+                </div>
+            </div>
+        ))}
+      </div>
+      <button type="button" className="btn btn-sm btn-outline-secondary mt-2" onClick={() => addItem('earnings')}><i className="bi bi-plus-lg me-1"></i> Add Earning</button>
+    </div>
+  )}
+
+  {activeTab === 'deductions' && (
+    <div className="deductions-tab-grid">
+      <div className="deductions-column">
+        <h6 className="form-grid-title"><i className="bi bi-shield-check me-2"></i>Statutory Deductions</h6>
+        <p className="text-muted small">Override the system-calculated values if necessary. The original calculation is shown for reference.</p>
+        <div className="form-grid">
+          <EditableStatutoryField label="Withholding Tax" fieldKey="tax" value={statutoryDeductions.tax} originalValue={payrollData.deductions.tax} onChange={handleStatutoryChange} />
+          <EditableStatutoryField label="SSS Contribution" fieldKey="sss" value={statutoryDeductions.sss} originalValue={payrollData.deductions.sss} onChange={handleStatutoryChange} />
+          <EditableStatutoryField label="PhilHealth Contribution" fieldKey="philhealth" value={statutoryDeductions.philhealth} originalValue={payrollData.deductions.philhealth} onChange={handleStatutoryChange} />
+          <EditableStatutoryField label="Pag-IBIG Contribution" fieldKey="hdmf" value={statutoryDeductions.hdmf} originalValue={payrollData.deductions.hdmf} onChange={handleStatutoryChange} />
+        </div>
+      </div>
+      <div className="deductions-column">
+         <h6 className="form-grid-title"><i className="bi bi-wallet2 me-2"></i>Other Deductions / Repayments</h6>
+         <div className="deduction-list">
+           {otherDeductions.map((item, index) => {
+              const isPredefined = OTHER_DEDUCTION_TYPES.includes(item.description);
+              return (
+                  <div key={index} className="deduction-item-row">
+                      <select 
+                          className="form-select form-select-sm" 
+                          value={item.description}
+                          onChange={(e) => handleItemChange(index, 'description', e.target.value, 'otherDeductions')}
+                      >
+                          {OTHER_DEDUCTION_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+                          {!isPredefined && item.description && (
+                              <option value={item.description} disabled>{item.description} (custom)</option>
+                          )}
+                      </select>
+                      <div className="input-group input-group-sm">
+                          <span className="input-group-text">₱</span>
+                          <input type="number" className="form-control text-end" placeholder="0.00" value={item.amount} onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'otherDeductions')} />
                       </div>
-                      {earnings.map((item, index) => (
-                          <div role="row" className="grid-row" key={item.tempId || index}>
-                              <div role="gridcell">
-                                {item.isNew ? (
-                                    <select className="form-select form-select-sm" value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value, 'earnings')}>
-                                        {ADDITIONAL_EARNING_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
-                                    </select>
-                                ) : (
-                                    <input type="text" className="form-control form-control-inline" value={item.description} readOnly disabled />
-                                )}
-                              </div>
-                              <div role="gridcell">
-                                <input 
-                                  type={typeof item.hours === 'number' ? 'number' : 'text'} 
-                                  className="form-control form-control-inline text-center" 
-                                  value={item.hours} 
-                                  onChange={(e) => handleItemChange(index, 'hours', e.target.value, 'earnings')} 
-                                  readOnly={typeof item.hours !== 'number'} 
-                                />
-                              </div>
-                              <div role="gridcell">
-                                <input 
-                                  type="number" step="0.01" className="form-control form-control-inline text-end" 
-                                  value={item.amount} onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'earnings')} 
-                                />
-                              </div>
-                              <div role="gridcell" className="text-center">
-                                {item.isNew && (
-                                    <button className="btn btn-sm btn-remove-row" onClick={() => removeItem(index, 'earnings')} title="Remove Earning"><i className="bi bi-x"></i></button>
-                                )}
-                              </div>
-                          </div>
-                      ))}
-                    </div>
-                    <button className="btn btn-sm btn-outline-secondary mt-2" onClick={() => addItem('earnings')}><i className="bi bi-plus-lg me-1"></i> Add Earning</button>
+                      <button type="button" className="btn btn-sm btn-remove-row" onClick={() => removeItem(index, 'otherDeductions')} title="Remove Deduction"><i className="bi bi-x"></i></button>
                   </div>
-                )}
+              )
+           })}
+         </div>
+         <button type="button" className="btn btn-sm btn-outline-secondary mt-2" onClick={() => addItem('otherDeductions')}><i className="bi bi-plus-lg me-1"></i> Add Deduction</button>
+      </div>
+    </div>
+  )}
+  
+  {activeTab === 'absences' && (
+    <div className="p-2">
+      <p className="text-muted small">The following absences were automatically detected. You may change the description if an absence was excused (e.g., due to an approved leave).</p>
+      {absences.length > 0 ? (
+          <table className="table table-sm table-striped mt-3">
+              <thead><tr><th>Description</th><th>Date</th></tr></thead>
+              <tbody>
+                  {absences.map((item, index) => (
+                  <tr key={index}>
+                      <td>
+                        <select className="form-select form-select-sm" value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value, 'absences')}>
+                          <option value="Unexcused">Unexcused</option><option value="Excused">Excused</option>
+                        </select>
+                      </td>
+                      <td>{new Date(item.startDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                  </tr>
+                  ))}
+              </tbody>
+              <tfoot>
+                  <tr className="table-light"><th className="text-end fw-bold">Total Absences:</th><th className="fw-bold">{absences.reduce((acc, curr) => acc + (curr.totalDays || 0), 0)} Day(s)</th></tr>
+              </tfoot>
+          </table>
+      ) : (
+          <div className="text-center p-5 bg-light rounded mt-3">
+              <i className="bi bi-check-circle-fill fs-1 text-success mb-3 d-block"></i>
+              <h5 className="text-muted">No Absences Recorded</h5>
+              <p className="text-muted">The employee had perfect attendance for all scheduled workdays in this period.</p>
+          </div>
+      )}
+    </div>
+  )}
 
-                {activeTab === 'deductions' && (
-                  <div className="deductions-tab-grid">
-                    <div className="deductions-column">
-                      <h6 className="form-grid-title"><i className="bi bi-shield-check me-2"></i>Statutory Deductions</h6>
-                      <p className="text-muted small">Override the system-calculated values if necessary. The original calculation is shown for reference.</p>
-                      <div className="form-grid">
-                        <EditableStatutoryField label="Withholding Tax" fieldKey="tax" value={statutoryDeductions.tax} originalValue={payrollData.deductions.tax} onChange={handleStatutoryChange} />
-                        <EditableStatutoryField label="SSS Contribution" fieldKey="sss" value={statutoryDeductions.sss} originalValue={payrollData.deductions.sss} onChange={handleStatutoryChange} />
-                        <EditableStatutoryField label="PhilHealth Contribution" fieldKey="philhealth" value={statutoryDeductions.philhealth} originalValue={payrollData.deductions.philhealth} onChange={handleStatutoryChange} />
-                        <EditableStatutoryField label="Pag-IBIG Contribution" fieldKey="hdmf" value={statutoryDeductions.hdmf} originalValue={payrollData.deductions.hdmf} onChange={handleStatutoryChange} />
-                      </div>
-                    </div>
-                    <div className="deductions-column">
-                       <h6 className="form-grid-title"><i className="bi bi-wallet2 me-2"></i>Other Deductions / Repayments</h6>
-                       <div className="deduction-list">
-                         {otherDeductions.map((item, index) => {
-                            const isPredefined = OTHER_DEDUCTION_TYPES.includes(item.description);
-                            return (
-                                <div key={index} className="deduction-item-row">
-                                    <select 
-                                        className="form-select form-select-sm" 
-                                        value={item.description}
-                                        onChange={(e) => handleItemChange(index, 'description', e.target.value, 'otherDeductions')}
-                                    >
-                                        {OTHER_DEDUCTION_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
-                                        {!isPredefined && item.description && (
-                                            <option value={item.description} disabled>{item.description} (custom)</option>
-                                        )}
-                                    </select>
-                                    <div className="input-group input-group-sm">
-                                        <span className="input-group-text">₱</span>
-                                        <input type="number" className="form-control text-end" placeholder="0.00" value={item.amount} onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'otherDeductions')} />
-                                    </div>
-                                    <button className="btn btn-sm btn-remove-row" onClick={() => removeItem(index, 'otherDeductions')} title="Remove Deduction"><i className="bi bi-x"></i></button>
-                                </div>
-                            )
-                         })}
-                       </div>
-                       <button className="btn btn-sm btn-outline-secondary mt-2" onClick={() => addItem('otherDeductions')}><i className="bi bi-plus-lg me-1"></i> Add Deduction</button>
-                    </div>
+  {activeTab === 'leave' && (
+    <div className="p-3">
+      <div className="leave-balances-grid">
+          <div>
+              <h6 className="form-grid-title">Current Leave Balances (Year-to-Date)</h6>
+              <p className="text-muted small">This is the employee's total remaining leave for the year.</p>
+              <LeaveBalanceDisplay label="Vacation Leave" balanceData={leaveBalances.vacation} />
+              <LeaveBalanceDisplay label="Sick Leave" balanceData={leaveBalances.sick} />
+              <LeaveBalanceDisplay label="Personal Leave" balanceData={leaveBalances.personal} />
+          </div>
+          <div className="leave-earnings-breakdown">
+              <h6 className="form-grid-title">Leave Earnings Breakdown (This Pay Period)</h6>
+              <p className="text-muted small">Calculated pay for any excused absences in this period, based on available leave credits.</p>
+              {leaveEarningsBreakdown.breakdown.length > 0 ? (
+                  <table className="table table-sm">
+                      <tbody>
+                          {leaveEarningsBreakdown.breakdown.map(item => (
+                              <tr key={item.type}>
+                                  <td>{item.type} ({item.days} Day/s)</td>
+                                  <td className="text-end">₱{formatCurrency(item.amount)}</td>
+                              </tr>
+                          ))}
+                      </tbody>
+                      <tfoot>
+                          <tr className="table-light">
+                              <th className="text-end">Total Leave Earnings</th>
+                              <th className="text-end">₱{formatCurrency(leaveEarningsBreakdown.total)}</th>
+                          </tr>
+                      </tfoot>
+                  </table>
+              ) : (
+                  <div className="text-center text-muted p-4 bg-light rounded">
+                      No leave earnings recorded for this period.
                   </div>
-                )}
-                
-                {activeTab === 'absences' && (
-                  <div className="p-2">
-                    <p className="text-muted small">The following absences were automatically detected. You may change the description if an absence was excused (e.g., due to an approved leave).</p>
-                    {absences.length > 0 ? (
-                        <table className="table table-sm table-striped mt-3">
-                            <thead><tr><th>Description</th><th>Date</th></tr></thead>
-                            <tbody>
-                                {absences.map((item, index) => (
-                                <tr key={index}>
-                                    <td>
-                                      <select className="form-select form-select-sm" value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value, 'absences')}>
-                                        <option value="Unexcused">Unexcused</option><option value="Excused">Excused</option>
-                                      </select>
-                                    </td>
-                                    <td>{new Date(item.startDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
-                                </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                <tr className="table-light"><th className="text-end fw-bold">Total Absences:</th><th className="fw-bold">{absences.reduce((acc, curr) => acc + (curr.totalDays || 0), 0)} Day(s)</th></tr>
-                            </tfoot>
-                        </table>
-                    ) : (
-                        <div className="text-center p-5 bg-light rounded mt-3">
-                            <i className="bi bi-check-circle-fill fs-1 text-success mb-3 d-block"></i>
-                            <h5 className="text-muted">No Absences Recorded</h5>
-                            <p className="text-muted">The employee had perfect attendance for all scheduled workdays in this period.</p>
-                        </div>
-                    )}
-                  </div>
-                )}
+              )}
+          </div>
+      </div>
+    </div>
+  )}
 
-                {activeTab === 'leave' && (
-                  <div className="p-3">
-                    <div className="leave-balances-grid">
-                        <div>
-                            <h6 className="form-grid-title">Current Leave Balances (Year-to-Date)</h6>
-                            <p className="text-muted small">This is the employee's total remaining leave for the year.</p>
-                            <LeaveBalanceDisplay label="Vacation Leave" balanceData={leaveBalances.vacation} />
-                            <LeaveBalanceDisplay label="Sick Leave" balanceData={leaveBalances.sick} />
-                            <LeaveBalanceDisplay label="Personal Leave" balanceData={leaveBalances.personal} />
-                        </div>
-                        <div className="leave-earnings-breakdown">
-                            <h6 className="form-grid-title">Leave Earnings Breakdown (This Pay Period)</h6>
-                            <p className="text-muted small">Calculated pay for any excused absences in this period, based on available leave credits.</p>
-                            {leaveEarningsBreakdown.breakdown.length > 0 ? (
-                                <table className="table table-sm">
-                                    <tbody>
-                                        {leaveEarningsBreakdown.breakdown.map(item => (
-                                            <tr key={item.type}>
-                                                <td>{item.type} ({item.days} Day/s)</td>
-                                                <td className="text-end">₱{formatCurrency(item.amount)}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                    <tfoot>
-                                        <tr className="table-light">
-                                            <th className="text-end">Total Leave Earnings</th>
-                                            <th className="text-end">₱{formatCurrency(leaveEarningsBreakdown.total)}</th>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            ) : (
-                                <div className="text-center text-muted p-4 bg-light rounded">
-                                    No leave earnings recorded for this period.
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'info' && (
-                  <div className="p-3">
-                    <p className="text-muted small mb-3">Changes made here will update the employee's master record permanently upon saving.</p>
-                    <div className="form-grid">
-                        <InfoField label="Employee Full Name"><input type="text" name="name" className="form-control" value={editableEmployeeData.name} onChange={handleEmployeeInfoChange} /></InfoField>
-                        <InfoField label="Employee Number"><input type="text" className="form-control" value={editableEmployeeData.id} readOnly disabled /></InfoField>
-                        <InfoField label="Tax Identification Number"><input type="text" name="tinNo" className="form-control" value={editableEmployeeData.tinNo} onChange={handleEmployeeInfoChange} /></InfoField>
-                        <InfoField label="SSS Number"><input type="text" name="sssNo" className="form-control" value={editableEmployeeData.sssNo} onChange={handleEmployeeInfoChange} /></InfoField>
-                        <InfoField label="PhilHealth Number"><input type="text" name="philhealthNo" className="form-control" value={editableEmployeeData.philhealthNo} onChange={handleEmployeeInfoChange} /></InfoField>
-                        <InfoField label="HDMF (Pag-IBIG) Number"><input type="text" name="pagIbigNo" className="form-control" value={editableEmployeeData.pagIbigNo} onChange={handleEmployeeInfoChange} /></InfoField>
-                        <InfoField label="Position"><select name="positionId" className="form-select" value={editableEmployeeData.positionId} onChange={handleEmployeeInfoChange}>{positions.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}</select></InfoField>
-                        <InfoField label="Status"><select name="status" className="form-select" value={editableEmployeeData.status} onChange={handleEmployeeInfoChange}><option value="Active">Active</option><option value="Inactive">Inactive</option></select></InfoField>
-                    </div>
-                  </div>
-                )}
-              </div>
+  {activeTab === 'info' && (
+    <div className="p-3">
+      <p className="text-muted small mb-3">Changes made here will update the employee's master record permanently upon saving.</p>
+      <div className="form-grid">
+          <InfoField label="Employee Full Name"><input type="text" name="name" className="form-control" value={editableEmployeeData.name} onChange={handleEmployeeInfoChange} /></InfoField>
+          <InfoField label="Employee Number"><input type="text" className="form-control" value={editableEmployeeData.id} readOnly disabled /></InfoField>
+          <InfoField label="Tax Identification Number"><input type="text" name="tinNo" className="form-control" value={editableEmployeeData.tinNo} onChange={handleEmployeeInfoChange} /></InfoField>
+          <InfoField label="SSS Number"><input type="text" name="sssNo" className="form-control" value={editableEmployeeData.sssNo} onChange={handleEmployeeInfoChange} /></InfoField>
+          <InfoField label="PhilHealth Number"><input type="text" name="philhealthNo" className="form-control" value={editableEmployeeData.philhealthNo} onChange={handleEmployeeInfoChange} /></InfoField>
+          <InfoField label="HDMF (Pag-IBIG) Number"><input type="text" name="pagIbigNo" className="form-control" value={editableEmployeeData.pagIbigNo} onChange={handleEmployeeInfoChange} /></InfoField>
+          <InfoField label="Position"><select name="positionId" className="form-select" value={editableEmployeeData.positionId} onChange={handleEmployeeInfoChange}>{positions.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}</select></InfoField>
+          <InfoField label="Status"><select name="status" className="form-select" value={editableEmployeeData.status} onChange={handleEmployeeInfoChange}><option value="Active">Active</option><option value="Inactive">Inactive</option></select></InfoField>
+      </div>
+    </div>
+  )}
+</div>
             </div>
             <div className="modal-footer">
               <div className="footer-actions-left">
