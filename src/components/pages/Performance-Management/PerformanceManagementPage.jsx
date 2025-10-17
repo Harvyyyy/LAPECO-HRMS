@@ -218,31 +218,31 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
       </header>
       <div className="performance-content">
         <div className="performance-dashboard-layout-revised">
-          <div className="card performance-controls-card">
+          <div className="card performance-controls-card shadow-sm">
             <div className="performance-controls-bar">
               <div className="filter-group">
-                <label>Filter Dates By</label>
-                <select className="form-select form-select-sm" value={dateFilterType} onChange={e => setDateFilterType(e.target.value)}>
+                <label htmlFor="dateFilterTypeSelect">Filter Dates By</label>
+                <select id="dateFilterTypeSelect" className="form-select" value={dateFilterType} onChange={e => setDateFilterType(e.target.value)}>
                   <option value="periodEnd">Evaluation Period</option>
                   <option value="evaluationDate">Submission Date</option>
                 </select>
               </div>
-              <div className="filter-group">
+              <div className="filter-group date-range-group">
                 <label>Date Range</label>
-                <div className='d-flex align-items-center gap-2'>
-                  <input type="date" className="form-control form-control-sm" value={startDate || ''} onChange={e => handleDateChange(e.target.value, 'start')} />
-                  <span>-</span>
-                  <input type="date" className="form-control form-control-sm" value={endDate || ''} onChange={e => handleDateChange(e.target.value, 'end')} />
+                <div className="input-group">
+                  <input type="date" className="form-control" value={startDate || ''} onChange={e => handleDateChange(e.target.value, 'start')} />
+                  <span className="input-group-text">-</span>
+                  <input type="date" className="form-control" value={endDate || ''} onChange={e => handleDateChange(e.target.value, 'end')} />
                 </div>
               </div>
               <div className="filter-group">
                 <label>Quick Presets</label>
                 <div className="btn-group w-100">
-                  <button className={`btn btn-sm ${activePreset === '30d' ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => handleDatePreset('30d')}>30d</button>
-                  <button className={`btn btn-sm ${activePreset === '90d' ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => handleDatePreset('90d')}>90d</button>
-                  <button className={`btn btn-sm ${activePreset === 'thisYear' ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => handleDatePreset('thisYear')}>This Year</button>
-                  <button className={`btn btn-sm ${activePreset === 'lastYear' ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => handleDatePreset('lastYear')}>Last Year</button>
-                  <button className={`btn btn-sm ${activePreset === 'all' ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => handleDatePreset('all')}>All</button>
+                  <button className={`btn ${activePreset === '30d' ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => handleDatePreset('30d')}>30d</button>
+                  <button className={`btn ${activePreset === '90d' ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => handleDatePreset('90d')}>90d</button>
+                  <button className={`btn ${activePreset === 'thisYear' ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => handleDatePreset('thisYear')}>This Year</button>
+                  <button className={`btn ${activePreset === 'lastYear' ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => handleDatePreset('lastYear')}>Last Year</button>
+                  <button className={`btn ${activePreset === 'all' ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => handleDatePreset('all')}>All</button>
                 </div>
               </div>
             </div>
@@ -335,8 +335,6 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
           evaluation={modalProps.evaluation}
           employee={modalProps.employee}
           position={modalProps.position}
-          kras={kras}
-          kpis={kpis}
           evaluationFactors={evaluationFactors}
         />
       )}

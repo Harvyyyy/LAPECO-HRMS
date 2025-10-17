@@ -284,6 +284,46 @@
     gap: 1.5rem;
 }
 
+/* === NEW / UPDATED: Filter Bar styles === */
+.performance-controls-card {
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 0;
+}
+
+.performance-controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: flex-end;
+}
+
+.performance-controls-bar .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+}
+
+.performance-controls-bar .filter-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 0;
+}
+
+.performance-controls-bar .date-range-group {
+    min-width: 300px;
+}
+
+.performance-controls-bar .form-control,
+.performance-controls-bar .form-select,
+.performance-controls-bar .btn-group .btn {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+/* === END NEW / UPDATED === */
+
 /* Stat Cards Grid */
 .stat-card-grid-revised {
     display: grid;
@@ -312,77 +352,19 @@
     line-height: 1.1;
     color: var(--text-primary);
 }
+.stat-card-revised .stat-info .stat-value strong {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
 .stat-card-revised .stat-info .stat-label {
     font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
 /* Analysis Grid (Chart & Insights) */
-.analysis-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-    gap: 1.5rem;
-    align-items: flex-start;
-}
-.analysis-grid .card-body {
-    color: var(--text-primary);
-}
-
-/* Strategic Insights Card */
-.insight-card .card-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-.insight-avatar-list {
-    display: flex;
-    align-items: center;
-    margin-top: 0.75rem;
-}
-.insight-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--bg-primary);
-    margin-left: -12px;
-    transition: transform 0.2s ease;
-    cursor: pointer;
-}
-.insight-avatar:first-child {
-    margin-left: 0;
-}
-.insight-avatar:hover {
-    transform: translateY(-4px) scale(1.1);
-    z-index: 5;
-}
-.avatar-more-count {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: var(--bg-tertiary);
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: -12px;
-    border: 2px solid var(--bg-primary);
-}
-.insight-card.high-potentials {
-    background: linear-gradient(135deg, #f0f9f4, var(--bg-primary));
-    border-color: var(--app-success-color);
-}
-.insight-card.turnover-risks {
-    background: linear-gradient(135deg, #fdf3f4, var(--bg-primary));
-    border-color: var(--danger-color);
-}
-.dark-theme .insight-card.high-potentials {
-    background: rgba(var(--app-success-rgb), 0.1);
-}
-.dark-theme .insight-card.turnover-risks {
-    background: rgba(var(--danger-rgb), 0.1);
+.analysis-grid-full-width {
+    grid-column: 1 / -1;
 }
 
 /* History Table Section */

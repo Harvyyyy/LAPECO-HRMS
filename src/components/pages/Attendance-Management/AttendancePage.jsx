@@ -8,6 +8,7 @@ import EditAttendanceModal from '../../modals/EditAttendanceModal';
 import ConfirmationModal from '../../modals/ConfirmationModal';
 import useReportGenerator from '../../../hooks/useReportGenerator';
 import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+import StatDonutChart from '../../common/StatDonutChart';
 
 const calculateHoursWorked = (signIn, signOut, breakOut, breakIn) => {
   if (!signIn || !signOut) return '0h 0m';
@@ -43,6 +44,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState('');
+  const [employeeDateFilter, setEmployeeDateFilter] = useState({ start: '', end: '' }); // --- NEW ---
 
   const [showReportPreview, setShowReportPreview] = useState(false);
   const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
@@ -136,13 +138,27 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
       )
   , [employees, employeeSearchTerm]);
     
+  // --- MODIFIED: Added date filtering logic ---
   const selectedEmployeeRecords = useMemo(() => {
       if (!selectedEmployee) return { records: [], stats: {} };
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+
+      const hasDateFilter = employeeDateFilter.start && employeeDateFilter.end;
+      const filterStartDate = hasDateFilter ? new Date(employeeDateFilter.start) : null;
+      const filterEndDate = hasDateFilter ? new Date(employeeDateFilter.end) : null;
+      if (filterStartDate) filterStartDate.setHours(0, 0, 0, 0);
+      if (filterEndDate) filterEndDate.setHours(23, 59, 59, 999);
       
       const records = allSchedules
-          .filter(s => s.empId === selectedEmployee.id)
+          .filter(s => {
+              if (s.empId !== selectedEmployee.id) return false;
+              if (hasDateFilter) {
+                  const scheduleDate = new Date(s.date);
+                  return scheduleDate >= filterStartDate && scheduleDate <= filterEndDate;
+              }
+              return true;
+          })
           .map(schedule => {
               const log = (attendanceLogs || []).find(l => l.empId === schedule.empId && l.date === schedule.date);
               const scheduleDate = new Date(schedule.date);
@@ -160,15 +176,32 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
           .sort((a, b) => new Date(b.date) - new Date(a.date));
       
       const stats = records.reduce((acc, rec) => {
-          acc.totalScheduled++;
-          if (rec.status === 'Late') acc.totalLate++;
-          if (rec.status === 'Absent') acc.totalAbsent++;
+          const recordDate = new Date(rec.date);
+          recordDate.setHours(0,0,0,0);
+          
+          if (recordDate < today) {
+            acc.totalScheduled++;
+            if (rec.status === 'Late') acc.totalLate++;
+            if (rec.status === 'Absent') acc.totalAbsent++;
+          }
           return acc;
       }, { totalScheduled: 0, totalLate: 0, totalAbsent: 0 });
+      
+      const totalPresent = stats.totalScheduled - stats.totalAbsent;
+      
+      stats.presentPercentage = stats.totalScheduled > 0 ? (totalPresent / stats.totalScheduled) * 100 : 0;
+      stats.latePercentage = stats.totalScheduled > 0 ? (stats.totalLate / stats.totalScheduled) * 100 : 0;
+      stats.absentPercentage = stats.totalScheduled > 0 ? (stats.totalAbsent / stats.totalScheduled) * 100 : 0;
+      stats.totalPresent = totalPresent;
 
       return { records, stats };
-  }, [selectedEmployee, allSchedules, attendanceLogs]);
+  }, [selectedEmployee, allSchedules, attendanceLogs, employeeDateFilter]);
   
+  const handleSelectEmployee = (emp) => {
+    setSelectedEmployee(emp);
+    setEmployeeDateFilter({ start: '', end: '' });
+  };
+
   const handleStatusFilterClick = (newStatus) => {
     setStatusFilter(prevStatus => prevStatus === newStatus ? '' : newStatus);
   };
@@ -317,6 +350,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
     const positionMap = new Map(positions.map(pos => [pos.id, pos.title]));
     
     if (selectedEmployee) {
+        const { records, stats } = selectedEmployeeRecords;
         return (
             <div>
                 <button className="btn btn-light me-3 back-button mb-3" onClick={() => setSelectedEmployee(null)}>
@@ -329,23 +363,70 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
                         <p className="employee-detail-meta">{selectedEmployee.id} • {positionMap.get(selectedEmployee.positionId) || 'Unassigned'}</p>
                     </div>
                 </div>
+
+                <div className="card my-4">
+                    <div className="card-body employee-date-filter-bar">
+                        <div className="filter-group">
+                            <label htmlFor="employeeStartDate" className="form-label">Start Date</label>
+                            <input
+                                type="date"
+                                id="employeeStartDate"
+                                className="form-control"
+                                value={employeeDateFilter.start}
+                                onChange={(e) => setEmployeeDateFilter(prev => ({ ...prev, start: e.target.value }))}
+                            />
+                        </div>
+                        <div className="filter-group">
+                            <label htmlFor="employeeEndDate" className="form-label">End Date</label>
+                            <input
+                                type="date"
+                                id="employeeEndDate"
+                                className="form-control"
+                                value={employeeDateFilter.end}
+                                onChange={(e) => setEmployeeDateFilter(prev => ({ ...prev, end: e.target.value }))}
+                                min={employeeDateFilter.start}
+                            />
+                        </div>
+                        <button 
+                            className="btn btn-outline-secondary align-self-end" 
+                            onClick={() => setEmployeeDateFilter({ start: '', end: '' })}
+                        >
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
                 <div className="employee-attendance-stats my-4">
-                    <div className="stat-card scheduled"> <span className="stat-value">{selectedEmployeeRecords.stats.totalScheduled}</span> <span className="stat-label">Total Scheduled</span> </div>
-                    <div className="stat-card present"> <span className="stat-value">{selectedEmployeeRecords.stats.totalScheduled - selectedEmployeeRecords.stats.totalAbsent}</span> <span className="stat-label">Days Present</span> </div>
-                    <div className="stat-card late"> <span className="stat-value">{selectedEmployeeRecords.stats.totalLate}</span> <span className="stat-label">Total Lates</span> </div>
-                    <div className="stat-card absent"> <span className="stat-value">{selectedEmployeeRecords.stats.totalAbsent}</span> <span className="stat-label">Total Absences</span> </div>
+                  <StatDonutChart 
+                    label={`Present (${stats.totalPresent}/${stats.totalScheduled})`} 
+                    percentage={stats.presentPercentage} 
+                    color="var(--app-success-color)"
+                  />
+                  <StatDonutChart 
+                    label={`Late (${stats.totalLate}/${stats.totalScheduled})`} 
+                    percentage={stats.latePercentage}
+                    color="var(--warning-color)"
+                  />
+                  <StatDonutChart 
+                    label={`Absent (${stats.totalAbsent}/${stats.totalScheduled})`} 
+                    percentage={stats.absentPercentage}
+                    color="var(--danger-color)"
+                  />
                 </div>
                 <div className="card data-table-card shadow-sm">
-                    <div className="table-responsive">
+                    <div className="card-header"><h6 className="mb-0">Filtered Attendance History</h6></div>
+                    <div className="table-responsive" style={{maxHeight: '40vh'}}>
                         <table className="table data-table mb-0">
                             <thead><tr><th>Date</th><th>Start Time</th><th>End Time</th><th>Sign In</th><th>Sign Out</th><th>Status</th></tr></thead>
                             <tbody>
-                                {selectedEmployeeRecords.records.map(rec => (
+                                {records.length > 0 ? records.map(rec => (
                                     <tr key={rec.scheduleId || rec.date}>
-                                        <td>{rec.date}</td><td>{rec.start_time}</td><td>{rec.end_time}</td><td>{rec.signIn || '---'}</td><td>{rec.signOut || '---'}</td>
+                                        <td>{rec.date}</td><td>{rec.start_time || 'N/A'}</td><td>{rec.end_time || 'N/A'}</td><td>{rec.signIn || '---'}</td><td>{rec.signOut || '---'}</td>
                                         <td><span className={`status-badge status-${rec.status.toLowerCase()}`}>{rec.status}</span></td>
                                     </tr>
-                                ))}
+                                )) : (
+                                  <tr><td colSpan="6" className="text-center p-4 text-muted">No attendance history found for the selected date range.</td></tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -362,7 +443,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
             </div>
             <div className="employee-selection-grid">
                 {filteredEmployeesForSelection.map(emp => (
-                    <div key={emp.id} className="employee-selection-card" onClick={() => setSelectedEmployee(emp)}>
+                    <div key={emp.id} className="employee-selection-card" onClick={() => handleSelectEmployee(emp)}>
                         <img src={emp.imageUrl || placeholderAvatar} alt={emp.name} className="employee-selection-avatar" />
                         <div className="employee-selection-info">
                             <div className="employee-selection-name">{emp.name}</div>
@@ -469,7 +550,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
             ) : (
               <div className="text-center p-5 bg-light rounded d-flex flex-column justify-content-center" style={{minHeight: '300px'}}>
                   <i className="bi bi-calendar-check fs-1 text-muted mb-3 d-block"></i>
-                  <h4 className="text-muted">{dailyAttendanceList.length > 0 && (positionFilter || statusFilter) ? 'No employees match filters.' : 'No Employees Scheduled'}</h4>
+                  <h4 className="text-muted">{dailyAttendanceList.length > 0 && (positionFilter || statusFilter) ? 'No employees match filters.' : `No Employees Scheduled`}</h4>
                   <p className="text-muted">{dailyAttendanceList.length > 0 && (positionFilter || statusFilter) ? 'Try adjusting your filters.' : 'There is no schedule created for this day.'}</p>
               </div>
             )}
