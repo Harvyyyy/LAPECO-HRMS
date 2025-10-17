@@ -26,7 +26,7 @@ import AttendancePage from './components/pages/Attendance-Management/AttendanceP
 import PayrollPage from './components/pages/Payroll-Management/PayrollPage';
 import PayrollGenerationPage from './components/pages/Payroll-Management/PayrollGenerationPage';
 import PayrollHistoryPage from './components/pages/Payroll-Management/PayrollHistoryPage';
-import ThirteenthMonthPage from './components/pages/Payroll-Management/ThirteenthMonthPage'; // --- NEW ---
+import ThirteenthMonthPage from './components/pages/Payroll-Management/ThirteenthMonthPage';
 import MyPayrollLayout from './components/pages/My-Payroll/MyPayrollLayout';
 import MyPayrollProjectionPage from './components/pages/My-Payroll/MyPayrollProjectionPage';
 import MyPayrollHistoryPage from './components/pages/My-Payroll/MyPayrollHistoryPage';
@@ -506,20 +506,32 @@ function AppContent() {
       setNotifications([]);
     },
     generatePayrollRun: (payrollRunData) => {
+        const allRecords = payrollRunData.records.map(r => {
+            const totalEarnings = (r.earnings || []).reduce((sum, earn) => sum + (earn.amount || 0), 0);
+            const totalDeductions = Object.values(r.deductions).reduce((sum, val) => sum + val, 0);
+            return { 
+                ...r,
+                payrollId: `PAY-${Date.now()}-${r.empId}`,
+                totalEarnings: totalEarnings,
+                netPay: totalEarnings - totalDeductions,
+            };
+        });
+        
+        const validRecords = allRecords.filter(r => r.totalEarnings > 0);
+
         const newRun = {
             runId: `RUN-${Date.now()}`,
             cutOff: payrollRunData.cutOff,
-            records: payrollRunData.records.map(r => {
-                const totalEarnings = (r.earnings || []).reduce((sum, earn) => sum + (earn.amount || 0), 0);
-                const totalDeductions = Object.values(r.deductions).reduce((sum, val) => sum + val, 0);
-                return { 
-                    ...r,
-                    payrollId: `PAY-${Date.now()}-${r.empId}`,
-                    netPay: totalEarnings - totalDeductions,
-                };
-            })
+            records: validRecords,
         };
+
+        if (validRecords.length === 0) {
+            showToast(`Payroll for ${newRun.cutOff} was not generated as no employees had workdays in this period.`, 'warning');
+            return;
+        }
+
         setPayrolls(prev => [newRun, ...prev]);
+        showToast(`Payroll for ${newRun.cutOff} with ${validRecords.length} employees has been generated.`, 'success');
     },
     updatePayrollRecord: (payrollId, updatedData) => {
         setPayrolls(prev => prev.map(run => ({
@@ -531,6 +543,31 @@ function AppContent() {
     },
     deletePayrollRun: (runId) => {
       setPayrolls(prev => prev.filter(run => run.runId !== runId));
+    },
+    markRunAsPaid: (runId) => {
+      let updatedCount = 0;
+      let runPeriod = '';
+
+      setPayrolls(prev => prev.map(run => {
+        if (run.runId === runId) {
+          runPeriod = run.cutOff;
+          const updatedRecords = run.records.map(rec => {
+            if (rec.status !== 'Paid') {
+              updatedCount++;
+              return { ...rec, status: 'Paid' };
+            }
+            return rec;
+          });
+          return { ...run, records: updatedRecords };
+        }
+        return run;
+      }));
+
+      if (updatedCount > 0) {
+        showToast(`${updatedCount} record(s) for the period ${runPeriod} have been marked as paid.`, 'success');
+      } else {
+        showToast(`All records for the period ${runPeriod} were already paid.`, 'info');
+      }
     },
     saveCase: (formData, caseId) => {
       if (caseId) {

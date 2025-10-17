@@ -39,7 +39,6 @@
   font-weight: 700;
   line-height: 1.2;
   color: var(--text-primary);
-  margin-bottom: 0.25rem;
 }
 .recruitment-stat-card .stat-info .stat-label {
   font-size: 0.85rem;
@@ -121,7 +120,6 @@
 
 /* Kanban Header Colors */
 .kanban-header-new-applicant { background-color: #0d6efd; }
-.kanban-header-screening { background-color: #6c757d; }
 .kanban-header-interview { background-color: var(--info-color); }
 .kanban-header-offer { background-color: var(--warning-color); }
 .kanban-header-hired { background-color: var(--app-success-color); }
@@ -272,7 +270,6 @@
   letter-spacing: 0.03em;
 }
 .applicant-status-badge.status-new-applicant { background-color: #0d6efd; }
-.applicant-status-badge.status-screening { background-color: #6c757d; }
 .applicant-status-badge.status-interview { background-color: var(--info-color); color: var(--text-primary) !important; }
 .applicant-status-badge.status-offer { background-color: var(--warning-color); color: var(--text-primary) !important; }
 .applicant-status-badge.status-hired { background-color: var(--app-success-color); color: var(--text-on-success) !important; }

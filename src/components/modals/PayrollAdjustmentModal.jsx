@@ -3,6 +3,7 @@ import { addDays } from 'date-fns';
 import './PayrollAdjustmentModal.css';
 import ReportPreviewModal from './ReportPreviewModal';
 import useReportGenerator from '../../hooks/useReportGenerator';
+import { calculateSssContribution, calculatePhilhealthContribution, calculatePagibigContribution } from '../../hooks/contributionUtils';
 
 const formatCurrency = (value) => Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -33,14 +34,19 @@ const InfoField = ({ label, children }) => (
     </div>
 );
 
-const EditableStatutoryField = ({ label, fieldKey, value, originalValue, onChange }) => (
+const EditableStatutoryField = ({ label, fieldKey, value, originalValue, onChange, onFocus, onBlur, activeField }) => (
     <div className="form-group">
         <label htmlFor={fieldKey}>{label}</label>
         <div className="input-group">
             <span className="input-group-text">₱</span>
             <input 
                 type="number" id={fieldKey} name={fieldKey}
-                className="form-control text-end" value={value} onChange={onChange}
+                className="form-control text-end" 
+                value={activeField === fieldKey ? value : Number(value).toFixed(2)} 
+                onChange={onChange}
+                onFocus={onFocus}
+                onBlur={onBlur}
+                step="0.01"
             />
         </div>
         <small className="form-text text-muted">System Calculated: ₱{formatCurrency(originalValue)}</small>
@@ -56,6 +62,7 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
   const [absences, setAbsences] = useState([]);
   const [editableEmployeeData, setEditableEmployeeData] = useState(null);
   const [statutoryDeductions, setStatutoryDeductions] = useState({});
+  const [activeField, setActiveField] = useState(null); // --- NEW ---
   
   const [showPayslipPreview, setShowPayslipPreview] = useState(false);
   const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator(theme);
@@ -65,13 +72,33 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
     return positions.find(p => p.id === employeeDetails.positionId);
   }, [employeeDetails, positions]);
 
+  const systemCalculatedDeductions = useMemo(() => {
+    if (!position) return { sss: 0, philhealth: 0, hdmf: 0 };
+    const monthlySalary = position.monthlySalary || 0;
+    const sss = calculateSssContribution(monthlySalary);
+    const philhealth = calculatePhilhealthContribution(monthlySalary);
+    const pagibig = calculatePagibigContribution(monthlySalary);
+    return {
+      sss: parseFloat((sss.employeeShare / 2).toFixed(2)),
+      philhealth: parseFloat((philhealth.employeeShare / 2).toFixed(2)),
+      hdmf: parseFloat((pagibig.employeeShare / 2).toFixed(2)),
+    };
+  }, [position]);
+
   useEffect(() => {
     if (payrollData && show) {
         setStatus(payrollData.status || 'Pending');
         setActiveTab('summary');
         setEditableEmployeeData({ ...employeeDetails });
         setAbsences(payrollData.absences || []);
-        setStatutoryDeductions(payrollData.deductions || {});
+        
+        const initialDeductions = {
+            tax: parseFloat((payrollData.deductions?.tax || 0).toFixed(2)),
+            sss: parseFloat((systemCalculatedDeductions.sss).toFixed(2)),
+            philhealth: parseFloat((systemCalculatedDeductions.philhealth).toFixed(2)),
+            hdmf: parseFloat((systemCalculatedDeductions.hdmf).toFixed(2)),
+        };
+        setStatutoryDeductions(initialDeductions);
         
         const defaultEarningsCopy = JSON.parse(JSON.stringify(defaultEarnings));
 
@@ -89,7 +116,7 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
         setEarnings(combinedEarnings);
         setOtherDeductions(payrollData.otherDeductions || []);
     }
-  }, [payrollData, employeeDetails, show]);
+  }, [payrollData, employeeDetails, show, systemCalculatedDeductions]);
 
   const totals = useMemo(() => {
     const totalGrossPay = earnings.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
@@ -188,7 +215,7 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
   
   const handleStatutoryChange = (e) => {
       const { name, value } = e.target;
-      setStatutoryDeductions(prev => ({ ...prev, [name]: Number(value) || 0 }));
+      setStatutoryDeductions(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSaveClick = () => {
@@ -210,10 +237,10 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
       
       onSave(payrollData.payrollId, { 
           status, 
-          earnings: finalEarnings.map(({isDefault, isNew, tempId, ...rest}) => rest), 
-          otherDeductions: finalDeductions, 
+          earnings: finalEarnings.map(({isDefault, isNew, tempId, ...rest}) => ({ ...rest, amount: parseFloat(Number(rest.amount).toFixed(2)) })), 
+          otherDeductions: finalDeductions.map(d => ({...d, amount: parseFloat(Number(d.amount).toFixed(2)) })),
           absences: absences, 
-          deductions: statutoryDeductions,
+          deductions: Object.fromEntries(Object.entries(statutoryDeductions).map(([key, value]) => [key, parseFloat(Number(value).toFixed(2))])),
           netPay: totals.netPay 
       });
     }
@@ -338,7 +365,10 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
                 <div role="gridcell">
                   <input 
                     type="number" step="0.01" className="form-control form-control-inline text-end" 
-                    value={item.amount} onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'earnings')} 
+                    value={activeField === `earning-${index}` ? item.amount : Number(item.amount).toFixed(2)} 
+                    onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'earnings')}
+                    onFocus={() => setActiveField(`earning-${index}`)}
+                    onBlur={() => setActiveField(null)}
                   />
                 </div>
                 <div role="gridcell" className="text-center">
@@ -359,10 +389,10 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
         <h6 className="form-grid-title"><i className="bi bi-shield-check me-2"></i>Statutory Deductions</h6>
         <p className="text-muted small">Override the system-calculated values if necessary. The original calculation is shown for reference.</p>
         <div className="form-grid">
-          <EditableStatutoryField label="Withholding Tax" fieldKey="tax" value={statutoryDeductions.tax} originalValue={payrollData.deductions.tax} onChange={handleStatutoryChange} />
-          <EditableStatutoryField label="SSS Contribution" fieldKey="sss" value={statutoryDeductions.sss} originalValue={payrollData.deductions.sss} onChange={handleStatutoryChange} />
-          <EditableStatutoryField label="PhilHealth Contribution" fieldKey="philhealth" value={statutoryDeductions.philhealth} originalValue={payrollData.deductions.philhealth} onChange={handleStatutoryChange} />
-          <EditableStatutoryField label="Pag-IBIG Contribution" fieldKey="hdmf" value={statutoryDeductions.hdmf} originalValue={payrollData.deductions.hdmf} onChange={handleStatutoryChange} />
+          <EditableStatutoryField label="Withholding Tax" fieldKey="tax" value={statutoryDeductions.tax} originalValue={payrollData.deductions.tax} onChange={handleStatutoryChange} onFocus={(e) => setActiveField(e.target.name)} onBlur={() => setActiveField(null)} activeField={activeField} />
+          <EditableStatutoryField label="SSS Contribution" fieldKey="sss" value={statutoryDeductions.sss} originalValue={systemCalculatedDeductions.sss} onChange={handleStatutoryChange} onFocus={(e) => setActiveField(e.target.name)} onBlur={() => setActiveField(null)} activeField={activeField} />
+          <EditableStatutoryField label="PhilHealth Contribution" fieldKey="philhealth" value={statutoryDeductions.philhealth} originalValue={systemCalculatedDeductions.philhealth} onChange={handleStatutoryChange} onFocus={(e) => setActiveField(e.target.name)} onBlur={() => setActiveField(null)} activeField={activeField} />
+          <EditableStatutoryField label="Pag-IBIG Contribution" fieldKey="hdmf" value={statutoryDeductions.hdmf} originalValue={systemCalculatedDeductions.hdmf} onChange={handleStatutoryChange} onFocus={(e) => setActiveField(e.target.name)} onBlur={() => setActiveField(null)} activeField={activeField} />
         </div>
       </div>
       <div className="deductions-column">
@@ -370,23 +400,41 @@ const PayrollAdjustmentModal = ({ show, onClose, onSave, onSaveEmployeeInfo, pay
          <div className="deduction-list">
            {otherDeductions.map((item, index) => {
               const isPredefined = OTHER_DEDUCTION_TYPES.includes(item.description);
+              const isSystemGenerated = item.isSystemGenerated;
               return (
                   <div key={index} className="deduction-item-row">
-                      <select 
-                          className="form-select form-select-sm" 
-                          value={item.description}
-                          onChange={(e) => handleItemChange(index, 'description', e.target.value, 'otherDeductions')}
-                      >
-                          {OTHER_DEDUCTION_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
-                          {!isPredefined && item.description && (
-                              <option value={item.description} disabled>{item.description} (custom)</option>
-                          )}
-                      </select>
+                      {isSystemGenerated ? (
+                          <input type="text" className="form-control form-control-sm" value={item.description} readOnly disabled />
+                      ) : (
+                        <select 
+                            className="form-select form-select-sm" 
+                            value={item.description}
+                            onChange={(e) => handleItemChange(index, 'description', e.target.value, 'otherDeductions')}
+                        >
+                            {OTHER_DEDUCTION_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+                            {!isPredefined && item.description && (
+                                <option value={item.description} disabled>{item.description} (custom)</option>
+                            )}
+                        </select>
+                      )}
                       <div className="input-group input-group-sm">
                           <span className="input-group-text">₱</span>
-                          <input type="number" className="form-control text-end" placeholder="0.00" value={item.amount} onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'otherDeductions')} />
+                          <input 
+                            type="number" 
+                            className="form-control text-end" 
+                            placeholder="0.00" 
+                            value={activeField === `deduction-${index}` ? item.amount : Number(item.amount).toFixed(2)} 
+                            onChange={(e) => handleItemChange(index, 'amount', e.target.value, 'otherDeductions')}
+                            onFocus={() => setActiveField(`deduction-${index}`)}
+                            onBlur={() => setActiveField(null)}
+                            step="0.01"
+                          />
                       </div>
-                      <button type="button" className="btn btn-sm btn-remove-row" onClick={() => removeItem(index, 'otherDeductions')} title="Remove Deduction"><i className="bi bi-x"></i></button>
+                      {!isSystemGenerated && (
+                        <button type="button" className="btn btn-sm btn-remove-row" onClick={() => removeItem(index, 'otherDeductions')} title="Remove Deduction">
+                          <i className="bi bi-x"></i>
+                        </button>
+                      )}
                   </div>
               )
            })}

@@ -124,6 +124,8 @@ export const initialSchedulesData = [
   createScheduleEntry(7, 'EMP003', 1, '09:00', '18:00'),
   createScheduleEntry(8, 'EMP004', 1),
   createScheduleEntry(9, 'EMP009', 1),
+  // --- NEW: Schedule for HR User to test late deduction ---
+  createScheduleEntry(27, 'EMP005', 1),
   createScheduleEntry(10, 'EMP001', 2),
   createScheduleEntry(11, 'EMP002', 2, '09:00', '18:00'), 
   createScheduleEntry(12, 'EMP003', 2, '09:00', '18:00'),
@@ -164,6 +166,8 @@ export const initialAttendanceLogs = [
 
   // --- Yesterday's Logs (Day 1) ---
   { empId: 'EMP001', date: createPastDate(1), signIn: '08:00', breakOut: '12:00', breakIn: '13:00', signOut: '17:00', overtimeHours: 0 }, // Perfect
+  // --- NEW: Late log for HR user ---
+  { empId: 'EMP005', date: createPastDate(1), signIn: '08:22', breakOut: '12:00', breakIn: '13:00', signOut: '17:00', overtimeHours: 0 }, // 22 mins late
   { empId: 'EMP002', date: createPastDate(1), signIn: '09:05', breakOut: '12:10', breakIn: '13:05', signOut: '18:02', overtimeHours: 0 }, // Late, stayed late
   { empId: 'EMP003', date: createPastDate(1), signIn: '09:01', breakOut: '12:30', breakIn: '13:30', signOut: '16:55', overtimeHours: 0 }, // On time, undertime
   { empId: 'EMP004', date: createPastDate(1), signIn: '08:05', breakOut: '12:00', breakIn: '13:00', signOut: '18:05', overtimeHours: 1 }, // Late, manual overtime
@@ -213,7 +217,6 @@ export const initialAttendanceLogs = [
   { empId: 'EMP003', date: createPastDate(5), signIn: '08:03', breakOut: '12:00', breakIn: '13:00', signOut: '17:00', overtimeHours: 0 },
   { empId: 'EMP009', date: createPastDate(5), signIn: '08:00', signOut: '17:00', overtimeHours: 0 },
 ];
-
 
 // ============================================================================
 // LEAVE MANAGEMENT DATA

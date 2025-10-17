@@ -29,7 +29,6 @@
     font-weight: 700; 
     line-height: 1.2; 
     color: var(--text-primary);
-    margin-bottom: 0.25rem;
 }
 .training-stat-card .stat-label { 
     font-size: 0.9rem; 
