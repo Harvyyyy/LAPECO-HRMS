@@ -3,6 +3,26 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  border: 2px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.stat-donut-chart-container.interactive {
+  cursor: pointer;
+  background-color: var(--bg-secondary);
+}
+
+.stat-donut-chart-container.interactive:hover {
+  background-color: var(--bg-primary);
+  box-shadow: var(--card-shadow);
+}
+
+.stat-donut-chart-container.interactive.active {
+  background-color: var(--bg-primary);
+  box-shadow: var(--card-shadow);
+  border-color: var(--app-success-color);
 }
 
 .stat-donut-chart {

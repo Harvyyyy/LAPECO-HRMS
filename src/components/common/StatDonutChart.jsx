@@ -1,13 +1,15 @@
 import React from 'react';
 import './StatDonutChart.css';
 
-const StatDonutChart = ({ percentage, label, size = 100, strokeWidth = 10, color }) => {
+const StatDonutChart = ({ percentage, label, size = 100, strokeWidth = 10, color, onClick, isActive = false }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percentage / 100) * circumference;
 
+  const containerClass = `stat-donut-chart-container ${onClick ? 'interactive' : ''} ${isActive ? 'active' : ''}`;
+
   return (
-    <div className="stat-donut-chart-container">
+    <div className={containerClass} onClick={onClick}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="stat-donut-chart">
         <circle
           className="stat-donut-chart-bg"

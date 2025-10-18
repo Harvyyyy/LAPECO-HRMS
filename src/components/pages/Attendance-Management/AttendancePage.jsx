@@ -7,7 +7,6 @@ import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import EditAttendanceModal from '../../modals/EditAttendanceModal';
 import ConfirmationModal from '../../modals/ConfirmationModal';
 import useReportGenerator from '../../../hooks/useReportGenerator';
-
 import StatDonutChart from '../../common/StatDonutChart';
 import Avatar from '../../common/Avatar';
 
@@ -46,6 +45,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState('');
   const [employeeDateFilter, setEmployeeDateFilter] = useState({ start: '', end: '' });
+  const [employeeHistoryFilter, setEmployeeHistoryFilter] = useState('');
 
   const [showReportPreview, setShowReportPreview] = useState(false);
   const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
@@ -216,12 +216,22 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
       stats.totalPresent = totalPresent;
       stats.totalOnTime = totalOnTime;
 
-      return { records, stats };
-  }, [selectedEmployee, allSchedules, attendanceLogs, employeeDateFilter]);
+      let filteredRecords = records;
+      if (employeeHistoryFilter) {
+          if (employeeHistoryFilter === 'Present') {
+              filteredRecords = records.filter(r => r.status === 'Present');
+          } else {
+              filteredRecords = records.filter(r => r.status === employeeHistoryFilter);
+          }
+      }
+
+      return { records: filteredRecords, stats };
+  }, [selectedEmployee, allSchedules, attendanceLogs, employeeDateFilter, employeeHistoryFilter]);
   
   const handleSelectEmployee = (emp) => {
     setSelectedEmployee(emp);
     setEmployeeDateFilter({ start: '', end: '' });
+    setEmployeeHistoryFilter('');
   };
 
   const handleStatusFilterClick = (newStatus) => {
@@ -420,20 +430,32 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
                 </div>
 
                 <div className="employee-attendance-stats my-4">
+                  <button 
+                    className={`btn btn-light view-all-btn ${!employeeHistoryFilter ? 'active' : ''}`}
+                    onClick={() => setEmployeeHistoryFilter('')}
+                  >
+                    View All ({records.length})
+                  </button>
                   <StatDonutChart 
-                    label={`Present (${stats.totalPresent}/${stats.totalScheduled})`} 
-                    percentage={stats.presentPercentage} 
+                    label={`On Time (${stats.totalOnTime}/${stats.totalScheduled})`} 
+                    percentage={stats.totalScheduled > 0 ? (stats.totalOnTime / stats.totalScheduled) * 100 : 0} 
                     color="var(--app-success-color)"
+                    onClick={() => setEmployeeHistoryFilter(prev => prev === 'Present' ? '' : 'Present')}
+                    isActive={employeeHistoryFilter === 'Present'}
                   />
                   <StatDonutChart 
                     label={`Late (${stats.totalLate}/${stats.totalScheduled})`} 
                     percentage={stats.latePercentage}
                     color="var(--warning-color)"
+                    onClick={() => setEmployeeHistoryFilter(prev => prev === 'Late' ? '' : 'Late')}
+                    isActive={employeeHistoryFilter === 'Late'}
                   />
                   <StatDonutChart 
                     label={`Absent (${stats.totalAbsent}/${stats.totalScheduled})`} 
                     percentage={stats.absentPercentage}
                     color="var(--danger-color)"
+                    onClick={() => setEmployeeHistoryFilter(prev => prev === 'Absent' ? '' : 'Absent')}
+                    isActive={employeeHistoryFilter === 'Absent'}
                   />
                 </div>
                 <div className="card data-table-card shadow-sm">
@@ -445,10 +467,10 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
                                 {records.length > 0 ? records.map(rec => (
                                     <tr key={rec.scheduleId || rec.date}>
                                         <td>{rec.date}</td><td>{rec.start_time || 'N/A'}</td><td>{rec.end_time || 'N/A'}</td><td>{rec.signIn || '---'}</td><td>{rec.signOut || '---'}</td>
-                                        <td><span className={`status-badge status-${rec.status.toLowerCase()}`}>{rec.status}</span></td>
+                                        <td><span className={`status-badge status-${rec.status.toLowerCase().replace(' ', '-')}`}>{rec.status}</span></td>
                                     </tr>
                                 )) : (
-                                  <tr><td colSpan="6" className="text-center p-4 text-muted">No attendance history found for the selected date range.</td></tr>
+                                  <tr><td colSpan="6" className="text-center p-4 text-muted">No attendance history found for the selected filters.</td></tr>
                                 )}
                             </tbody>
                         </table>
@@ -478,7 +500,7 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
         </div>
     );
   }
-
+  
   return (
     <div className="container-fluid p-0 page-module-container">
       <header className="page-header attendance-page-header d-flex justify-content-between align-items-md-center p-3">
@@ -522,24 +544,30 @@ const AttendancePage = ({ allSchedules, employees, positions, attendanceLogs, se
                 )}
               </div>
               <div className="daily-stats-charts">
-                  <div className={`stat-card scheduled ${!statusFilter ? 'active' : ''}`} onClick={() => handleStatusFilterClick('')}>
+                  <div className={`stat-card ${!statusFilter ? 'active' : ''}`} onClick={() => handleStatusFilterClick('')}>
                     <span className="stat-value">{dailyStats.total}</span>
                     <span className="stat-label">Scheduled</span>
                   </div>
                   <StatDonutChart 
                     label={`Present (${dailyStats.present}/${dailyStats.total})`} 
                     percentage={dailyStats.presentPercentage} 
-                    color="var(--app-success-color)" 
+                    color="var(--app-success-color)"
+                    onClick={() => handleStatusFilterClick('Present')}
+                    isActive={statusFilter === 'Present'}
                   />
                   <StatDonutChart 
                     label={`Late (${dailyStats.late}/${dailyStats.total})`} 
                     percentage={dailyStats.latePercentage} 
-                    color="var(--warning-color)" 
+                    color="var(--warning-color)"
+                    onClick={() => handleStatusFilterClick('Late')}
+                    isActive={statusFilter === 'Late'}
                   />
                   <StatDonutChart 
                     label={`Absent (${dailyStats.absent}/${dailyStats.total})`} 
                     percentage={dailyStats.absentPercentage} 
-                    color="var(--danger-color)" 
+                    color="var(--danger-color)"
+                    onClick={() => handleStatusFilterClick('Absent')}
+                    isActive={statusFilter === 'Absent'}
                   />
               </div>
               <div className="filters-group"> <select className="form-select" value={positionFilter} onChange={(e) => setPositionFilter(e.target.value)}> {uniquePositions.map(pos => <option key={pos} value={pos === 'All Positions' ? '' : pos}>{pos}</option>)} </select> </div>

@@ -42,7 +42,6 @@
   margin-bottom: 0.25rem;
 }
 
-/* --- MODIFIED: Styles for the new donut chart group --- */
 .daily-view-header-bar .daily-stats-charts {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -65,11 +64,16 @@
   background-color: var(--bg-secondary);
   cursor: pointer;
   border: 2px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+.daily-view-header-bar .stat-card:hover {
+  background-color: var(--bg-primary);
+  box-shadow: var(--card-shadow);
 }
 .daily-view-header-bar .stat-card.active {
   background-color: var(--bg-primary);
   box-shadow: var(--card-shadow);
-  border-color: var(--text-secondary);
+  border-color: var(--app-success-color);
 }
 .daily-view-header-bar .stat-card .stat-value { 
   font-size: 1.75rem; 
@@ -83,7 +87,6 @@
   text-transform: uppercase; 
   color: var(--text-secondary); 
 }
-/* --- END MODIFIED --- */
 
 .daily-view-header-bar .filters-group { display: flex; align-items: center; gap: 0.75rem; }
 .daily-view-header-bar .filters-group .form-select { min-width: 180px; }
@@ -194,6 +197,21 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
 }
+
+.employee-attendance-stats .view-all-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+    border: 2px solid var(--border-color);
+}
+.employee-attendance-stats .view-all-btn.active {
+    border-color: var(--app-success-color);
+    background-color: rgba(var(--app-success-rgb), 0.1);
+    color: var(--app-success-color);
+}
+
 
 .employee-date-filter-bar {
     display: flex;
