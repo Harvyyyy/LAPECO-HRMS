@@ -323,7 +323,7 @@ const CaseManagementPage = ({ cases, employees, handlers, caseSubmissions = [] }
                   <td className="text-center">
                     <ActionsDropdown>
                         <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setViewingSubmission(sub); }}>
-                            <i className="bi bi-info-circle me-2"></i> View Reason
+                            <i className="bi bi-info-circle me-2"></i> View Description
                         </a>
                         <a className="dropdown-item" href="#" onClick={(e) => e.preventDefault()} disabled>
                             <i className="bi bi-paperclip me-2"></i> View Attachments

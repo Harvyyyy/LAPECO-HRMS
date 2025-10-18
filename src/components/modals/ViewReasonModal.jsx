@@ -29,7 +29,7 @@ const ViewReasonModal = ({
             {!isCaseReport ? (
               <p><strong>Leave Type:</strong> {request.leaveType}</p>
             ) : (
-              <p><strong>Infraction:</strong> {request.leaveType}</p>
+              <p><strong>Reason:</strong> {request.leaveType}</p>
             )}
 
             <hr />

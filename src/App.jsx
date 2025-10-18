@@ -1,3 +1,5 @@
+// src/App.jsx
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
@@ -42,8 +44,8 @@ import PredictiveAnalyticsPage from './components/pages/Predictive-Analytics/Pre
 import LeaderboardsPage from './components/pages/Leaderboards/LeaderboardsPage';
 import MyResignationPage from './components/pages/My-Resignation/MyResignationPage';
 import ResignationManagementPage from './components/pages/Resignation-Management/ResignationManagementPage';
-import TerminatedEmployeesTab from './components/pages/Resignation-Management/TerminatedEmployeesTab';
 import MyCasesPage from './components/pages/My-Cases/MyCasesPage';
+import SubmitReportPage from './components/pages/Submit-Report/SubmitReportPage';
 
 // Constants & Assets
 import { USER_ROLES } from './constants/roles';
@@ -613,6 +615,7 @@ function AppContent() {
             <Route path="evaluate-team" element={<EvaluateTeamPage currentUser={currentUser} employees={employees} positions={positions} evaluations={evaluations} kras={kras} kpis={kpis} evaluationFactors={evaluationFactors} />} />
             <Route path="performance/evaluate" element={<EvaluationFormPage currentUser={currentUser} employees={employees} positions={positions} kras={kras} kpis={kpis} evaluationFactors={evaluationFactors} handlers={appLevelHandlers} />} />
             <Route path="my-leave" element={<MyLeavePage currentUser={currentUser} allLeaveRequests={leaveRequests} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} updateLeaveStatus={appLevelHandlers.updateLeaveStatus} handlers={appLevelHandlers} />} />
+            <Route path="submit-report" element={<SubmitReportPage currentUser={currentUser} employees={employees} handlers={appLevelHandlers} userRole={userRole} />} />
           </>
         )}
         {/* REGULAR EMPLOYEE ROUTES */}
@@ -628,6 +631,7 @@ function AppContent() {
             <Route path="evaluate-leader" element={<EvaluateLeaderPage currentUser={currentUser} employees={employees} positions={positions} />} />
             <Route path="performance/evaluate" element={<EvaluationFormPage currentUser={currentUser} employees={employees} positions={positions} kras={kras} kpis={kpis} evaluationFactors={evaluationFactors} handlers={appLevelHandlers} />} />
              <Route path="my-leave" element={<MyLeavePage currentUser={currentUser} allLeaveRequests={leaveRequests} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} updateLeaveStatus={appLevelHandlers.updateLeaveStatus} handlers={appLevelHandlers} />} />
+             <Route path="submit-report" element={<SubmitReportPage currentUser={currentUser} employees={employees} handlers={appLevelHandlers} userRole={userRole} />} />
           </>
         )}
         
