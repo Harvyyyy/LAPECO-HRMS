@@ -4,7 +4,6 @@ import Avatar from '../../common/Avatar';
 
 const EvaluationSelectorCard = ({ employee, positionTitle, lastEvaluation, onAction }) => {
   const { status, statusClass, lastEvalDateFormatted } = useMemo(() => {
-    // This logic correctly determines the status and remains unchanged.
     if (!lastEvaluation) {
       return { status: 'Due for Review', statusClass: 'due', lastEvalDateFormatted: 'N/A' };
     }
