@@ -125,8 +125,8 @@ const MyLeavePage = ({ currentUser, allLeaveRequests, createLeaveRequest, update
 
       <div className="my-leave-dashboard">
         <div className="leave-balances">
-            <div className="balance-card"><div className="balance-icon icon-vacation"><i className="bi bi-sun-fill"></i></div><div className="balance-info"><span className="balance-value">{leaveBalances.vacation}</span><span className="balance-label">Vacation Days Left</span></div></div>
-            <div className="balance-card"><div className="balance-icon icon-sick"><i className="bi bi-heart-pulse-fill"></i></div><div className="balance-info"><span className="balance-value">{leaveBalances.sick}</span><span className="balance-label">Sick Days Left</span></div></div>
+            <div className="balance-card"><div className="balance-icon icon-vacation"><i className="bi bi-sun-fill"></i></div><div className="balance-info"><span className="balance-value">{leaveBalances.vacation}</span><span className="balance-label"> Vacation Days Left</span></div></div>
+            <div className="balance-card"><div className="balance-icon icon-sick"><i className="bi bi-heart-pulse-fill"></i></div><div className="balance-info"><span className="balance-value">{leaveBalances.sick}</span><span className="balance-label"> Sick Days Left</span></div></div>
         </div>
         <div className="upcoming-leave-card">
             <h6><i className="bi bi-calendar-check-fill text-success me-2"></i>Upcoming Leave</h6>

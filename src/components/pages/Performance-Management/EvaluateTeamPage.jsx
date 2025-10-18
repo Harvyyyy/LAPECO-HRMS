@@ -5,7 +5,7 @@ import ViewEvaluationModal from '../../modals/ViewEvaluationModal';
 import EvaluationSelectorCard from './EvaluationSelectorCard';
 import './EvaluationPages.css';
 
-const EvaluateTeamPage = ({ currentUser, employees, positions, evaluations, kras, kpis }) => {
+const EvaluateTeamPage = ({ currentUser, employees, positions, evaluations, kras, kpis, evaluationFactors }) => {
   const navigate = useNavigate();
   const positionMap = useMemo(() => new Map(positions.map(p => [p.id, p.title])), [positions]);
   const employeeMap = useMemo(() => new Map(employees.map(e => [e.id, e])), [employees]);
@@ -72,6 +72,13 @@ const EvaluateTeamPage = ({ currentUser, employees, positions, evaluations, kras
     setShowStartModal(false);
   };
 
+  const modalProps = useMemo(() => {
+    if (!viewingEvaluation) return null;
+    const employee = employeeMap.get(viewingEvaluation.employeeId);
+    const position = employee ? positions.find(p => p.id === employee.positionId) : null;
+    return { evaluation: viewingEvaluation, employee, position };
+  }, [viewingEvaluation, employeeMap, positions]);
+
   return (
     <div className="container-fluid p-0 page-module-container">
       <header className="page-header mb-4">
@@ -80,20 +87,33 @@ const EvaluateTeamPage = ({ currentUser, employees, positions, evaluations, kras
       </header>
 
       <div className="status-summary-bar">
-        <div className="summary-card"><div className="summary-icon icon-team"><i className="bi bi-people-fill"></i></div><div className="summary-info"><span className="summary-value">{summaryStats.total}</span><span className="summary-label">Total Members</span></div></div>
-        <div className="summary-card"><div className="summary-icon icon-due"><i className="bi bi-hourglass-split"></i></div><div className="summary-info"><span className="summary-value">{summaryStats.due}</span><span className="summary-label">Due for Review</span></div></div>
-        <div className="summary-card"><div className="summary-icon icon-completed"><i className="bi bi-check2-circle"></i></div><div className="summary-info"><span className="summary-value">{summaryStats.completed}</span><span className="summary-label">Completed</span></div></div>
+        <div className={`summary-card interactive ${statusFilter === 'All' ? 'active' : ''}`} onClick={() => setStatusFilter('All')}>
+            <div className="summary-icon icon-team"><i className="bi bi-people-fill"></i></div>
+            <div className="summary-info">
+                <span className="summary-value">{summaryStats.total}</span>
+                <span className="summary-label"> Total Members</span>
+            </div>
+        </div>
+        <div className={`summary-card interactive ${statusFilter === 'Due' ? 'active' : ''}`} onClick={() => setStatusFilter('Due')}>
+            <div className="summary-icon icon-due"><i className="bi bi-hourglass-split"></i></div>
+            <div className="summary-info">
+                <span className="summary-value">{summaryStats.due}</span>
+                <span className="summary-label"> Due for Review</span>
+            </div>
+        </div>
+        <div className={`summary-card interactive ${statusFilter === 'Completed' ? 'active' : ''}`} onClick={() => setStatusFilter('Completed')}>
+            <div className="summary-icon icon-completed"><i className="bi bi-check2-circle"></i></div>
+            <div className="summary-info">
+                <span className="summary-value">{summaryStats.completed}</span>
+                <span className="summary-label"> Completed</span>
+            </div>
+        </div>
       </div>
       
       <div className="controls-bar page-controls-bar d-flex justify-content-between mb-4">
         <div className="input-group" style={{ maxWidth: '400px' }}>
             <span className="input-group-text"><i className="bi bi-search"></i></span>
             <input type="text" className="form-control" placeholder="Search by name..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-        </div>
-        <div className="btn-group" role="group">
-            <button type="button" className={`btn ${statusFilter === 'All' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setStatusFilter('All')}>All</button>
-            <button type="button" className={`btn ${statusFilter === 'Due' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setStatusFilter('Due')}>Due</button>
-            <button type="button" className={`btn ${statusFilter === 'Completed' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setStatusFilter('Completed')}>Completed</button>
         </div>
       </div>
 
@@ -123,15 +143,14 @@ const EvaluateTeamPage = ({ currentUser, employees, positions, evaluations, kras
           employees={[selectedEmployee]} 
         />
       )}
-      {viewingEvaluation && (
+      {modalProps && (
         <ViewEvaluationModal
           show={showViewModal}
           onClose={() => setShowViewModal(false)}
-          evaluation={viewingEvaluation}
-          employee={employeeMap.get(viewingEvaluation.employeeId)}
-          position={positionMap.get(employeeMap.get(viewingEvaluation.employeeId)?.positionId)}
-          kras={kras}
-          kpis={kpis}
+          evaluation={modalProps.evaluation}
+          employee={modalProps.employee}
+          position={modalProps.position}
+          evaluationFactors={evaluationFactors}
         />
       )}
     </div>
