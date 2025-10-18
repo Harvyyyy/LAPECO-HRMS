@@ -109,7 +109,7 @@ const PayrollGenerationPage = ({ employees, positions, schedules, attendanceLogs
       }
 
       return { emp, totalGross, breakdown, workdays, earnings, absences, otherDeductions };
-    }).filter(Boolean);
+    }).filter(Boolean).filter(item => item.workdays > 0);
   }, [startDate, endDate, employees, positions, schedules, attendanceLogs, holidays, positionMap, holidayMap]);
 
   const summary = useMemo(() => {

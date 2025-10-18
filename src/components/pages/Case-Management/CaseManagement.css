@@ -95,12 +95,6 @@
     align-items: center;
     gap: 0.75rem;
 }
-.case-card-revised-header .avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-}
 .case-card-revised-header .name {
     font-weight: 600;
     font-size: 1.05rem;
@@ -148,12 +142,6 @@
 .case-detail-header-main {
     display: flex;
     gap: 1.5rem;
-}
-.case-detail-header-main .avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
 }
 .case-detail-header-main .title-section .case-reason {
     font-size: 1.75rem;
@@ -275,11 +263,4 @@
     .case-detail-layout {
         grid-template-columns: 1fr;
     }
-}
-
-.avatar-table {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
 }

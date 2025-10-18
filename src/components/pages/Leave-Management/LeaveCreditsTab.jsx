@@ -25,12 +25,13 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
             new Date(req.dateFrom).getFullYear() === currentYear
           )
           .reduce((acc, req) => {
-            const type = req.leaveType.toLowerCase().replace(' leave', '');
+            const rawType = req.leaveType.toLowerCase();
+            let type = rawType.replace(' leave', '');
             if (acc.hasOwnProperty(type)) {
               acc[type] = (acc[type] || 0) + req.days;
             }
             return acc;
-          }, { vacation: 0, sick: 0, personal: 0, unpaid: 0, paternity: 0 });
+          }, { vacation: 0, sick: 0, unpaid: 0, emergency: 0, paternity: 0 });
         
         const individualHistory = leaveRequests.filter(req => req.empId === emp.id);
 
@@ -42,7 +43,6 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
           remainingBalance: {
             vacation: (totalCredits.vacation || 0) - (usedCredits.vacation || 0),
             sick: (totalCredits.sick || 0) - (usedCredits.sick || 0),
-            personal: (totalCredits.personal || 0) - (usedCredits.personal || 0),
             paternity: (totalCredits.paternity || 0) - (usedCredits.paternity || 0),
           }
         };
@@ -52,9 +52,14 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
 
     return [...filteredData].sort((a, b) => {
       let valA, valB;
-      if (['vacation', 'sick', 'personal', 'paternity', 'unpaid'].includes(sortConfig.key)) {
-        valA = sortConfig.key === 'unpaid' ? a.usedCredits.unpaid : a.remainingBalance[sortConfig.key];
-        valB = sortConfig.key === 'unpaid' ? b.usedCredits.unpaid : b.remainingBalance[sortConfig.key];
+      if (['vacation', 'sick', 'paternity', 'unpaid', 'emergency'].includes(sortConfig.key)) {
+        if (sortConfig.key === 'unpaid' || sortConfig.key === 'emergency') {
+          valA = a.usedCredits[sortConfig.key] || 0;
+          valB = b.usedCredits[sortConfig.key] || 0;
+        } else {
+          valA = a.remainingBalance[sortConfig.key];
+          valB = b.remainingBalance[sortConfig.key];
+        }
       } else {
         valA = a.name.toLowerCase();
         valB = b.name.toLowerCase();
@@ -125,8 +130,8 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
                 <th className="sortable" onClick={() => requestSort('name')}>Employee Name {getSortIcon('name')}</th>
                 <th className="sortable" onClick={() => requestSort('vacation')}>Vacation {getSortIcon('vacation')}</th>
                 <th className="sortable" onClick={() => requestSort('sick')}>Sick {getSortIcon('sick')}</th>
-                <th className="sortable" onClick={() => requestSort('personal')}>Personal {getSortIcon('personal')}</th>
                 <th className="sortable" onClick={() => requestSort('paternity')}>Paternity {getSortIcon('paternity')}</th>
+                <th className="sortable text-center" onClick={() => requestSort('emergency')}>Emergency {getSortIcon('emergency')}</th>
                 <th className="sortable text-center" onClick={() => requestSort('unpaid')}>Unpaid {getSortIcon('unpaid')}</th>
                 <th>Actions</th>
               </tr>
@@ -145,8 +150,8 @@ const LeaveCreditsTab = ({ employees, leaveRequests, handlers }) => {
                       <div className="progress" style={{height: '8px'}}><div className={`progress-bar ${getProgressBarVariant(vacationPercentage)}`} style={{width: `${vacationPercentage}%`}}></div></div>
                     </td>
                     <td className="text-center">{emp.remainingBalance.sick} / {emp.totalCredits.sick}</td>
-                    <td className="text-center">{emp.remainingBalance.personal} / {emp.totalCredits.personal}</td>
                     <td className="text-center">{emp.gender === 'Male' ? `${emp.remainingBalance.paternity} / ${emp.totalCredits.paternity}` : 'N/A'}</td>
+                    <td className="text-center fw-bold">{emp.usedCredits.emergency || 0}</td>
                     <td className="text-center fw-bold">{emp.usedCredits.unpaid || 0}</td>
                     <td>
                         <div className="dropdown">

@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
 import StartEvaluationModal from '../../modals/StartEvaluationModal';
 import './EvaluationPages.css';
+import Avatar from '../../common/Avatar';
 
 const EvaluateLeaderPage = ({ currentUser, employees, positions }) => {
   const navigate = useNavigate();
@@ -33,9 +33,10 @@ const EvaluateLeaderPage = ({ currentUser, employees, positions }) => {
         <div className="evaluation-selector-grid">
           <div className="card evaluation-selector-card">
             <div className="card-body d-flex align-items-center">
-              <img 
-                src={teamLeader.avatarUrl || placeholderAvatar} 
-                alt={teamLeader.name} 
+              <Avatar
+                src={teamLeader.avatarUrl}
+                alt={teamLeader.name}
+                size="lg"
                 className="selector-avatar"
               />
               <div className="selector-info">

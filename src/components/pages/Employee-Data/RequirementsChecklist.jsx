@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Doughnut } from 'react-chartjs-2';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+import Avatar from '../../common/Avatar';
 
 const REQUIREMENTS_LIST = [
     { key: 'sssNo', label: 'SSS' },
@@ -76,6 +76,13 @@ const RequirementsChecklist = ({ employees }) => {
 
     const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' };
 
+    const percentComplete = useMemo(() => {
+      const total = processedEmployees.length;
+      if (total === 0) return 0;
+      const completeCount = processedEmployees.filter(e => e.isComplete).length;
+      return Math.round((completeCount / total) * 100);
+    }, [processedEmployees]);
+
     return (
         <div className="requirements-checklist-container">
             <div className="requirements-header-grid">
@@ -109,7 +116,10 @@ const RequirementsChecklist = ({ employees }) => {
                         <h6 className="mb-0"><i className="bi bi-pie-chart-fill me-2"></i>Overall Completeness</h6>
                     </div>
                     <div className="card-body">
-                        <Doughnut data={chartData} options={chartOptions} />
+                        <div className="completeness-chart-wrapper">
+                            <Doughnut data={chartData} options={chartOptions} />
+                            <div className="completeness-chart-center-text">{percentComplete}%</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -135,7 +145,12 @@ const RequirementsChecklist = ({ employees }) => {
                                 <tr key={emp.id}>
                                     <td>
                                         <div className="d-flex align-items-center">
-                                            <img src={emp.imageUrl || placeholderAvatar} alt={emp.name} className="employee-avatar-table me-2" />
+                                            <Avatar 
+                                                src={emp.imageUrl}
+                                                alt={emp.name}
+                                                size="sm"
+                                                className="me-2"
+                                            />
                                             <span>{emp.name}</span>
                                         </div>
                                     </td>

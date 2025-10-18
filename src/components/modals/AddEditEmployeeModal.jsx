@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import './AddEditEmployeeModal.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import placeholderImage from '../../assets/placeholder-profile.jpg';
+import Avatar from '../common/Avatar';
 
 const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, viewOnly = false, onSwitchToEdit }) => {
   const initialFormState = {
@@ -9,7 +9,7 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
     email: '', positionId: '',
     joiningDate: new Date().toISOString().split('T')[0],
     birthday: '', gender: '', address: '', contactNumber: '',
-    imageUrl: null, imagePreviewUrl: placeholderImage,
+    imageUrl: null,
     sssNo: '', tinNo: '', pagIbigNo: '', philhealthNo: '',
     status: 'Active',
     resumeFile: null, 
@@ -40,7 +40,6 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
           address: employeeData.address || '',
           contactNumber: employeeData.contactNumber || '',
           imageUrl: employeeData.imageUrl || null,
-          imagePreviewUrl: employeeData.imageUrl || placeholderImage,
           sssNo: employeeData.sssNo || '',
           tinNo: employeeData.tinNo || '',
           pagIbigNo: employeeData.pagIbigNo || '',
@@ -63,7 +62,7 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
       const file = files[0];
       if (name === 'imageUrl') {
         if (file) {
-          setFormData({ ...formData, imageUrl: file, imagePreviewUrl: URL.createObjectURL(file) });
+          setFormData({ ...formData, imageUrl: file });
         }
       } else if (name === 'resumeFile') {
         setFormData({ ...formData, resumeFile: file, resumeUrl: file ? URL.createObjectURL(file) : employeeData?.resumeUrl || null });
@@ -92,7 +91,6 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
     e.preventDefault();
     if (validateForm()) {
       const dataToSave = { ...formData };
-      delete dataToSave.imagePreviewUrl;
       const newEmployee = onSave(dataToSave, employeeData?.id);
       
       if (!isEditMode && newEmployee) { // Only close on successful creation
@@ -109,6 +107,14 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
   
   const displayName = employeeData?.name || 'New Employee';
 
+  // Create a preview URL for file objects
+  const imagePreviewSrc = useMemo(() => {
+    if (formData.imageUrl instanceof File) {
+      return URL.createObjectURL(formData.imageUrl);
+    }
+    return formData.imageUrl;
+  }, [formData.imageUrl]);
+
   return (
     <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
       <div className="modal-dialog modal-dialog-centered modal-xl">
@@ -122,7 +128,12 @@ const AddEditEmployeeModal = ({ show, onClose, onSave, employeeData, positions, 
               <div className="employee-form-container">
                 <div className="employee-form-left-column">
                   <div className={`employee-profile-img-container ${isViewMode ? '' : 'editable'}`} onClick={() => !isViewMode && fileInputRef.current.click()}>
-                    <img src={formData.imagePreviewUrl} alt="Profile Preview" className="employee-profile-img-form" onError={(e) => { e.target.src = placeholderImage; }} />
+                    <Avatar 
+                      src={imagePreviewSrc}
+                      alt="Profile Preview"
+                      size="xxl"
+                      className="employee-profile-img-form"
+                    />
                     {!isViewMode && <div className="employee-profile-img-overlay"><i className="bi bi-camera-fill"></i></div>}
                   </div>
                   <input type="file" ref={fileInputRef} name="imageUrl" accept="image/*" onChange={handleChange} className="d-none" disabled={isViewMode} />

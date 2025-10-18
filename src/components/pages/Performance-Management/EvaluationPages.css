@@ -1,5 +1,3 @@
-/* src/components/pages/Performance-Management/EvaluationPages.css */
-
 /* ==========================================================================
    Main Evaluation Form Page Layout
    ========================================================================== */
@@ -189,4 +187,137 @@
 .dark-theme .star-rating i,
 .dark-theme .star-rating i:hover ~ i {
     color: var(--border-color);
+}
+
+
+/* --- Selector Card Styles (EvaluateTeamPage & EvaluateLeaderPage) --- */
+.evaluation-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1rem;
+}
+
+.evaluation-selector-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.evaluation-selector-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow);
+}
+
+.evaluation-selector-card .selector-info {
+    flex-grow: 1;
+}
+
+.selector-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.selector-position {
+    font-size: 0.9rem;
+}
+
+.evaluation-selector-card-revised {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+.evaluation-selector-card-revised .card-main-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+.evaluation-selector-card-revised .card-status-panel {
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-item {
+    font-size: 0.8rem;
+}
+
+.status-label {
+    color: var(--text-secondary);
+}
+
+.status-value {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.status-badge-revised {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.3em 0.7em;
+    border-radius: var(--border-radius);
+    color: #fff;
+}
+
+.status-badge-revised.status-due {
+    background-color: var(--warning-color);
+    color: var(--text-primary);
+}
+
+.status-badge-revised.status-completed {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.card-action-button {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* --- Status Summary Bar (EvaluateTeamPage) --- */
+.status-summary-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: var(--bg-primary);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.summary-icon {
+    font-size: 1.5rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    color: #fff;
+}
+
+.summary-icon.icon-team { background-color: var(--text-secondary); }
+.summary-icon.icon-due { background-color: var(--warning-color); color: var(--text-primary); }
+.summary-icon.icon-completed { background-color: var(--app-success-color); }
+
+.summary-info .summary-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+}
+
+.summary-info .summary-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
 }

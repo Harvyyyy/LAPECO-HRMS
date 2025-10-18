@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+import Avatar from '../../common/Avatar';
 
 const CaseDetailView = ({ caseInfo, employee, onBack, onSaveLog, onEdit, onDelete }) => {
   const [newLogEntry, setNewLogEntry] = useState('');
@@ -25,7 +25,11 @@ const CaseDetailView = ({ caseInfo, employee, onBack, onSaveLog, onEdit, onDelet
 
       <div className="case-detail-header-revised">
           <div className="case-detail-header-main">
-            <img src={employee?.imageUrl || placeholderAvatar} alt={employee?.name} className="avatar" />
+            <Avatar 
+              src={employee?.imageUrl}
+              alt={employee?.name || 'Employee'}
+              size="xl"
+            />
             <div className="title-section">
                 <h1 className="case-reason">{caseInfo.reason}</h1>
                 <p className="employee-name">For: {employee?.name || 'Unknown'} ({caseInfo.employeeId})</p>

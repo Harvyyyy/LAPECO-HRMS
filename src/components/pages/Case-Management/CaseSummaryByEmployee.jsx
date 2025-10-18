@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+import Avatar from '../../common/Avatar';
 
 const CaseSummaryByEmployee = ({ employees, cases, onViewEmployeeCases }) => {
   const [sortConfig, setSortConfig] = useState({ key: 'totalCases', direction: 'descending' });
@@ -63,7 +63,12 @@ const CaseSummaryByEmployee = ({ employees, cases, onViewEmployeeCases }) => {
               <tr key={emp.id}>
                 <td>
                   <div className="d-flex align-items-center">
-                    <img src={emp.imageUrl || placeholderAvatar} alt={emp.name} className="avatar-table me-2" />
+                    <Avatar 
+                      src={emp.imageUrl}
+                      alt={emp.name}
+                      size="sm"
+                      className="me-2"
+                    />
                     <div>
                       <div className="fw-bold">{emp.name}</div>
                       <small className="text-muted">{emp.id}</small>

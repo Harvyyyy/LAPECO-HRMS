@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
 import './MyTeamPage.css';
+import Avatar from '../../common/Avatar';
 
 const MyTeamPage = ({ currentUser, employees, positions }) => {
   const [viewMode, setViewMode] = useState('card');
@@ -69,11 +69,11 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
       {sortedAndFilteredTeam.map(member => (
         <div key={member.id} className={`team-member-card-final ${member.isTeamLeader ? 'leader' : ''}`}>
           <div className="card-top-section">
-            <img 
-              src={member.avatarUrl || placeholderAvatar} 
-              alt={member.name} 
+            <Avatar
+              src={member.avatarUrl}
+              alt={member.name}
+              size="lg"
               className="member-avatar"
-              onError={(e) => { e.target.src = placeholderAvatar; }}
             />
             <div className="member-info">
               <h6 className="member-name">{member.name}</h6>
@@ -95,12 +95,6 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
                   </div>
                 )
             }
-          </div>
-          <div className="card-bottom-section">
-            <a href={`mailto:${member.email}`} className="contact-link">
-              <i className="bi bi-envelope-fill"></i>
-              <span>{member.email}</span>
-            </a>
           </div>
         </div>
       ))}
@@ -128,8 +122,15 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
                                 {member.isTeamLeader && <span className="badge bg-success-subtle text-success-emphasis ms-2">Leader</span>}
                             </td>
                             <td>
-                                <img src={member.avatarUrl || placeholderAvatar} alt={member.name} className="avatar-table me-2" onError={(e) => { e.target.src = placeholderAvatar; }}/>
-                                {member.name}
+                                <div className="d-flex align-items-center">
+                                    <Avatar
+                                      src={member.avatarUrl}
+                                      alt={member.name}
+                                      size="sm"
+                                      className="me-2"
+                                    />
+                                    {member.name}
+                                </div>
                             </td>
                             <td>{member.email}</td>
                             <td>{member.contactNumber || 'N/A'}</td>
@@ -151,6 +152,7 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
     </div>
   );
 
+  // --- No changes to the main component return statement ---
   return (
     <div className="container-fluid p-0 page-module-container">
       <header className="page-header d-flex justify-content-between align-items-center mb-4">

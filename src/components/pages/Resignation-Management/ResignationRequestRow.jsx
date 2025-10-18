@@ -1,7 +1,7 @@
 import React from 'react';
 import { differenceInDays, parseISO, startOfToday } from 'date-fns';
 import ActionsDropdown from '../../common/ActionsDropdown';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+
 
 const ResignationRequestRow = ({ request, employee, onApprove, onDecline, onEditDate, onViewReason, onDelete, onViewProfile }) => {
     if (!request || !request.id) {

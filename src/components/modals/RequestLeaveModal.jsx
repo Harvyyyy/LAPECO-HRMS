@@ -200,9 +200,11 @@ const RequestLeaveModal = ({ show, onClose, onSave, userGender, editingRequest }
               <div className="mb-3">
                 <label htmlFor="leaveType" className="form-label">Leave Type*</label>
                 <select id="leaveType" name="leaveType" className={`form-select ${errors.leaveType ? 'is-invalid' : ''}`} value={formData.leaveType} onChange={handleLeaveTypeChange}>
-                  <option value="Vacation">Vacation</option><option value="Sick Leave">Sick Leave</option><option value="Personal Leave">Personal Leave</option>
+                  <option value="Vacation">Vacation</option><option value="Sick Leave">Sick Leave</option>
+                  {isEditing && editingRequest?.leaveType === 'Personal Leave' && (<option value="Personal Leave" disabled>Personal Leave (deprecated)</option>)}
                   {userGender?.toLowerCase() === 'female' && (<option value="Maternity Leave">Maternity Leave</option>)}
                   {userGender?.toLowerCase() === 'male' && (<option value="Paternity Leave">Paternity Leave</option>)}
+                  <option value="Emergency Leave">Emergency Leave</option>
                   <option value="Unpaid Leave">Unpaid Leave</option>
                 </select>
                 {errors.leaveType && <div className="invalid-feedback">{errors.leaveType}</div>}

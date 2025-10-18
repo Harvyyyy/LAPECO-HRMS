@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
 import { USER_ROLES } from '../../../constants/roles';
 import './MyProfilePage.css';
+import Avatar from '../../common/Avatar';
 
 const InfoField = ({ label, value }) => (
     <div className="info-field">
@@ -73,9 +73,10 @@ const MyProfilePage = ({ currentUser, userRole, positions, employees, handlers }
         <div className="container-fluid p-0 page-module-container">
             <div className="profile-page-header">
                 <div className="profile-avatar-container" onClick={() => fileInputRef.current.click()}>
-                    <img 
-                        src={currentUser.imageUrl || placeholderAvatar}
+                    <Avatar 
+                        src={currentUser.imageUrl}
                         alt="My Avatar"
+                        size="xl"
                         className="profile-avatar-large"
                     />
                     <div className="profile-avatar-overlay"><i className="bi bi-camera-fill"></i></div>

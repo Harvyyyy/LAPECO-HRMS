@@ -133,7 +133,7 @@
 .leave-list { list-style: none; padding: 0; margin: 0; }
 .leave-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1.25rem; border-bottom: 1px solid var(--border-color); }
 .leave-item:last-child { border-bottom: none; }
-.leave-item .avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+
 .leave-item .info { flex-grow: 1; }
 .leave-item .info .name { font-weight: 500; font-size: 0.9rem; color: var(--text-primary); }
 .leave-item .info .leave-type { font-size: 0.8rem; color: var(--text-secondary); }
@@ -172,12 +172,6 @@
     gap: 0.75rem; 
     font-size: 0.9rem; 
     padding: 0.4rem 0; 
-}
-.roster-item .avatar { 
-    width: 32px; 
-    height: 32px; 
-    border-radius: 50%; 
-    object-fit: cover; 
 }
 .roster-item .name { 
     font-weight: 500; 

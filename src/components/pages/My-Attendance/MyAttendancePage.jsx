@@ -43,7 +43,6 @@ const MyAttendancePage = ({ currentUser, allSchedules, attendanceLogs }) => {
       const today = new Date(); today.setHours(0,0,0,0);
       const scheduleDate = new Date(schedule.date); scheduleDate.setHours(0,0,0,0);
 
-      // --- FIX: Initialize status to 'Scheduled' ---
       let status = 'Scheduled';
       let statusClass = 'scheduled';
 
@@ -157,7 +156,7 @@ const MyAttendancePage = ({ currentUser, allSchedules, attendanceLogs }) => {
                   <th>Date</th>
                   <th>Status</th>
                   <th>Schedule</th>
-                  <th>Sign In/Out</th>
+                  <th>Time In/Out</th>
                   <th>Hours</th>
                 </tr>
               </thead>
@@ -189,3 +188,4 @@ const MyAttendancePage = ({ currentUser, allSchedules, attendanceLogs }) => {
 };
 
 export default MyAttendancePage;
+

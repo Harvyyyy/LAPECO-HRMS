@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
-import placeholderAvatar from '../../assets/placeholder-profile.jpg';
 import NotificationDropdown from './NotificationDropdown';
 import ThemeToggle from './ThemeToggle'; 
+import Avatar from '../common/Avatar';
 
 const Header = ({ 
   onLogout, 
@@ -48,11 +48,11 @@ const Header = ({
             data-bs-toggle="dropdown" 
             aria-expanded="false"
           >
-            <img 
-              src={user.avatarUrl || placeholderAvatar} 
-              alt="User Avatar" 
-              className="user-avatar" 
-              onError={(e) => { e.target.onerror = null; e.target.src=placeholderAvatar; }}
+            <Avatar 
+              src={user.avatarUrl}
+              alt="User Avatar"
+              size="md"
+              className="user-avatar"
             />
             <div className="user-text-info">
               <span className="user-name">{user.name}</span>

@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+import Avatar from '../../common/Avatar';
 import useReportGenerator from '../../../hooks/useReportGenerator';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
+import ConfirmationModal from '../../modals/ConfirmationModal';
 
 const formatCurrency = (value) => {
     if (typeof value !== 'number') return '0.00';
@@ -15,6 +16,7 @@ const ThirteenthMonthPage = ({ employees = [], payrolls = [] }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
     const [statuses, setStatuses] = useState({});
+    const [showConfirmMarkAll, setShowConfirmMarkAll] = useState(false);
 
     const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
     const [showReportPreview, setShowReportPreview] = useState(false);
@@ -146,6 +148,18 @@ const ThirteenthMonthPage = ({ employees = [], payrolls = [] }) => {
         setShowReportPreview(true);
     };
 
+    // Bulk mark all as Paid (applies to filtered table rows)
+    const handleConfirmMarkAll = () => {
+        setStatuses(prev => {
+            const updated = { ...prev };
+            filteredAndSortedDetails.forEach(item => {
+                updated[item.id] = 'Paid';
+            });
+            return updated;
+        });
+        setShowConfirmMarkAll(false);
+    };
+
     const handleClosePreview = () => {
         setShowReportPreview(false);
         if (pdfDataUri) {
@@ -188,6 +202,9 @@ const ThirteenthMonthPage = ({ employees = [], payrolls = [] }) => {
                         </div>
                     </div>
                     <div className="controls-right d-flex gap-2">
+                        <button className="btn btn-sm btn-success" onClick={() => setShowConfirmMarkAll(true)} disabled={filteredAndSortedDetails.length === 0}>
+                            <i className="bi bi-check2-all me-2"></i>Mark All as Paid
+                        </button>
                         <button className="btn btn-sm btn-outline-secondary" onClick={handleExport} disabled={filteredAndSortedDetails.length === 0}>
                             <i className="bi bi-download me-2"></i>Export Excel
                         </button>
@@ -215,7 +232,12 @@ const ThirteenthMonthPage = ({ employees = [], payrolls = [] }) => {
                                     <td>{item.id}</td>
                                     <td>
                                         <div className="d-flex align-items-center">
-                                            <img src={item.imageUrl || placeholderAvatar} alt={item.name} className="avatar-table me-3" />
+                                            <Avatar 
+                                                src={item.imageUrl}
+                                                alt={item.name}
+                                                size="sm"
+                                                className="me-3"
+                                            />
                                             <div>
                                                 <div className="fw-bold">{item.name}</div>
                                             </div>
@@ -251,6 +273,17 @@ const ThirteenthMonthPage = ({ employees = [], payrolls = [] }) => {
                     </table>
                 </div>
             </div>
+            <ConfirmationModal
+                show={showConfirmMarkAll}
+                onClose={() => setShowConfirmMarkAll(false)}
+                onConfirm={handleConfirmMarkAll}
+                title="Mark All as Paid"
+                confirmText="Yes, Mark All"
+                confirmVariant="success"
+            >
+                <p>Mark all <strong>{filteredAndSortedDetails.length}</strong> displayed employees as <strong>Paid</strong> for {year}?</p>
+                <p className="text-muted">This updates only the statuses in this view.</p>
+            </ConfirmationModal>
             {(isLoading || pdfDataUri) && (
                 <ReportPreviewModal
                     show={showReportPreview}

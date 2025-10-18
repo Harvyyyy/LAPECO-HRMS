@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+import Avatar from '../../common/Avatar';
 
 const EvaluationSelectorCard = ({ employee, positionTitle, lastEvaluation, onAction }) => {
   const { status, statusClass, lastEvalDateFormatted } = useMemo(() => {
@@ -24,9 +24,10 @@ const EvaluationSelectorCard = ({ employee, positionTitle, lastEvaluation, onAct
   return (
     <div className="evaluation-selector-card-revised">
       <div className="card-main-info">
-        <img 
-          src={employee.imageUrl || placeholderAvatar} 
-          alt={employee.name} 
+        <Avatar
+          src={employee.imageUrl}
+          alt={employee.name}
+          size="lg"
           className="selector-avatar"
         />
         <div className="selector-info">

@@ -25,13 +25,12 @@
     flex-direction: column;
   }
   .profile-avatar {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 50%;
     border: 4px solid var(--bg-primary); 
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     margin: 0 auto 1rem auto;
+  }
+  .dark-theme .profile-avatar {
+    border-color: var(--bg-tertiary);
   }
   .profile-name {
     font-size: 1.4rem;
@@ -125,8 +124,4 @@
   .profile-main .detail-value {
       font-size: 0.95rem;
       color: var(--text-primary);
-  }
-
-  .dark-theme .profile-avatar {
-    border-color: var(--bg-tertiary);
   }

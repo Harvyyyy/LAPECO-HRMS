@@ -12,7 +12,7 @@ import ScoreIndicator from './ScoreIndicator';
 import PerformanceReportModal from '../../modals/PerformanceReportModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import useReportGenerator from '../../../hooks/useReportGenerator';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+import Avatar from '../../common/Avatar';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -302,7 +302,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
                       <tr key={ev.id}>
                         <td>
                           <div className='d-flex align-items-center'>
-                            <img src={employee?.imageUrl || placeholderAvatar} alt={employee?.name} className='avatar-table me-2' />
+                            <Avatar src={employee?.imageUrl} alt={employee?.name} size='sm' className='avatar-table me-2' />
                             <div>
                               <div className='fw-bold'>{employee?.name || 'Unknown'}</div>
                               <small className='text-muted'>{positionMap.get(employee?.positionId) || 'N/A'}</small>

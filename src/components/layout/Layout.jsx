@@ -7,7 +7,7 @@ import './Layout.css';
 
 const MOBILE_BREAKPOINT = 992;
 
-const Layout = ({ onLogout, userRole, currentUser, notifications, appLevelHandlers, theme, toast, clearToast }) => {
+const Layout = ({ onLogout, userRole, currentUser, notifications, appLevelHandlers, theme, toast, clearToast, employees }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarVisible, setIsMobileSidebarVisible] = useState(false);
   const [isMobileView, setIsMobileView] = useState(window.innerWidth < MOBILE_BREAKPOINT);
@@ -90,7 +90,7 @@ const Layout = ({ onLogout, userRole, currentUser, notifications, appLevelHandle
           onToggleMobileSidebar={handleToggleMobileSidebar}
         />
         <main className="page-content">
-          <Outlet />
+          <Outlet context={{ theme, employees }} />
         </main>
       </div>
 

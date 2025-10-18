@@ -37,6 +37,7 @@ import AccountsPage from './components/pages/Accounts/AccountsPage';
 import MyProfilePage from './components/pages/My-Profile/MyProfilePage';
 import AccountSettingsPage from './components/pages/Account-Settings/AccountSettingsPage';
 import ContributionsManagementPage from './components/pages/Contributions-Management/ContributionsManagementPage';
+import NotFoundPage from './components/pages/NotFound/NotFoundPage';
 import PredictiveAnalyticsPage from './components/pages/Predictive-Analytics/PredictiveAnalyticsPage';
 import LeaderboardsPage from './components/pages/Leaderboards/LeaderboardsPage';
 // --- NEW ---
@@ -1016,10 +1017,10 @@ function AppContent() {
             />
           </>
         )}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
       <Route path="/" element={currentUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
-      <Route path="*" element={ <div style={{ textAlign: 'center', marginTop: '50px' }}><h2>404 - Page Not Found</h2></div> } />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

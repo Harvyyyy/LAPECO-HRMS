@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { format, parseISO, isSameMonth, isAfter, startOfToday } from 'date-fns';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+import Avatar from '../../common/Avatar';
 
 const EmployeeDashboard = ({ 
   currentUser = { name: 'Employee', id: '' }, 
@@ -98,7 +98,6 @@ const EmployeeDashboard = ({
                       </Link>
                   </li>
                   {leaderEvaluation.leader && leaderEvaluation.isDue && (
-                    // --- MODIFIED: Added the new highlight class to the <li> ---
                     <li className="action-hub-item action-item-highlight">
                         <Link to="/dashboard/evaluate-leader">
                             <i className="action-icon bi bi-star-fill"></i>
@@ -131,7 +130,11 @@ const EmployeeDashboard = ({
             <ul className="roster-snapshot-list">
               {myTeam.slice(0, 3).map(member => (
                 <li key={member.id} className="roster-item">
-                  <img src={member.avatarUrl || placeholderAvatar} alt={member.name} className="avatar" />
+                  <Avatar 
+                    src={member.avatarUrl}
+                    alt={member.name}
+                    size="sm"
+                  />
                   <span className="name">{member.name}</span>
                 </li>
               ))}

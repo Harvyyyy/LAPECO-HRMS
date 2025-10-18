@@ -1,5 +1,3 @@
-// src/components/pages/Predictive-Analytics/PredictiveAnalyticsPage.jsx
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { startOfDay, endOfDay, subDays } from 'date-fns';
 import InsightDataCard from './InsightDataCard';
@@ -7,7 +5,6 @@ import RiskScoreIndicator from './RiskScoreIndicator';
 import RiskScoreBreakdown from './RiskScoreBreakdown';
 import PerformanceTrendChart from './PerformanceTrendChart';
 import RecommendedActions from './RecommendedActions';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
 import AddEditEmployeeModal from '../../modals/AddEditEmployeeModal';
 import EnrollEmployeeModal from '../../modals/EnrollEmployeeModal';
 import AddEditCaseModal from '../Case-Management/AddEditCaseModal';
@@ -16,6 +13,7 @@ import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import useReportGenerator from '../../../hooks/useReportGenerator';
 import PredictiveAnalyticsDashboard from './PredictiveAnalyticsDashboard';
 import './PredictiveAnalyticsPage.css';
+import Avatar from '../../common/Avatar';
 
 // --- CONFIGURATION FOR RISK SCORING & DEFINITIONS ---
 const RISK_WEIGHTS = { performance: 0.7, attendance: 0.3 };
@@ -319,7 +317,12 @@ const PredictiveAnalyticsPage = ({ evaluations = [], employees = [], positions =
                               <tr className={`main-row ${isExpanded ? 'selected-row' : ''}`} onClick={() => handleToggleDetails(emp.id)}>
                                 <td>
                                   <div className="d-flex align-items-center">
-                                    <img src={emp.imageUrl || placeholderAvatar} alt={emp.name} className="avatar-table me-3" />
+                                    <Avatar
+                                      src={emp.imageUrl}
+                                      alt={emp.name}
+                                      size="md"
+                                      className="me-3"
+                                    />
                                     <div>
                                       <div className="fw-bold">{emp.name}</div>
                                       <small className="text-muted">{emp.positionTitle}</small>

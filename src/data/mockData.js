@@ -285,7 +285,7 @@ export const initialLeaveRequests = [
 
   // --- PENDING REQUESTS ---
   { leaveId: 'LVE003', leaveType: 'Vacation', empId: 'EMP001', name: 'Alice Johnson', position: 'Packer', days: 5, dateFrom: '2025-09-15', dateTo: '2025-09-19', reason: 'Annual trip with family.', status: 'Pending' },
-  { leaveId: 'LVE004', leaveType: 'Personal Leave', empId: 'EMP004', name: 'David Green', position: 'Lifter', days: 1, dateFrom: '2025-08-22', dateTo: '2025-08-22', reason: 'Appointment at a government office.', status: 'Pending' },
+  { leaveId: 'LVE004', leaveType: 'Emergency Leave', empId: 'EMP004', name: 'David Green', position: 'Lifter', days: 1, dateFrom: '2025-08-22', dateTo: '2025-08-22', reason: 'Appointment at a government office.', status: 'Pending' },
   { leaveId: 'LVE005', leaveType: 'Unpaid Leave', empId: 'EMP009', name: 'Ivy Lee', position: 'Packer', days: 3, dateFrom: '2025-10-01', dateTo: '2025-10-03', reason: 'Personal matters.', status: 'Pending' },
   { leaveId: 'LVE101', leaveType: 'Vacation', empId: 'EMP102', name: 'Jack Davis', position: 'Picker', days: 2, dateFrom: '2025-10-10', dateTo: '2025-10-11', reason: 'Family event.', status: 'Pending' },
 
@@ -296,17 +296,17 @@ export const initialLeaveRequests = [
   { leaveId: 'LVE007', leaveType: 'Sick Leave', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 1, dateFrom: '2025-07-21', dateTo: '2025-07-21', reason: 'Fever and headache.', status: 'Approved' },
   { leaveId: 'LVE008', leaveType: 'Sick Leave', empId: 'EMP001', name: 'Alice Johnson', position: 'Packer', days: 3, dateFrom: '2025-06-02', dateTo: '2025-06-04', reason: 'Stomach flu, doctor advised rest.', status: 'Approved' },
   { leaveId: 'LVE009', leaveType: 'Vacation', empId: 'EMP004', name: 'David Green', position: 'Lifter', days: 10, dateFrom: '2025-01-20', dateTo: '2025-01-29', reason: 'Hometown festival.', status: 'Approved' },
-  { leaveId: 'LVE014', leaveType: 'Personal Leave', empId: 'EMP004', name: 'David Green', position: 'Lifter', days: 1, dateFrom: '2023-09-20', dateTo: '2023-09-20', reason: 'Family emergency.', status: 'Approved' },
+  { leaveId: 'LVE014', leaveType: 'Emergency Leave', empId: 'EMP004', name: 'David Green', position: 'Lifter', days: 1, dateFrom: '2023-09-20', dateTo: '2023-09-20', reason: 'Family emergency.', status: 'Approved' },
   { leaveId: 'LVE015', leaveType: 'Sick Leave', empId: 'EMP009', name: 'Ivy Lee', position: 'Packer', days: 2, dateFrom: '2023-09-25', dateTo: '2023-09-26', reason: 'Migraine.', status: 'Approved' },
   { leaveId: 'LVE102', leaveType: 'Sick Leave', empId: 'EMP115', name: 'Wendy Hall', position: 'Lifter', days: 1, dateFrom: '2025-09-01', dateTo: '2025-09-01', reason: 'Dental appointment.', status: 'Approved' },
 
   // --- DECLINED REQUESTS ---
   { leaveId: 'LVE010', leaveType: 'Vacation', empId: 'EMP009', name: 'Ivy Lee', position: 'Packer', days: 2, dateFrom: '2025-08-18', dateTo: '2025-08-19', reason: 'Sudden plan with friends.', status: 'Declined' },
-  { leaveId: 'LVE011', leaveType: 'Personal Leave', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 1, dateFrom: '2025-07-30', dateTo: '2025-07-30', reason: 'Need to process bank documents.', status: 'Declined' },
+  { leaveId: 'LVE011', leaveType: 'Emergency Leave', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 1, dateFrom: '2025-07-30', dateTo: '2025-07-30', reason: 'Need to process bank documents.', status: 'Declined' },
 
   // --- CANCELLED REQUESTS ---
   { leaveId: 'LVE012', leaveType: 'Vacation', empId: 'EMP001', name: 'Alice Johnson', position: 'Packer', days: 2, dateFrom: '2025-08-18', dateTo: '2025-08-19', reason: 'Sudden plan with friends.', status: 'Canceled' },
-  { leaveId: 'LVE013', leaveType: 'Personal Leave', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 1, dateFrom: '2025-07-30', dateTo: '2025-07-30', reason: 'Need to process bank documents.', status: 'Canceled' },
+  { leaveId: 'LVE013', leaveType: 'Emergency Leave', empId: 'EMP002', name: 'Bob Smith', position: 'Lifter', days: 1, dateFrom: '2025-07-30', dateTo: '2025-07-30', reason: 'Need to process bank documents.', status: 'Canceled' },
 ];
 
 // ============================================================================

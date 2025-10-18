@@ -4,10 +4,10 @@ import AddEditEmployeeModal from '../../modals/AddEditEmployeeModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import RequirementsChecklist from './RequirementsChecklist';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import placeholderImage from '../../../assets/placeholder-profile.jpg';
 import useReportGenerator from '../../../hooks/useReportGenerator';
 import ConfirmationModal from '../../modals/ConfirmationModal';
 import TerminateEmployeeModal from '../../modals/TerminateEmployeeModal';
+import Avatar from '../../common/Avatar';
 
 const EmployeeDataPage = ({ employees, positions, handlers }) => {
   const [activeTab, setActiveTab] = useState('all');
@@ -177,7 +177,12 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
             </div>
           </div>
           <div className="employee-card-body-v2">
-            <img src={emp.imageUrl || placeholderImage} alt={emp.name} className="employee-avatar-v2" onError={(e) => { e.target.src = placeholderImage; }} />
+            <Avatar
+              src={emp.imageUrl}
+              alt={emp.name}
+              size="xl"
+              className="employee-avatar-v2"
+            />
             <h5 className="employee-name-v2">{emp.name}</h5>
             <p className="employee-position-v2">{emp.positionTitle}</p>
             <span className={`status-badge-employee status-badge-${emp.status.toLowerCase()}`}>{emp.status}</span>
@@ -216,7 +221,12 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
               <td><strong>{emp.id}</strong></td>
               <td>
                 <div className="d-flex align-items-center">
-                    <img src={emp.imageUrl || placeholderImage} alt={emp.name} className="employee-avatar-table me-2" onError={(e) => { e.target.src = placeholderImage; }} />
+                    <Avatar 
+                      src={emp.imageUrl}
+                      alt={emp.name}
+                      size="sm"
+                      className="me-2"
+                    />
                     {emp.name}
                 </div>
               </td>
@@ -254,7 +264,9 @@ const EmployeeDataPage = ({ employees, positions, handlers }) => {
             </span>
         </div>
         <div className="header-actions d-flex align-items-center gap-2">
-            <button className="btn btn-outline-secondary" onClick={handleGenerateReport}><i className="bi bi-file-earmark-text-fill"></i> Generate Report</button>
+            <button className="btn btn-outline-secondary" onClick={handleGenerateReport} disabled={!positions || positions.length === 0}>
+                <i className="bi bi-file-earmark-text-fill"></i> Generate Report
+            </button>
             <button className="btn btn-success" onClick={handleOpenAddModal}><i className="bi bi-person-plus-fill"></i> Add New Employee</button>
         </div>
       </header>

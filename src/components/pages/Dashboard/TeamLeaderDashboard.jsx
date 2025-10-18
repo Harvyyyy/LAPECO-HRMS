@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { format, addDays, startOfToday, endOfToday, isWithinInterval } from 'date-fns';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+import Avatar from '../../common/Avatar';
 
 const TeamLeaderDashboard = ({ 
   currentUser = {}, 
@@ -104,7 +104,12 @@ const TeamLeaderDashboard = ({
                         <ul className="leave-list">
                             {whosOutNext7Days.length > 0 ? whosOutNext7Days.map(req => (
                                 <li key={req.leaveId} className="leave-item">
-                                    <img src={employees.find(e => e.id === req.empId)?.avatarUrl || placeholderAvatar} alt={req.name} className="avatar" />
+                                    <Avatar
+                                      src={employees.find(e => e.id === req.empId)?.imageUrl}
+                                      alt={req.name}
+                                      size="md"
+                                      className="leave-item-avatar"
+                                    />
                                     <div className="info">
                                         <span className="name">{req.name}</span>
                                         <span className="leave-type">{req.leaveType} ({req.days} days)</span>

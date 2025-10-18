@@ -1,6 +1,6 @@
 import React from 'react';
 import { format } from 'date-fns';
-import placeholderAvatar from '../../../assets/placeholder-profile.jpg';
+import Avatar from '../../common/Avatar';
 
 const CaseCard = ({ caseInfo, employee, onView, onDelete }) => {
   const statusClass = caseInfo.status.toLowerCase();
@@ -14,7 +14,11 @@ const CaseCard = ({ caseInfo, employee, onView, onDelete }) => {
     <div className="case-card-revised" onClick={() => onView(caseInfo)}>
       <div className="case-card-revised-header">
         <div className="employee-info">
-          <img src={employee?.imageUrl || placeholderAvatar} alt={employee?.name} className="avatar" />
+          <Avatar 
+            src={employee?.imageUrl}
+            alt={employee?.name || 'Employee'}
+            size="md"
+          />
           <div>
             <div className="name">{employee?.name || 'Unknown'}</div>
             <div className="id">{caseInfo.employeeId}</div>

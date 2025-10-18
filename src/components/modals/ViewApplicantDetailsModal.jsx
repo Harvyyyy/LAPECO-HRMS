@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './ViewApplicantDetailsModal.css';
-import placeholderImage from '../../assets/placeholder-profile.jpg';
+import Avatar from '../common/Avatar';
 
 const calculateAge = (birthdate) => {
     if (!birthdate) return 'N/A';
@@ -32,7 +32,12 @@ const ViewApplicantDetailsModal = ({ applicant, show, onClose, jobTitle }) => {
           <div className="modal-body">
             <div className="applicant-details-container">
               <div className="profile-sidebar">
-                <img src={placeholderImage} alt={`${applicant.name}'s profile`} className="profile-avatar"/>
+                <Avatar 
+                  src={null} // Applicant data model doesn't have imageUrl yet, so this will always be a placeholder
+                  alt={`${applicant.name}'s profile`}
+                  size="xxl"
+                  className="profile-avatar"
+                />
                 <h4 className="profile-name">{applicant.name}</h4>
                 <p className="profile-job-title">{jobTitle}</p>
                 <span className={`applicant-status-badge status-${applicant.status.replace(/\s+/g, '-').toLowerCase()}`}>{applicant.status}</span>
