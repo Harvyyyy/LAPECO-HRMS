@@ -1,6 +1,4 @@
-// src/components/modals/ViewAttachmentsModal.jsx (UPDATED)
-
-import React, { useState, useMemo } from 'react'; // <-- Import useMemo
+import React, { useState, useMemo } from 'react';
 import useReportGenerator from '../../hooks/useReportGenerator';
 import ReportPreviewModal from './ReportPreviewModal';
 
@@ -9,34 +7,36 @@ const ViewAttachmentsModal = ({ show, onClose, request }) => {
   const [previewTitle, setPreviewTitle] = useState('');
   const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
 
-  // --- MODIFIED LOGIC TO AGGREGATE ALL ATTACHMENTS ---
   const attachments = useMemo(() => {
     if (!request) return [];
-
+    
     const attachmentSet = new Set();
     
-    // General attachment
+    // 1. Add the general supporting document if it exists
     if (request.documentName) {
       attachmentSet.add(request.documentName);
     }
-    // Maternity attachments
-    if (request.maternityDetails?.medicalDocumentName) {
-      attachmentSet.add(request.maternityDetails.medicalDocumentName);
+    // 2. Add any maternity-specific documents
+    if (request.maternityDetails) {
+      if (request.maternityDetails.medicalDocumentName) {
+        attachmentSet.add(request.maternityDetails.medicalDocumentName);
+      }
+      if (request.maternityDetails.soloParentDocumentName) {
+        attachmentSet.add(request.maternityDetails.soloParentDocumentName);
+      }
     }
-    if (request.maternityDetails?.soloParentDocumentName) {
-      attachmentSet.add(request.maternityDetails.soloParentDocumentName);
-    }
-    // Paternity attachments
-    if (request.paternityDetails?.marriageCertName) {
-      attachmentSet.add(request.paternityDetails.marriageCertName);
-    }
-    if (request.paternityDetails?.birthCertName) {
-      attachmentSet.add(request.paternityDetails.birthCertName);
+    // 3. Add any paternity-specific documents
+    if (request.paternityDetails) {
+      if (request.paternityDetails.marriageCertName) {
+        attachmentSet.add(request.paternityDetails.marriageCertName);
+      }
+      if (request.paternityDetails.birthCertName) {
+        attachmentSet.add(request.paternityDetails.birthCertName);
+      }
     }
 
     return Array.from(attachmentSet);
   }, [request]);
-  // --- END MODIFIED LOGIC ---
 
   if (!show || !request) {
     return null;
@@ -83,7 +83,7 @@ const ViewAttachmentsModal = ({ show, onClose, request }) => {
                   ))}
                 </ul>
               ) : (
-                <p className="text-center">No attachments found.</p>
+                <p className="text-center text-muted p-3">No attachments found.</p>
               )}
             </div>
             <div className="modal-footer">

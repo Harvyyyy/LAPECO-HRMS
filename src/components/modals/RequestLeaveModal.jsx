@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { differenceInDays } from 'date-fns';
 
 const MATERNITY_NORMAL_DAYS = 105;
@@ -8,12 +8,14 @@ const MIN_POSTNATAL_DAYS = 60;
 const PATERNITY_DAYS = 7;
 
 const RequestLeaveModal = ({ show, onClose, onSave, userGender, editingRequest }) => {
+  const fileInputRef = useRef(null);
   const initialFormState = {
     leaveType: 'Vacation',
     dateFrom: '',
     dateTo: '',
     reason: '',
     days: 0,
+    supportingDocument: null,
     maternityType: 'prenatal',
     isSoloParent: false,
     deliveryDate: '',
@@ -150,7 +152,15 @@ const RequestLeaveModal = ({ show, onClose, onSave, userGender, editingRequest }
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validate()) {
-      let payload = { leaveType: formData.leaveType, dateFrom: formData.dateFrom, dateTo: formData.dateTo, reason: formData.reason, days: formData.days };
+      let payload = { 
+        leaveType: formData.leaveType, 
+        dateFrom: formData.dateFrom, 
+        dateTo: formData.dateTo, 
+        reason: formData.reason, 
+        days: formData.days,
+        supportingDocument: formData.supportingDocument,
+        documentName: formData.supportingDocument?.name || null,
+      };
       if (isMaternity) { 
         payload.maternityDetails = { 
           type: formData.maternityType, 
@@ -178,12 +188,24 @@ const RequestLeaveModal = ({ show, onClose, onSave, userGender, editingRequest }
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     const file = files[0];
-    setFormData(prev => ({ ...prev, [name]: file || null, isSoloParent: name === 'soloParentDocument' && !file ? false : prev.isSoloParent }));
+    if (name === 'supportingDocument') {
+        setFormData(prev => ({ ...prev, supportingDocument: file || null }));
+    } else {
+        setFormData(prev => ({ ...prev, [name]: file || null, isSoloParent: name === 'soloParentDocument' && !file ? false : prev.isSoloParent }));
+    }
   };
   const handleLeaveTypeChange = (e) => {
     const newLeaveType = e.target.value;
     setFormData(prev => ({ ...initialFormState, leaveType: newLeaveType, reason: prev.reason, dateFrom: prev.dateFrom }));
     setErrors({});
+  };
+
+  const removeAttachment = (fieldName) => {
+    setFormData(prev => ({ ...prev, [fieldName]: null }));
+    // Reset the specific file input
+    if (fieldName === 'supportingDocument' && fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const deliveryDateLabel = formData.maternityType === 'prenatal' ? 'Expected Date of Delivery*' : 'Actual Date of Delivery/Event*';
@@ -246,17 +268,6 @@ const RequestLeaveModal = ({ show, onClose, onSave, userGender, editingRequest }
                     </div>
                     {errors.isEligiblePaternity && <div className="invalid-feedback d-block">{errors.isEligiblePaternity}</div>}
                   </fieldset>
-                  <fieldset className="paternity-fieldset">
-                    <legend className="paternity-legend">Attachments</legend>
-                    <div className="mb-3">
-                      <label htmlFor="marriageCert" className="form-label">Marriage Certificate</label>
-                      <input type="file" className="form-control" name="marriageCert" id="marriageCert" onChange={handleFileChange} />
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="birthCert" className="form-label">Child's Birth / Medical Certificate</label>
-                      <input type="file" className="form-control" name="birthCert" id="birthCert" onChange={handleFileChange} />
-                    </div>
-                  </fieldset>
                 </>
               )}
 
@@ -279,42 +290,72 @@ const RequestLeaveModal = ({ show, onClose, onSave, userGender, editingRequest }
                 {isMaternity && formData.willAllocate && formData.allocationDays > 0 && (<p className="text-info small" style={{marginTop: '-10px'}}>(Original: {originalMaternityDays} days - {formData.allocationDays} allocated = {formData.days} remaining days for you)</p>)}
               </div>
               
-              {isMaternity && (
-                 <fieldset className="maternity-fieldset">
-                    <legend className="maternity-legend">Attachments & Allocation</legend>
-                    <div className="mb-3">
-                      <label htmlFor="medicalDocument" className="form-label">Medical Certificate</label>
-                      <input type="file" className="form-control" name="medicalDocument" id="medicalDocument" onChange={handleFileChange} />
-                    </div>
-                     {(formData.maternityType === 'prenatal' || formData.maternityType === 'normal') && (
-                        <>
-                          <div className="mb-3">
-                            <label htmlFor="soloParentDocument" className="form-label">Solo Parent ID</label>
-                            <input type="file" className="form-control" name="soloParentDocument" id="soloParentDocument" onChange={handleFileChange} />
-                            <div className="form-text">Upload your Solo Parent ID to claim the additional 15-day benefit.</div>
-                          </div>
-                          <div className="form-check mb-3">
-                            <input className="form-check-input" type="checkbox" id="isSoloParent" checked={formData.isSoloParent} onChange={(e) => setFormData({...formData, isSoloParent: e.target.checked})} disabled={!canClaimSoloParent}/>
-                            <label className="form-check-label" htmlFor="isSoloParent">I am a qualified Solo Parent (adds 15 days)</label>
-                          </div>
-                          <hr/>
-                          <div className="form-check">
-                            <input className="form-check-input" type="checkbox" id="willAllocate" checked={formData.willAllocate} onChange={(e) => setFormData({...formData, willAllocate: e.target.checked})} />
-                            <label className="form-check-label" htmlFor="willAllocate">I wish to allocate leave credits to the child's father / alternate caregiver.</label>
-                          </div>
-                          {formData.willAllocate && (
-                            <div className="mt-2 ps-4">
-                              <label htmlFor="allocationDays" className="form-label">Days to Allocate (Max 7)</label>
-                              <input type="number" className={`form-control ${errors.allocationDays ? 'is-invalid' : ''}`} id="allocationDays" min="0" max="7" value={formData.allocationDays} onChange={(e) => setFormData({...formData, allocationDays: parseInt(e.target.value, 10) || 0})} />
-                              {errors.allocationDays && <div className="invalid-feedback">{errors.allocationDays}</div>}
-                            </div>
-                          )}
-                        </>
-                      )}
-                 </fieldset>
-              )}
+              <div className="mb-3"><label htmlFor="reason" className="form-label">Reason*</label><textarea id="reason" name="reason" rows="3" className={`form-control ${errors.reason ? 'is-invalid' : ''}`} value={formData.reason} onChange={(e) => setFormData({...formData, reason: e.target.value})}></textarea>{errors.reason && <div className="invalid-feedback">{errors.reason}</div>}</div>
 
-              <div className="mb-3"><label htmlFor="reason" className="form-label mt-3">Reason*</label><textarea id="reason" name="reason" rows="3" className={`form-control ${errors.reason ? 'is-invalid' : ''}`} value={formData.reason} onChange={(e) => setFormData({...formData, reason: e.target.value})}></textarea>{errors.reason && <div className="invalid-feedback">{errors.reason}</div>}</div>
+              {/* === UNIVERSAL ATTACHMENT FIELD === */}
+              <fieldset className="attachment-fieldset">
+                <legend className="attachment-legend">Attachments</legend>
+                <div className="mb-3">
+                    <label htmlFor="supportingDocument" className="form-label">Supporting Document (Optional)</label>
+                    <input ref={fileInputRef} type="file" className="form-control" name="supportingDocument" id="supportingDocument" onChange={handleFileChange} />
+                    {formData.supportingDocument && (
+                        <div className="attachment-display mt-2">
+                            <i className="bi bi-paperclip"></i>
+                            <span>{formData.supportingDocument.name}</span>
+                            <button type="button" className="btn-close btn-sm" onClick={() => removeAttachment('supportingDocument')} aria-label="Remove attachment"></button>
+                        </div>
+                    )}
+                    <div className="form-text">e.g., Medical certificate for sick leave, event invitation for vacation leave.</div>
+                </div>
+
+                {isMaternity && (
+                    <>
+                      <div className="mb-3">
+                        <label htmlFor="medicalDocument" className="form-label">Medical Certificate</label>
+                        <input type="file" className="form-control" name="medicalDocument" id="medicalDocument" onChange={handleFileChange} />
+                      </div>
+                       {(formData.maternityType === 'prenatal' || formData.maternityType === 'normal') && (
+                          <>
+                            <div className="mb-3">
+                              <label htmlFor="soloParentDocument" className="form-label">Solo Parent ID</label>
+                              <input type="file" className="form-control" name="soloParentDocument" id="soloParentDocument" onChange={handleFileChange} />
+                              <div className="form-text">Upload your Solo Parent ID to claim the additional 15-day benefit.</div>
+                            </div>
+                            <div className="form-check mb-3">
+                              <input className="form-check-input" type="checkbox" id="isSoloParent" checked={formData.isSoloParent} onChange={(e) => setFormData({...formData, isSoloParent: e.target.checked})} disabled={!canClaimSoloParent}/>
+                              <label className="form-check-label" htmlFor="isSoloParent">I am a qualified Solo Parent (adds 15 days)</label>
+                            </div>
+                            <hr/>
+                            <div className="form-check">
+                              <input className="form-check-input" type="checkbox" id="willAllocate" checked={formData.willAllocate} onChange={(e) => setFormData({...formData, willAllocate: e.target.checked})} />
+                              <label className="form-check-label" htmlFor="willAllocate">I wish to allocate leave credits to the child's father / alternate caregiver.</label>
+                            </div>
+                            {formData.willAllocate && (
+                              <div className="mt-2 ps-4">
+                                <label htmlFor="allocationDays" className="form-label">Days to Allocate (Max 7)</label>
+                                <input type="number" className={`form-control ${errors.allocationDays ? 'is-invalid' : ''}`} id="allocationDays" min="0" max="7" value={formData.allocationDays} onChange={(e) => setFormData({...formData, allocationDays: parseInt(e.target.value, 10) || 0})} />
+                                {errors.allocationDays && <div className="invalid-feedback">{errors.allocationDays}</div>}
+                              </div>
+                            )}
+                          </>
+                        )}
+                    </>
+                )}
+
+                {isPaternity && (
+                    <>
+                        <div className="mb-3">
+                            <label htmlFor="marriageCert" className="form-label">Marriage Certificate</label>
+                            <input type="file" className="form-control" name="marriageCert" id="marriageCert" onChange={handleFileChange} />
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="birthCert" className="form-label">Child's Birth / Medical Certificate</label>
+                            <input type="file" className="form-control" name="birthCert" id="birthCert" onChange={handleFileChange} />
+                        </div>
+                    </>
+                )}
+
+              </fieldset>
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-outline-secondary" onClick={handleClose}>Cancel</button>

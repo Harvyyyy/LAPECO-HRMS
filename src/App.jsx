@@ -1,5 +1,3 @@
-// src/App.jsx
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
@@ -194,11 +192,31 @@ function AppContent() {
     },
     deleteTemplate: (templateId) => { setTemplates(prev => prev.filter(t => t.id !== templateId)); },
     updateLeaveRequest: (updatedLeaveData) => {
-        setLeaveRequests(prev => prev.map(req => req.leaveId === updatedLeaveData.leaveId ? { ...req, ...updatedLeaveData } : req));
+        const updatedRequest = { ...updatedLeaveData };
+        // If a new file was attached during edit, update the documentName
+        if (updatedLeaveData.supportingDocument) {
+            updatedRequest.documentName = updatedLeaveData.supportingDocument.name;
+        }
+        // Always delete raw file objects before saving to state
+        delete updatedRequest.supportingDocument;
+        delete updatedRequest.medicalDocument;
+        delete updatedRequest.soloParentDocument;
+        delete updatedRequest.marriageCert;
+        delete updatedRequest.birthCert;
+
+        setLeaveRequests(prev => prev.map(req => 
+            req.leaveId === updatedRequest.leaveId ? { ...req, ...updatedRequest } : req
+        ));
         showToast("Leave request has been updated successfully.");
     },
     createLeaveRequest: (leaveData) => {
-        const newRequest = { ...leaveData, leaveId: `LVE${Date.now().toString().slice(-4)}`, status: 'Pending' };
+        const newRequest = { 
+            ...leaveData, 
+            leaveId: `LVE${Date.now().toString().slice(-4)}`, 
+            status: 'Pending',
+            // Explicitly add documentName from the file object if it exists
+            documentName: leaveData.supportingDocument?.name || null 
+        };
         delete newRequest.supportingDocument; 
         setLeaveRequests(prev => [newRequest, ...prev]);
     },

@@ -1,5 +1,3 @@
-// src/components/pages/Leave-Management/LeaveRequestTable.jsx
-
 import React, { useState, useMemo } from 'react';
 import ConfirmationModal from '../../modals/ConfirmationModal';
 import ViewReasonModal from '../../modals/ViewReasonModal';
@@ -147,11 +145,6 @@ const LeaveRequestTable = ({ leaveRequests, handlers }) => {
             </thead>
             <tbody>
               {filteredAndSortedRequests.map(req => {
-                const hasAttachment = req.documentName || 
-                                      req.maternityDetails?.medicalDocumentName || 
-                                      req.maternityDetails?.soloParentDocumentName ||
-                                      req.paternityDetails?.marriageCertName ||
-                                      req.paternityDetails?.birthCertName;
                 return (
                   <tr key={req.leaveId}>
                     <td>{req.empId}</td><td>{req.name}</td><td>{req.position}</td>
@@ -169,7 +162,7 @@ const LeaveRequestTable = ({ leaveRequests, handlers }) => {
                     <td className="text-center">
                       <ActionsDropdown>
                         <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setRequestToView(req); }}><i className="bi bi-info-circle me-2"></i>View Reason</a>
-                        {hasAttachment && (<a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setViewingAttachmentsRequest(req); }}><i className="bi bi-paperclip me-2"></i>View Attachments</a>)}
+                        <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setViewingAttachmentsRequest(req); }}><i className="bi bi-paperclip me-2"></i>View Attachments</a>
                         {req.status !== 'Canceled' && (<a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); openConfirmationModal(req); }}><i className="bi bi-pencil-square me-2"></i>Change Status</a>)}
                         {req.maternityDetails && (<a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setEditingMaternityRequest(req); }}><i className="bi bi-pencil-fill me-2"></i>Edit Maternity Details</a>)}
                         {req.paternityDetails && (<a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setEditingPaternityRequest(req); }}><i className="bi bi-pencil-fill me-2"></i>Edit Paternity Details</a>)}
