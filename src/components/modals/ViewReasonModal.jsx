@@ -10,6 +10,8 @@ const ViewReasonModal = ({
     return null;
   }
 
+  const isCaseReport = title.includes('Case Report');
+
   return (
     <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
       <div className="modal-dialog modal-dialog-centered">
@@ -19,10 +21,17 @@ const ViewReasonModal = ({
             <button type="button" className="btn-close" onClick={onClose} aria-label="Close"></button>
           </div>
           <div className="modal-body">
-            <p className="mb-1"><strong>Employee:</strong> {request.name} ({request.empId})</p>
-            {request.leaveType !== 'Resignation' && (
+            <p className="mb-1">
+                <strong>{isCaseReport ? 'Regarding:' : 'Employee:'}</strong> {request.name}
+            </p>
+            <p className="text-muted small mb-1">{request.empId}</p>
+
+            {!isCaseReport ? (
               <p><strong>Leave Type:</strong> {request.leaveType}</p>
+            ) : (
+              <p><strong>Infraction:</strong> {request.leaveType}</p>
             )}
+
             <hr />
             <p className="text-muted">{request.reason || "No reason provided."}</p>
           </div>

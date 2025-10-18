@@ -1,3 +1,5 @@
+// src/data/mockData.js
+
 import { evaluationFactorsConfig } from '../config/evaluation.config';
 
 const createPastDate = (daysAgo) => {
@@ -510,6 +512,19 @@ export const initialPayrollsData = [
   },
 ];
 
+export const initialCaseSubmissions = [
+  {
+    id: 'SUB123456',
+    employeeId: 'EMP009',
+    submittedBy: 'EMP003',
+    issueDate: createPastDate(2),
+    reason: 'Safety Violation',
+    description: 'Ivy was observed operating the packing machine without wearing the required safety gloves. This is the second time this has been noted this month. A verbal reminder was given on the spot.',
+    attachments: [{ fileName: 'safety_observation_log_EMP009.pdf', url: '#' }],
+    status: 'Pending',
+    hrComments: null,
+  }
+];
 
 // ============================================================================
 // CASE MANAGEMENT DATA
@@ -522,6 +537,12 @@ export const initialCasesData = [
   {
     caseId: 'CASE002', employeeId: 'EMP009', issueDate: '2025-05-20', actionType: 'Written Warning', reason: 'Safety Violation', description: 'Observed operating machinery without required safety goggles, despite previous verbal reminders.', status: 'Closed', attachments: ['safety_report_q2.pdf'], nextSteps: 'Additional safety training completed on 2025-05-28.', actionLog: [ { date: '2025-05-20', action: 'Case Created. Written warning issued and signed by employee.' }, { date: '2025-05-28', action: 'Safety training course completed. Certificate attached.' }, { date: '2025-06-20', action: 'Case reviewed and closed by HR Manager.' } ]
   },
+  {
+    caseId: 'CASE003', employeeId: 'EMP001', issueDate: createPastDate(90), actionType: 'Verbal Warning', reason: 'Tardiness / Punctuality', description: `Employee was 12 minutes late on ${createPastDate(91)} without providing notice. A verbal reminder was issued.`, status: 'Closed', attachments: [], nextSteps: 'Attendance will be monitored for 30 days. No further incidents reported.', actionLog: [ { date: createPastDate(90), action: 'Case Created. Verbal warning issued by Team Leader Carol White.' }, { date: createPastDate(60), action: '30-day monitoring period ended. Attendance has been satisfactory. Case closed.' } ]
+  },
+  {
+    caseId: 'CASE004', employeeId: 'EMP002', issueDate: createPastDate(15), actionType: 'Written Warning', reason: 'Company Policy Violation', description: 'Employee failed to adhere to the clean desk policy after repeated verbal reminders on two separate occasions this month. A formal written warning has been issued.', status: 'Ongoing', attachments: ['policy_reminder_email.pdf'], nextSteps: 'A follow-up review will be conducted in 15 days.', actionLog: [ { date: createPastDate(15), action: 'Case created and written warning issued by HR Manager Grace Field.' } ]
+  }
 ];
 
 // ============================================================================

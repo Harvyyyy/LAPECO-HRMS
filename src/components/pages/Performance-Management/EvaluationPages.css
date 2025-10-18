@@ -190,24 +190,70 @@
 }
 
 
-/* --- Selector Card Styles (EvaluateTeamPage & EvaluateLeaderPage) --- */
+/* ==========================================================================
+   UPDATED: Selector Card Styles (EvaluateTeamPage & EvaluateLeaderPage)
+   ========================================================================== */
 .evaluation-selector-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.5rem;
 }
 
-.evaluation-selector-card {
+.evaluation-selector-card-revised {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
     transition: all 0.2s ease-in-out;
 }
-
-.evaluation-selector-card:hover {
+.evaluation-selector-card-revised:hover {
     transform: translateY(-4px);
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+    border-color: var(--app-success-color);
 }
 
-.evaluation-selector-card .selector-info {
+.evaluation-selector-card-revised .card-main-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+.selector-avatar {
+    border: 1px solid var(--border-color);
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-icon {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.status-icon.due {
+    color: var(--warning-color);
+}
+
+.status-icon.completed {
+    color: var(--app-success-color);
+}
+
+.evaluation-selector-card-revised .selector-info {
     flex-grow: 1;
+    min-width: 0;
+}
+
+.evaluation-selector-card-revised .selector-name,
+.evaluation-selector-card-revised .selector-position {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .selector-name {
@@ -220,22 +266,6 @@
     font-size: 0.9rem;
 }
 
-.evaluation-selector-card-revised {
-    background-color: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-    display: flex;
-    flex-direction: column;
-}
-
-.evaluation-selector-card-revised .card-main-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
-}
-
 .evaluation-selector-card-revised .card-status-panel {
     border-top: 1px solid var(--border-color);
     background-color: var(--bg-secondary);
@@ -243,32 +273,56 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-.status-item {
-    font-size: 0.8rem;
+.status-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1 1 0;
+    min-width: 100px;
+}
+.status-column:nth-child(2) {
+    align-items: center;
+}
+
+.actions-column {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    flex: 1 1 0;
+    min-width: 140px;
 }
 
 .status-label {
     color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.75rem;
+    text-transform: uppercase;
 }
 
 .status-value {
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 0.9rem;
     color: var(--text-primary);
 }
 
 .status-badge-revised {
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
     padding: 0.3em 0.7em;
-    border-radius: var(--border-radius);
-    color: #fff;
+    border-radius: 20px;
+    text-transform: uppercase;
 }
 
 .status-badge-revised.status-due {
-    background-color: var(--warning-color);
-    color: var(--text-primary);
+    background-color: rgba(var(--warning-rgb), 0.2);
+    color: #997404;
+}
+.dark-theme .status-badge-revised.status-due {
+    color: var(--warning-color);
 }
 
 .status-badge-revised.status-completed {
@@ -276,12 +330,9 @@
     color: var(--text-secondary);
 }
 
-.card-action-button {
-    display: flex;
-    gap: 0.5rem;
-}
-
-/* --- Status Summary Bar (EvaluateTeamPage) --- */
+/* ==========================================================================
+   Status Summary Bar (EvaluateTeamPage)
+   ========================================================================== */
 .status-summary-bar {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -320,4 +371,31 @@
 .summary-info .summary-label {
     font-size: 0.9rem;
     color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Controls Bar (EvaluateTeamPage)
+   ========================================================================== */
+.page-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--card-shadow);
+}
+
+.page-controls-bar .input-group {
+  flex: 1 1 350px;
+}
+
+.page-controls-bar .btn-group {
+  flex: 0 0 auto;
+}
+.card-action-button .btn + .btn {
+  margin-left: 0.5rem;
 }

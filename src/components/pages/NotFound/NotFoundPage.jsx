@@ -2,46 +2,44 @@ import React from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './NotFoundPage.css';
+import Illustration from '../../../assets/undraw_page-not-found_6wni.svg';
 
-const NotFoundPage = () => {
+const NotFoundPageContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  
   const inDashboard = location.pathname.startsWith('/dashboard');
-  const base = inDashboard ? '/dashboard' : '';
-
-  const quickLinks = [
-    { to: `${base}`, label: 'Dashboard', icon: 'bi-speedometer2' },
-    { to: `${base}/my-profile`, label: 'My Profile', icon: 'bi-person-circle' },
-    { to: `${base}/account-settings`, label: 'Account Settings', icon: 'bi-gear' },
-  ];
+  const base = inDashboard ? '/dashboard' : '/';
 
   return (
-    <div className="not-found-container">
-      <div className="not-found-card shadow-sm">
-        <div className="icon-circle animated-pulse">
-          <i className="bi bi-exclamation-triangle-fill"></i>
-        </div>
-        <h2 className="title">Page Not Found</h2>
-        <p className="subtitle">Sorry, we can’t find the page you were looking for.</p>
-        <div className="attempted-path"><code>{location.pathname}</code></div>
-        <p className="message">If you typed the address, check the spelling. Otherwise, try one of these helpful destinations:</p>
-
-        <div className="link-grid">
-          {quickLinks.map(link => (
-            <Link key={link.to} to={link.to} className="link-grid-item">
-              <i className={`bi ${link.icon}`}></i>
-              <span>{link.label}</span>
-            </Link>
-          ))}
-        </div>
-
-        <div className="actions">
-          <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>Go to Dashboard</button>
-          <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>Go Back</button>
+    <div className="not-found-container-modern">
+      <div className="not-found-content">
+        <img src={Illustration} alt="Page not found" className="not-found-illustration" />
+        <h1 className="not-found-title">Oops! Page not found.</h1>
+        <p className="not-found-message">
+          The page you are looking for might have been moved, renamed, or is temporarily unavailable.
+        </p>
+        
+        <div className="not-found-actions">
+          <button className="btn btn-success" onClick={() => navigate(base)}>
+            <i className="bi bi-house-door-fill me-2"></i>Go to Dashboard
+          </button>
+          <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
+            <i className="bi bi-arrow-left me-2"></i>Go Back
+          </button>
         </div>
       </div>
     </div>
   );
+};
+
+const NotFoundPage = ({ currentUser }) => {
+    const location = useLocation();
+    if (currentUser && location.pathname.startsWith('/dashboard')) {
+        return <NotFoundPageContent />;
+    }
+
+    return <NotFoundPageContent />;
 };
 
 export default NotFoundPage;

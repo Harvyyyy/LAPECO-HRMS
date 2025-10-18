@@ -8,13 +8,17 @@ import CaseSummaryByEmployee from './CaseSummaryByEmployee';
 import ReportConfigurationModal from '../../modals/ReportConfigurationModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import ConfirmationModal from '../../modals/ConfirmationModal';
+import ActionCaseSubmissionModal from './ActionCaseSubmissionModal';
+import ViewReasonModal from '../../modals/ViewReasonModal';
+import ActionsDropdown from '../../common/ActionsDropdown';
 import useReportGenerator from '../../../hooks/useReportGenerator';
 import { reportsConfig } from '../../../config/reports.config'; 
 import './CaseManagement.css';
+import '../My-Cases/MyCasesPage.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const CaseManagementPage = ({ cases, employees, handlers }) => {
+const CaseManagementPage = ({ cases, employees, handlers, caseSubmissions = [] }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showModal, setShowModal] = useState(false);
   const [editingCase, setEditingCase] = useState(null);
@@ -22,6 +26,10 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [caseToDelete, setCaseToDelete] = useState(null);
+
+  const [submissionToAction, setSubmissionToAction] = useState(null);
+  const [submissionActionType, setSubmissionActionType] = useState('');
+  const [viewingSubmission, setViewingSubmission] = useState(null);
 
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showReportPreview, setShowReportPreview] = useState(false);
@@ -33,7 +41,8 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
     total: cases.length,
     ongoing: cases.filter(c => c.status === 'Ongoing').length,
     closed: cases.filter(c => c.status === 'Closed').length,
-  }), [cases]);
+    pendingSubmissions: (caseSubmissions || []).filter(s => s.status === 'Pending').length,
+  }), [cases, caseSubmissions]);
 
   const chartData = useMemo(() => {
     const counts = cases.reduce((acc, c) => {
@@ -84,6 +93,13 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
       })
       .sort((a, b) => new Date(b.issueDate) - new Date(a.issueDate));
   }, [cases, searchTerm, statusFilter, employeeMap]);
+  
+  const pendingSubmissions = useMemo(() => {
+      return (caseSubmissions || [])
+        .filter(s => s.status === 'Pending')
+        .sort((a, b) => new Date(b.issueDate) - new Date(a.issueDate));
+  }, [caseSubmissions]);
+
 
   const handleOpenModal = (caseData = null) => {
     setEditingCase(caseData);
@@ -105,6 +121,21 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
       setCaseToDelete(null);
       setSelectedCase(null);
     }
+  };
+
+  const handleOpenSubmissionActionModal = (submission, action) => {
+    setSubmissionToAction(submission);
+    setSubmissionActionType(action);
+  };
+
+  const handleCloseSubmissionActionModal = () => {
+    setSubmissionToAction(null);
+    setSubmissionActionType('');
+  };
+
+  const handleConfirmSubmissionAction = (submissionId, status, comments) => {
+    handlers.updateCaseSubmissionStatus(submissionId, status, comments);
+    handleCloseSubmissionActionModal();
   };
 
   const caseReportConfig = reportsConfig.find(r => r.id === 'disciplinary_cases');
@@ -154,6 +185,19 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
           caseData={editingCase}
           employees={employees}
         />
+         <ConfirmationModal
+            show={!!caseToDelete}
+            onClose={() => setCaseToDelete(null)}
+            onConfirm={handleConfirmDelete}
+            title="Confirm Case Deletion"
+            confirmText="Yes, Delete Case"
+            confirmVariant="danger"
+        >
+            {caseToDelete && (
+                <p>Are you sure you want to permanently delete the case "<strong>{caseToDelete.reason}</strong>" for <strong>{employeeMap.get(caseToDelete.employeeId)?.name}</strong>?</p>
+            )}
+            <p className="text-danger">This action cannot be undone.</p>
+        </ConfirmationModal>
       </>
     );
   }
@@ -217,15 +261,24 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
 
   const renderCaseList = () => (
     <>
+        <div className="my-cases-stats-grid">
+            <div className={`stat-card-my-cases all ${statusFilter === 'All' ? 'active' : ''}`} onClick={() => setStatusFilter('All')}>
+                <span className="stat-value">{stats.total}</span>
+                <span className="stat-label">All Cases</span>
+            </div>
+            <div className={`stat-card-my-cases ongoing ${statusFilter === 'Ongoing' ? 'active' : ''}`} onClick={() => setStatusFilter('Ongoing')}>
+                <span className="stat-value">{stats.ongoing}</span>
+                <span className="stat-label">Ongoing</span>
+            </div>
+            <div className={`stat-card-my-cases closed ${statusFilter === 'Closed' ? 'active' : ''}`} onClick={() => setStatusFilter('Closed')}>
+                <span className="stat-value">{stats.closed}</span>
+                <span className="stat-label">Closed</span>
+            </div>
+        </div>
         <div className="controls-bar d-flex justify-content-between mb-4">
             <div className="input-group" style={{ maxWidth: '400px' }}>
                 <span className="input-group-text"><i className="bi bi-search"></i></span>
                 <input type="text" className="form-control" placeholder="Search by Case ID, Name, Reason..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-            </div>
-            <div className="btn-group" role="group">
-                <button type="button" className={`btn ${statusFilter === 'All' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setStatusFilter('All')}>All</button>
-                <button type="button" className={`btn ${statusFilter === 'Ongoing' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setStatusFilter('Ongoing')}>Ongoing</button>
-                <button type="button" className={`btn ${statusFilter === 'Closed' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setStatusFilter('Closed')}>Closed</button>
             </div>
         </div>
         <div className="case-card-grid">
@@ -241,6 +294,58 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
         </div>
         {filteredCases.length === 0 && <div className="text-center p-5 bg-light rounded"><p>No cases found for the selected filters.</p></div>}
     </>
+  );
+  
+  const renderCaseReports = () => (
+    <div className="card data-table-card shadow-sm">
+      <div className="card-header">
+        <h6 className="mb-0">Pending Case Report Submissions ({pendingSubmissions.length})</h6>
+      </div>
+      <div className="table-responsive">
+        <table className="table data-table mb-0 align-middle">
+          <thead>
+            <tr>
+              <th>Submitted By</th>
+              <th>Regarding</th>
+              <th>Date of Incident</th>
+              <th className="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pendingSubmissions.length > 0 ? pendingSubmissions.map(sub => {
+              const submittedByName = employeeMap.get(sub.submittedBy)?.name || sub.submittedBy;
+              const employeeName = employeeMap.get(sub.employeeId)?.name || sub.employeeId;
+              return (
+                <tr key={sub.id}>
+                  <td>{submittedByName}</td>
+                  <td>{employeeName}</td>
+                  <td>{sub.issueDate}</td>
+                  <td className="text-center">
+                    <ActionsDropdown>
+                        <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setViewingSubmission(sub); }}>
+                            <i className="bi bi-info-circle me-2"></i> View Reason
+                        </a>
+                        <a className="dropdown-item" href="#" onClick={(e) => e.preventDefault()} disabled>
+                            <i className="bi bi-paperclip me-2"></i> View Attachments
+                        </a>
+                        <div className="dropdown-divider"></div>
+                        <a className="dropdown-item text-success" href="#" onClick={(e) => { e.preventDefault(); handleOpenSubmissionActionModal(sub, 'Approved'); }}>
+                            <i className="bi bi-check-circle-fill me-2"></i> Approve
+                        </a>
+                        <a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); handleOpenSubmissionActionModal(sub, 'Declined'); }}>
+                            <i className="bi bi-x-circle-fill me-2"></i> Decline
+                        </a>
+                    </ActionsDropdown>
+                  </td>
+                </tr>
+              )
+            }) : (
+              <tr><td colSpan="4" className="text-center p-4 text-muted">There are no pending case reports for review.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 
   return (
@@ -259,11 +364,18 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
 
       <ul className="nav nav-tabs case-management-tabs mb-4">
         <li className="nav-item"><button className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>Dashboard</button></li>
+        <li className="nav-item">
+          <button className={`nav-link ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>
+            Case Reports
+            {stats.pendingSubmissions > 0 && <span className="badge rounded-pill bg-warning text-dark ms-2">{stats.pendingSubmissions}</span>}
+          </button>
+        </li>
         <li className="nav-item"><button className={`nav-link ${activeTab === 'list' ? 'active' : ''}`} onClick={() => setActiveTab('list')}>All Cases</button></li>
         <li className="nav-item"><button className={`nav-link ${activeTab === 'byEmployee' ? 'active' : ''}`} onClick={() => setActiveTab('byEmployee')}>By Employee</button></li>
       </ul>
 
       {activeTab === 'dashboard' && renderDashboard()}
+      {activeTab === 'reports' && renderCaseReports()}
       {activeTab === 'list' && renderCaseList()}
       {activeTab === 'byEmployee' && (
         <CaseSummaryByEmployee 
@@ -281,6 +393,13 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
         employees={employees}
       />
 
+      <ActionCaseSubmissionModal
+        show={!!submissionToAction}
+        onClose={handleCloseSubmissionActionModal}
+        onConfirm={handleConfirmSubmissionAction}
+        submissionData={{ submission: submissionToAction, action: submissionActionType }}
+      />
+      
       <ReportConfigurationModal
         show={showConfigModal}
         onClose={() => setShowConfigModal(false)}
@@ -310,6 +429,18 @@ const CaseManagementPage = ({ cases, employees, handlers }) => {
           )}
           <p className="text-danger">This action cannot be undone.</p>
       </ConfirmationModal>
+      
+      <ViewReasonModal
+        show={!!viewingSubmission}
+        onClose={() => setViewingSubmission(null)}
+        title="Case Report Details"
+        request={viewingSubmission ? {
+            name: employeeMap.get(viewingSubmission.employeeId)?.name || 'N/A',
+            empId: `Submitted by: ${employeeMap.get(viewingSubmission.submittedBy)?.name || 'N/A'}`,
+            leaveType: viewingSubmission.reason,
+            reason: viewingSubmission.description,
+        } : null}
+      />
     </div>
   );
 };

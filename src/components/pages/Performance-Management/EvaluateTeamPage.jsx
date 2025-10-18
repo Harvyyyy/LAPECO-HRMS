@@ -8,7 +8,8 @@ import './EvaluationPages.css';
 const EvaluateTeamPage = ({ currentUser, employees, positions, evaluations, kras, kpis }) => {
   const navigate = useNavigate();
   const positionMap = useMemo(() => new Map(positions.map(p => [p.id, p.title])), [positions]);
-
+  const employeeMap = useMemo(() => new Map(employees.map(e => [e.id, e])), [employees]);
+  
   const [showStartModal, setShowStartModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -84,7 +85,7 @@ const EvaluateTeamPage = ({ currentUser, employees, positions, evaluations, kras
         <div className="summary-card"><div className="summary-icon icon-completed"><i className="bi bi-check2-circle"></i></div><div className="summary-info"><span className="summary-value">{summaryStats.completed}</span><span className="summary-label">Completed</span></div></div>
       </div>
       
-      <div className="controls-bar d-flex justify-content-between mb-4">
+      <div className="controls-bar page-controls-bar d-flex justify-content-between mb-4">
         <div className="input-group" style={{ maxWidth: '400px' }}>
             <span className="input-group-text"><i className="bi bi-search"></i></span>
             <input type="text" className="form-control" placeholder="Search by name..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />

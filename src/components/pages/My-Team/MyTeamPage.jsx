@@ -3,11 +3,15 @@ import { Link } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './MyTeamPage.css';
 import Avatar from '../../common/Avatar';
+import SubmitCaseReportModal from './SubmitCaseReportModal';
 
-const MyTeamPage = ({ currentUser, employees, positions }) => {
+const MyTeamPage = ({ currentUser, employees, positions, handlers }) => {
   const [viewMode, setViewMode] = useState('card');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
+  
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportingEmployee, setReportingEmployee] = useState(null);
 
   const positionMap = useMemo(() => new Map(positions.map(p => [p.id, p.title])), [positions]);
 
@@ -51,6 +55,26 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
     return filteredMembers;
   }, [teamRoster, teamLeader, searchTerm, sortConfig]);
 
+  // --- NEW HANDLERS ---
+  const handleOpenReportModal = (employee) => {
+    setReportingEmployee(employee);
+    setShowReportModal(true);
+  };
+  
+  const handleCloseReportModal = () => {
+    setReportingEmployee(null);
+    setShowReportModal(false);
+  };
+  
+  const handleSubmitReport = (formData) => {
+    handlers.submitCaseReport({
+      ...formData,
+      submittedBy: currentUser.id,
+      employeeId: reportingEmployee.id,
+    });
+    handleCloseReportModal();
+  };
+
   const requestSort = (key) => {
     let direction = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -90,6 +114,7 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
                       </button>
                       <ul className="dropdown-menu dropdown-menu-end">
                         <li><Link className="dropdown-item" to="/dashboard/evaluate-team">Evaluate</Link></li>
+                        <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleOpenReportModal(member); }}>Report Incident</a></li>
                       </ul>
                     </div>
                   </div>
@@ -140,6 +165,7 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
                                     <button className="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">Actions</button>
                                     <ul className="dropdown-menu dropdown-menu-end">
                                         <li><Link className="dropdown-item" to="/dashboard/evaluate-team">Evaluate</Link></li>
+                                        <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); handleOpenReportModal(member); }}>Report Incident</a></li>
                                     </ul>
                                 </div>
                               )}
@@ -152,47 +178,57 @@ const MyTeamPage = ({ currentUser, employees, positions }) => {
     </div>
   );
 
-  // --- No changes to the main component return statement ---
   return (
-    <div className="container-fluid p-0 page-module-container">
-      <header className="page-header d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 className="page-main-title">{currentPositionTitle} Team</h1>
-            {teamLeader && <p className="page-subtitle text-muted mb-0">Led by: <strong>{teamLeader.name}</strong></p>}
-        </div>
-        <div className="d-flex align-items-center gap-2">
-            <div className="view-toggle-buttons btn-group">
-              <button className={`btn btn-sm ${viewMode === 'card' ? 'active' : 'btn-outline-secondary'}`} onClick={() => setViewMode('card')} title="Card View"><i className="bi bi-grid-fill"></i></button>
-              <button className={`btn btn-sm ${viewMode === 'table' ? 'active' : 'btn-outline-secondary'}`} onClick={() => setViewMode('table')} title="List View"><i className="bi bi-list-task"></i></button>
-            </div>
-        </div>
-      </header>
-      
-      <div className="controls-bar page-controls-bar mb-4">
-          <div className="filters-group">
-            <div className="input-group">
-              <span className="input-group-text"><i className="bi bi-search"></i></span>
-              <input 
-                type="text" 
-                className="form-control" 
-                placeholder="Search team members by name or ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+    <>
+      <div className="container-fluid p-0 page-module-container">
+        <header className="page-header d-flex justify-content-between align-items-center mb-4">
+          <div>
+              <h1 className="page-main-title">{currentPositionTitle} Team</h1>
+              {teamLeader && <p className="page-subtitle text-muted mb-0">Led by: <strong>{teamLeader.name}</strong></p>}
           </div>
+          <div className="d-flex align-items-center gap-2">
+              <div className="view-toggle-buttons btn-group">
+                <button className={`btn btn-sm ${viewMode === 'card' ? 'active' : 'btn-outline-secondary'}`} onClick={() => setViewMode('card')} title="Card View"><i className="bi bi-grid-fill"></i></button>
+                <button className={`btn btn-sm ${viewMode === 'table' ? 'active' : 'btn-outline-secondary'}`} onClick={() => setViewMode('table')} title="List View"><i className="bi bi-list-task"></i></button>
+              </div>
+          </div>
+        </header>
+        
+        <div className="controls-bar page-controls-bar mb-4">
+            <div className="filters-group">
+              <div className="input-group">
+                <span className="input-group-text"><i className="bi bi-search"></i></span>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  placeholder="Search team members by name or ID..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+        </div>
+
+        {sortedAndFilteredTeam.length > 0 ? (
+          viewMode === 'card' ? renderCardView() : renderTableView()
+        ) : (
+          <div className="text-center p-5 bg-light rounded">
+              <i className="bi bi-people-fill fs-1 text-muted mb-3 d-block"></i>
+              <h4 className="text-muted">{teamRoster.length > 0 && searchTerm ? "No team members match your search." : "You are not currently assigned to a team."}</h4>
+              <p className="text-muted">{teamRoster.length > 0 && searchTerm ? "Try a different name or ID." : "Please contact HR if you believe this is an error."}</p>
+          </div>
+        )}
       </div>
 
-      {sortedAndFilteredTeam.length > 0 ? (
-        viewMode === 'card' ? renderCardView() : renderTableView()
-      ) : (
-        <div className="text-center p-5 bg-light rounded">
-            <i className="bi bi-people-fill fs-1 text-muted mb-3 d-block"></i>
-            <h4 className="text-muted">{teamRoster.length > 0 && searchTerm ? "No team members match your search." : "You are not currently assigned to a team."}</h4>
-            <p className="text-muted">{teamRoster.length > 0 && searchTerm ? "Try a different name or ID." : "Please contact HR if you believe this is an error."}</p>
-        </div>
+      {showReportModal && reportingEmployee && (
+        <SubmitCaseReportModal
+          show={showReportModal}
+          onClose={handleCloseReportModal}
+          onSubmit={handleSubmitReport}
+          employee={reportingEmployee}
+        />
       )}
-    </div>
+    </>
   );
 };
 
