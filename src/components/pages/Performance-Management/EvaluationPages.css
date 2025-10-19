@@ -3,7 +3,7 @@
    ========================================================================== */
 .evaluation-form-page {
     background-color: var(--bg-secondary);
-    padding-bottom: 100px; /* Space for the sticky footer */
+    padding-bottom: 100px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -191,7 +191,7 @@
 
 
 /* ==========================================================================
-   UPDATED: Selector Card Styles (EvaluateTeamPage & EvaluateLeaderPage)
+   Selector Card Styles (EvaluateTeamPage & EvaluateLeaderPage)
    ========================================================================== */
 .evaluation-selector-grid {
     display: grid;
@@ -245,6 +245,15 @@
 
 .selector-position {
     font-size: 0.9rem;
+}
+
+.selector-score {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.selector-score .text-muted {
+    font-size: 0.85rem;
 }
 
 .evaluation-selector-card-revised .card-status-panel {

@@ -102,6 +102,18 @@ function AppContent() {
   const [terminations, setTerminations] = useState(mockData.initialTerminationData);
   const [theme, setTheme] = useState('light');
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  
+  const [evaluationPeriods, setEvaluationPeriods] = useState(mockData.initialEvaluationPeriods);
+
+  const activeEvaluationPeriod = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to start of day for comparison
+    return evaluationPeriods.find(period => {
+        const start = new Date(period.activationStart);
+        const end = new Date(period.activationEnd);
+        return today >= start && today <= end;
+    }) || null;
+  }, [evaluationPeriods]);
 
   useEffect(() => {
     const todayISO = new Date().toISOString().split('T')[0];
@@ -139,6 +151,20 @@ function AppContent() {
   };
 
   const appLevelHandlers = {
+    saveEvaluationPeriod: (formData, periodId) => {
+        if (periodId) {
+            setEvaluationPeriods(prev => prev.map(p => p.id === periodId ? { ...p, ...formData } : p));
+            showToast('Evaluation period updated successfully.');
+        } else {
+            const newPeriod = { id: Date.now(), ...formData };
+            setEvaluationPeriods(prev => [...prev, newPeriod]);
+            showToast('New evaluation period created.', 'success');
+        }
+    },
+    deleteEvaluationPeriod: (periodId) => {
+        setEvaluationPeriods(prev => prev.filter(p => p.id !== periodId));
+        showToast('Evaluation period deleted.', 'info');
+    },
     savePosition: (formData, positionId) => {
         if (positionId) {
             setPositions(prev => prev.map(pos => pos.id === positionId ? { ...pos, ...formData } : pos));
@@ -193,11 +219,9 @@ function AppContent() {
     deleteTemplate: (templateId) => { setTemplates(prev => prev.filter(t => t.id !== templateId)); },
     updateLeaveRequest: (updatedLeaveData) => {
         const updatedRequest = { ...updatedLeaveData };
-        // If a new file was attached during edit, update the documentName
         if (updatedLeaveData.supportingDocument) {
             updatedRequest.documentName = updatedLeaveData.supportingDocument.name;
         }
-        // Always delete raw file objects before saving to state
         delete updatedRequest.supportingDocument;
         delete updatedRequest.medicalDocument;
         delete updatedRequest.soloParentDocument;
@@ -214,7 +238,6 @@ function AppContent() {
             ...leaveData, 
             leaveId: `LVE${Date.now().toString().slice(-4)}`, 
             status: 'Pending',
-            // Explicitly add documentName from the file object if it exists
             documentName: leaveData.supportingDocument?.name || null 
         };
         delete newRequest.supportingDocument; 
@@ -509,6 +532,7 @@ function AppContent() {
         setKpis(mockData.initialKpisData);
         setEvaluationFactors(mockData.initialEvaluationFactors);
         setEvaluations(initialEvaluationsData);
+        setEvaluationPeriods(mockData.initialEvaluationPeriods);
       }
       if (resetConfig.payrolls) setPayrolls(mockData.initialPayrollsData);
       if (resetConfig.disciplinaryCases) setDisciplinaryCases(mockData.initialCasesData);
@@ -562,6 +586,17 @@ function AppContent() {
       />
   );
 
+  const evaluationFormPageElement = (
+    <EvaluationFormPage
+      currentUser={currentUser}
+      employees={employees}
+      positions={positions}
+      evaluations={evaluations}
+      evaluationFactors={evaluationFactors}
+      handlers={appLevelHandlers}
+    />
+  );
+
   return (
     <Routes>
       <Route path="/login" element={currentUser ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} />
@@ -602,14 +637,25 @@ function AppContent() {
             <Route path="payroll/*" element={<PayrollPage />}>
                 <Route index element={<Navigate to="history" replace />} />
                 <Route path="history" element={<PayrollHistoryPage payrolls={payrolls} employees={employees} positions={positions} handlers={appLevelHandlers} allLeaveRequests={leaveRequests} />} />
-                <Route path="generate" element={<PayrollGenerationPage employees={employees} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} holidays={holidays} onGenerate={appLevelHandlers.generatePayrollRun} />} />
+                <Route 
+                  path="generate" 
+                  element={<PayrollGenerationPage 
+                    employees={employees} 
+                    positions={positions} 
+                    schedules={schedules} 
+                    attendanceLogs={attendanceLogs} 
+                    holidays={holidays} 
+                    onGenerate={appLevelHandlers.generatePayrollRun} 
+                    payrolls={payrolls}
+                  />} 
+                />
                 <Route path="13th-month" element={<ThirteenthMonthPage employees={employees} payrolls={payrolls} />} />
             </Route>
             <Route path="holiday-management" element={<HolidayManagementPage holidays={holidays} handlers={appLevelHandlers} />} />
-            <Route path="contributions-management" element={<ContributionsManagementPage employees={employees} positions={positions} payrolls={payrolls} />} />
-            <Route path="performance" element={<PerformanceManagementPage kras={kras} kpis={kpis} positions={positions} employees={employees} evaluations={evaluations} handlers={appLevelHandlers} evaluationFactors={evaluationFactors} theme={theme} />} />
+            <Route path="contributions-management" element={<ContributionsManagementPage employees={employees} positions={positions} payrolls={payrolls} theme={theme} />} />
+            <Route path="performance" element={<PerformanceManagementPage kras={kras} kpis={kpis} positions={positions} employees={employees} evaluations={evaluations} handlers={appLevelHandlers} evaluationFactors={evaluationFactors} theme={theme} evaluationPeriods={evaluationPeriods} />} />
             <Route path="predictive-analytics" element={<PredictiveAnalyticsPage evaluations={evaluations} employees={employees} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} handlers={appLevelHandlers} trainingPrograms={trainingPrograms} enrollments={enrollments} />} />
-            <Route path="performance/evaluate" element={<EvaluationFormPage currentUser={currentUser} employees={employees} positions={positions} kras={kras} kpis={kpis} evaluationFactors={evaluationFactors} handlers={appLevelHandlers} />} />
+            <Route path="performance/evaluate" element={evaluationFormPageElement} />
             <Route path="training/*" element={<TrainingPage trainingPrograms={trainingPrograms} enrollments={enrollments} handlers={appLevelHandlers} />} >
               <Route path=":programId" element={<ProgramDetailPage employees={employees} trainingPrograms={trainingPrograms} enrollments={enrollments} handlers={appLevelHandlers} />} />
             </Route>
@@ -630,8 +676,8 @@ function AppContent() {
               <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />
             </Route>
             <Route path="team-employees" element={<MyTeamPage currentUser={currentUser} employees={employees} positions={positions} handlers={appLevelHandlers} />} />
-            <Route path="evaluate-team" element={<EvaluateTeamPage currentUser={currentUser} employees={employees} positions={positions} evaluations={evaluations} kras={kras} kpis={kpis} evaluationFactors={evaluationFactors} />} />
-            <Route path="performance/evaluate" element={<EvaluationFormPage currentUser={currentUser} employees={employees} positions={positions} kras={kras} kpis={kpis} evaluationFactors={evaluationFactors} handlers={appLevelHandlers} />} />
+            <Route path="evaluate-team" element={<EvaluateTeamPage currentUser={currentUser} employees={employees} positions={positions} evaluations={evaluations} kras={kras} kpis={kpis} evaluationFactors={evaluationFactors} activeEvaluationPeriod={activeEvaluationPeriod} />} />
+            <Route path="performance/evaluate" element={evaluationFormPageElement} />
             <Route path="my-leave" element={<MyLeavePage currentUser={currentUser} allLeaveRequests={leaveRequests} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} updateLeaveStatus={appLevelHandlers.updateLeaveStatus} handlers={appLevelHandlers} />} />
             <Route path="submit-report" element={<SubmitReportPage currentUser={currentUser} employees={employees} handlers={appLevelHandlers} userRole={userRole} />} />
           </>
@@ -646,8 +692,8 @@ function AppContent() {
                 <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />
             </Route>
             <Route path="team-employees" element={<MyTeamPage currentUser={currentUser} employees={employees} positions={positions} />} />
-            <Route path="evaluate-leader" element={<EvaluateLeaderPage currentUser={currentUser} employees={employees} positions={positions} />} />
-            <Route path="performance/evaluate" element={<EvaluationFormPage currentUser={currentUser} employees={employees} positions={positions} kras={kras} kpis={kpis} evaluationFactors={evaluationFactors} handlers={appLevelHandlers} />} />
+            <Route path="evaluate-leader" element={<EvaluateLeaderPage currentUser={currentUser} employees={employees} positions={positions} evaluations={evaluations} activeEvaluationPeriod={activeEvaluationPeriod} />} />
+            <Route path="performance/evaluate" element={evaluationFormPageElement} />
              <Route path="my-leave" element={<MyLeavePage currentUser={currentUser} allLeaveRequests={leaveRequests} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} updateLeaveStatus={appLevelHandlers.updateLeaveStatus} handlers={appLevelHandlers} />} />
              <Route path="submit-report" element={<SubmitReportPage currentUser={currentUser} employees={employees} handlers={appLevelHandlers} userRole={userRole} />} />
           </>

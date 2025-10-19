@@ -22,9 +22,9 @@ const ThirteenthMonthPage = ({ employees = [], payrolls = [] }) => {
     const [showReportPreview, setShowReportPreview] = useState(false);
 
     const uniqueYears = useMemo(() => {
-        const years = new Set(payrolls.map(run => run.cutOff.split(' to ')[0].substring(0, 4)));
+        const years = new Set(payrolls.map(run => new Date(run.cutOff.split(' to ')[0]).getFullYear()));
         const currentYear = new Date().getFullYear();
-        years.add(currentYear.toString());
+        years.add(currentYear);
         return Array.from(years).sort((a, b) => b - a);
     }, [payrolls]);
 
@@ -148,7 +148,6 @@ const ThirteenthMonthPage = ({ employees = [], payrolls = [] }) => {
         setShowReportPreview(true);
     };
 
-    // Bulk mark all as Paid (applies to filtered table rows)
     const handleConfirmMarkAll = () => {
         setStatuses(prev => {
             const updated = { ...prev };
