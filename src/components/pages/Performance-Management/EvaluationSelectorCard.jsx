@@ -49,7 +49,7 @@ const EvaluationSelectorCard = ({ employee, positionTitle, lastEvaluation, onAct
         <>
           <button 
             className="btn btn-sm btn-outline-secondary"
-            onClick={() => onAction('review', submissionForActivePeriod)}
+            onClick={() => onAction('review', submissionForActivePeriod)} // Pass submission data
           >
             Review Evaluation
           </button>

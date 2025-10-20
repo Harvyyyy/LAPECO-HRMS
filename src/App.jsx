@@ -51,6 +51,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 
 // Import all mock data from centralized file
 import * as mockData from './data/mockData';
+import { doDateRangesOverlap } from './utils/dateUtils';
 
 // Add evaluationDate to mock data
 const initialEvaluationsData = mockData.initialEvaluationsData.map((ev, index) => {
@@ -152,6 +153,19 @@ function AppContent() {
 
   const appLevelHandlers = {
     saveEvaluationPeriod: (formData, periodId) => {
+        const otherPeriods = evaluationPeriods.filter(p => p.id !== periodId);
+        const hasOverlap = otherPeriods.some(p => 
+            doDateRangesOverlap(
+                p.activationStart, p.activationEnd,
+                formData.activationStart, formData.activationEnd
+            )
+        );
+
+        if (hasOverlap) {
+            showToast('Error: The activation window overlaps with an existing period. Please choose different dates.', 'error');
+            return false;
+        }
+
         if (periodId) {
             setEvaluationPeriods(prev => prev.map(p => p.id === periodId ? { ...p, ...formData } : p));
             showToast('Evaluation period updated successfully.');
@@ -160,6 +174,7 @@ function AppContent() {
             setEvaluationPeriods(prev => [...prev, newPeriod]);
             showToast('New evaluation period created.', 'success');
         }
+        return true;
     },
     deleteEvaluationPeriod: (periodId) => {
         setEvaluationPeriods(prev => prev.filter(p => p.id !== periodId));
@@ -692,7 +707,8 @@ function AppContent() {
                 <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />
             </Route>
             <Route path="team-employees" element={<MyTeamPage currentUser={currentUser} employees={employees} positions={positions} />} />
-            <Route path="evaluate-leader" element={<EvaluateLeaderPage currentUser={currentUser} employees={employees} positions={positions} evaluations={evaluations} activeEvaluationPeriod={activeEvaluationPeriod} />} />
+            {/* --- THIS IS THE FIX --- */}
+            <Route path="evaluate-leader" element={<EvaluateLeaderPage currentUser={currentUser} employees={employees} positions={positions} evaluations={evaluations} activeEvaluationPeriod={activeEvaluationPeriod} evaluationFactors={evaluationFactors} />} />
             <Route path="performance/evaluate" element={evaluationFormPageElement} />
              <Route path="my-leave" element={<MyLeavePage currentUser={currentUser} allLeaveRequests={leaveRequests} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} updateLeaveStatus={appLevelHandlers.updateLeaveStatus} handlers={appLevelHandlers} />} />
              <Route path="submit-report" element={<SubmitReportPage currentUser={currentUser} employees={employees} handlers={appLevelHandlers} userRole={userRole} />} />

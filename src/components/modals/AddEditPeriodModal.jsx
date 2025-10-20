@@ -26,6 +26,7 @@ const AddEditPeriodModal = ({ show, onClose, onSave, periodData }) => {
   };
 
   const handleSubmit = () => {
+    setError('');
     const { name, evaluationStart, evaluationEnd, activationStart, activationEnd } = formData;
     if (!name || !evaluationStart || !evaluationEnd || !activationStart || !activationEnd) {
       setError('All fields are required.');
@@ -43,8 +44,11 @@ const AddEditPeriodModal = ({ show, onClose, onSave, periodData }) => {
         setError('The activation window must start on or after the evaluation period ends.');
         return;
     }
-    onSave(formData, periodData?.id);
-    onClose();
+    
+    const success = onSave(formData, periodData?.id);
+    if (success) {
+        onClose();
+    }
   };
 
   if (!show) return null;

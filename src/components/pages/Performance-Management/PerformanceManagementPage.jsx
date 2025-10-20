@@ -16,6 +16,7 @@ import useReportGenerator from '../../../hooks/useReportGenerator';
 import Avatar from '../../common/Avatar';
 import ConfirmationModal from '../../modals/ConfirmationModal';
 import PeriodCard from './PeriodCard';
+import EvaluationTracker from './EvaluationTracker';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -38,33 +39,147 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
   const [periodSearchTerm, setPeriodSearchTerm] = useState('');
   const [periodStatusFilter, setPeriodStatusFilter] = useState('all');
 
-  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
+  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator(theme);
   const navigate = useNavigate();
 
   const employeeMap = useMemo(() => new Map(employees.map(e => [e.id, e])), [employees]);
   const positionMap = useMemo(() => new Map(positions.map(p => [p.id, p.title])), [positions]);
   
   const evaluationCountsByPeriod = useMemo(() => {
-    const counts = {};
+    const activeEmployees = employees.filter(e => e.status === 'Active');
+    const leaders = activeEmployees.filter(e => e.isTeamLeader);
+    const members = activeEmployees.filter(e => !e.isTeamLeader);
+
+    const periodStats = {};
+
     for (const period of evaluationPeriods) {
+      // Each leader gets evaluated by their members.
+      const leaderEvalTasks = leaders.reduce((sum, leader) => {
+        const teamSize = members.filter(m => m.positionId === leader.positionId).length;
+        return sum + teamSize;
+      }, 0);
+
+      // Each member gets evaluated by their leader.
+      const memberEvalTasks = members.length;
+      
+      const leadersOwnEvalTasks = leaders.length;
+
+      const totalTasks = leaderEvalTasks + memberEvalTasks + leadersOwnEvalTasks;
+
       const start = startOfDay(parseISO(period.evaluationStart));
       const end = endOfDay(parseISO(period.evaluationEnd));
-      counts[period.id] = evaluations.filter(ev => {
+      
+      const completedCount = evaluations.filter(ev => {
         const evalDate = parseISO(ev.periodEnd);
         return evalDate >= start && evalDate <= end;
       }).length;
+      
+      periodStats[period.id] = {
+        completed: completedCount,
+        total: totalTasks,
+      };
     }
-    return counts;
-  }, [evaluationPeriods, evaluations]);
+    return periodStats;
+  }, [evaluationPeriods, evaluations, employees]);
 
   const sortedEvaluationPeriods = useMemo(() => 
-    [...evaluationPeriods].sort((a,b) => new Date(b.periodStart) - new Date(a.periodStart))
+    [...evaluationPeriods].sort((a,b) => new Date(b.evaluationStart) - new Date(a.evaluationStart))
   , [evaluationPeriods]);
 
   const periodOptions = useMemo(() => [
     { value: 'all', label: 'All Time' },
     ...sortedEvaluationPeriods.map(p => ({ value: p.id, label: p.name }))
   ], [sortedEvaluationPeriods]);
+  
+  const activeEvaluationPeriod = useMemo(() => {
+    const today = startOfDay(new Date());
+    return evaluationPeriods.find(period => {
+        const start = startOfDay(parseISO(period.activationStart));
+        const end = endOfDay(parseISO(period.activationEnd));
+        return today >= start && today <= end;
+    }) || null;
+  }, [evaluationPeriods]);
+
+  const { evaluationTrackerData, totalPendingCount } = useMemo(() => {
+    if (!activeEvaluationPeriod) return { evaluationTrackerData: [], totalPendingCount: 0 };
+
+    const activeEmployees = employees.filter(e => e.status === 'Active' && e.positionId !== null);
+    
+    const evaluationsForPeriod = evaluations.filter(ev => 
+        ev.periodStart === activeEvaluationPeriod.evaluationStart && 
+        ev.periodEnd === activeEvaluationPeriod.evaluationEnd
+    );
+    const completedEvaluationsMap = new Map(evaluationsForPeriod.map(ev => [ev.employeeId, ev]));
+
+    const employeesByPosition = activeEmployees.reduce((acc, emp) => {
+        (acc[emp.positionId] = acc[emp.positionId] || []).push(emp);
+        return acc;
+    }, {});
+    
+    const trackerData = Object.values(employeesByPosition).map(teamMembersInPos => {
+        const teamLeader = teamMembersInPos.find(e => e.isTeamLeader);
+        const members = teamMembersInPos.filter(e => !e.isTeamLeader);
+        const positionTitle = positionMap.get(teamMembersInPos[0]?.positionId) || 'Unassigned';
+
+        if (members.length === 0 && !teamLeader) return null;
+
+        const completedMembers = [];
+        const pendingMembers = [];
+        
+        members.forEach(member => {
+            const evaluation = completedEvaluationsMap.get(member.id);
+            if (evaluation) {
+                completedMembers.push({ ...member, evaluation });
+            } else {
+                pendingMembers.push(member);
+            }
+        });
+
+        let leaderStatus = null;
+        if (teamLeader) {
+          const leaderEvaluation = completedEvaluationsMap.get(teamLeader.id);
+          
+          const evalsCompletedByLeader = new Set(
+            evaluationsForPeriod
+              .filter(ev => ev.evaluatorId === teamLeader.id)
+              .map(ev => ev.employeeId)
+          );
+          
+          const evalsOfLeaderByMembers = evaluationsForPeriod.filter(ev => 
+            ev.employeeId === teamLeader.id && members.some(m => m.id === ev.evaluatorId)
+          ).length;
+          
+          const pendingMemberEvals = members.filter(member => !evalsCompletedByLeader.has(member.id));
+
+          leaderStatus = {
+            isEvaluated: !!leaderEvaluation,
+            evaluation: leaderEvaluation || null,
+            pendingMemberEvals: pendingMemberEvals,
+            evalsOfLeaderByMembers: evalsOfLeaderByMembers
+          };
+        }
+        
+        return {
+            positionId: teamMembersInPos[0]?.positionId,
+            positionTitle,
+            teamLeader,
+            leaderStatus,
+            completedMembers,
+            pendingMembers,
+        };
+    }).filter(Boolean);
+
+    const pendingCount = trackerData.reduce((sum, team) => {
+      let teamPending = team.pendingMembers.length;
+      if (team.leaderStatus) {
+        if (!team.leaderStatus.isEvaluated) teamPending++;
+        teamPending += team.leaderStatus.pendingMemberEvals.length;
+      }
+      return sum + teamPending;
+    }, 0);
+
+    return { evaluationTrackerData: trackerData, totalPendingCount: pendingCount };
+  }, [activeEvaluationPeriod, employees, evaluations, positionMap]);
 
   const filteredEvaluations = useMemo(() => {
     let evals = [...evaluations];
@@ -244,6 +359,12 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
             </button>
         </li>
         <li className="nav-item">
+            <button className={`nav-link ${activeTab === 'tracker' ? 'active' : ''}`} onClick={() => setActiveTab('tracker')}>
+                Evaluation Tracker
+                {totalPendingCount > 0 && <span className="badge rounded-pill bg-warning text-dark ms-2">{totalPendingCount}</span>}
+            </button>
+        </li>
+        <li className="nav-item">
             <button className={`nav-link ${activeTab === 'periods' ? 'active' : ''}`} onClick={() => setActiveTab('periods')}>
                 Manage Periods
             </button>
@@ -343,6 +464,13 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
                 </div>
             </div>
         )}
+        {activeTab === 'tracker' && (
+          <EvaluationTracker 
+            teams={evaluationTrackerData}
+            activePeriod={activeEvaluationPeriod}
+            onViewEvaluation={handleViewEvaluation}
+          />
+        )}
         {activeTab === 'periods' && (
             <div>
               <div className="period-controls-bar">
@@ -371,7 +499,8 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
                   <PeriodCard 
                     key={period.id}
                     period={period}
-                    evaluationsCount={evaluationCountsByPeriod[period.id] || 0}
+                    evaluationsCount={evaluationCountsByPeriod[period.id]?.completed || 0}
+                    totalTargetEvaluations={evaluationCountsByPeriod[period.id]?.total || 0}
                     onEdit={() => handleOpenPeriodModal(period)}
                     onDelete={() => setPeriodToDelete(period)}
                     onViewResults={() => handleViewResultsForPeriod(period)}
