@@ -371,7 +371,7 @@ function AppContent() {
     resetPassword: (employeeId) => {
         const newPassword = Math.random().toString(36).slice(-8);
         setUserAccounts(prev => prev.map(acc => acc.employeeId === employeeId ? { ...acc, password: newPassword } : acc));
-        alert(`Password for ${employeeId} has been reset to: ${newPassword}`);
+        showToast(`Password for ${employeeId} has been reset to: ${newPassword}`, 'info');
     },
     toggleAccountStatus: (employeeId) => {
         setUserAccounts(prev => prev.map(acc => {
@@ -395,7 +395,7 @@ function AppContent() {
         if (!resumeFile) return;
         const resumeUrl = URL.createObjectURL(resumeFile);
         setEmployees(prev => prev.map(emp => emp.id === employeeId ? { ...emp, resumeUrl } : emp));
-        alert("Resume updated successfully!");
+        showToast("Resume updated successfully!");
     },
     toggleTheme: () => { setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light'); },
     saveEvaluation: (evaluationData, evalId) => {
@@ -558,6 +558,8 @@ function AppContent() {
       }
       showToast("Selected data has been reset successfully.", "info");
     },
+    // Add showToast to appLevelHandlers so it can be passed down
+    showToast: showToast,
   };
 
   const handleLoginSuccess = (userId) => {
@@ -707,7 +709,6 @@ function AppContent() {
                 <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />
             </Route>
             <Route path="team-employees" element={<MyTeamPage currentUser={currentUser} employees={employees} positions={positions} />} />
-            {/* --- THIS IS THE FIX --- */}
             <Route path="evaluate-leader" element={<EvaluateLeaderPage currentUser={currentUser} employees={employees} positions={positions} evaluations={evaluations} activeEvaluationPeriod={activeEvaluationPeriod} evaluationFactors={evaluationFactors} />} />
             <Route path="performance/evaluate" element={evaluationFormPageElement} />
              <Route path="my-leave" element={<MyLeavePage currentUser={currentUser} allLeaveRequests={leaveRequests} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} updateLeaveStatus={appLevelHandlers.updateLeaveStatus} handlers={appLevelHandlers} />} />
