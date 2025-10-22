@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { startOfDay, endOfDay, isPast, isFuture, parseISO } from 'date-fns';
@@ -26,7 +25,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
   const [editingPeriod, setEditingPeriod] = useState(null);
   const [periodToDelete, setPeriodToDelete] = useState(null);
 
-  const [viewingEvaluation, setViewingEvaluation] = useState(null);
+  const [viewingEvaluationContext, setViewingEvaluationContext] = useState(null);
   const [showReportConfigModal, setShowReportConfigModal] = useState(false);
   const [showReportPreview, setShowReportPreview] = useState(false);
 
@@ -40,7 +39,6 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
   const [periodStatusFilter, setPeriodStatusFilter] = useState('all');
 
   const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator(theme);
-  const navigate = useNavigate();
 
   const employeeMap = useMemo(() => new Map(employees.map(e => [e.id, e])), [employees]);
   const positionMap = useMemo(() => new Map(positions.map(p => [p.id, p.title])), [positions]);
@@ -53,19 +51,13 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
     const periodStats = {};
 
     for (const period of evaluationPeriods) {
-      // Each leader gets evaluated by their members.
       const leaderEvalTasks = leaders.reduce((sum, leader) => {
         const teamSize = members.filter(m => m.positionId === leader.positionId).length;
         return sum + teamSize;
       }, 0);
-
-      // Each member gets evaluated by their leader.
       const memberEvalTasks = members.length;
-      
       const leadersOwnEvalTasks = leaders.length;
-
       const totalTasks = leaderEvalTasks + memberEvalTasks + leadersOwnEvalTasks;
-
       const start = startOfDay(parseISO(period.evaluationStart));
       const end = endOfDay(parseISO(period.evaluationEnd));
       
@@ -74,10 +66,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
         return evalDate >= start && evalDate <= end;
       }).length;
       
-      periodStats[period.id] = {
-        completed: completedCount,
-        total: totalTasks,
-      };
+      periodStats[period.id] = { completed: completedCount, total: totalTasks };
     }
     return periodStats;
   }, [evaluationPeriods, evaluations, employees]);
@@ -138,35 +127,13 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
         let leaderStatus = null;
         if (teamLeader) {
           const leaderEvaluation = completedEvaluationsMap.get(teamLeader.id);
-          
-          const evalsCompletedByLeader = new Set(
-            evaluationsForPeriod
-              .filter(ev => ev.evaluatorId === teamLeader.id)
-              .map(ev => ev.employeeId)
-          );
-          
-          const evalsOfLeaderByMembers = evaluationsForPeriod.filter(ev => 
-            ev.employeeId === teamLeader.id && members.some(m => m.id === ev.evaluatorId)
-          ).length;
-          
+          const evalsCompletedByLeader = new Set(evaluationsForPeriod.filter(ev => ev.evaluatorId === teamLeader.id).map(ev => ev.employeeId));
+          const evalsOfLeaderByMembers = evaluationsForPeriod.filter(ev => ev.employeeId === teamLeader.id && members.some(m => m.id === ev.evaluatorId)).length;
           const pendingMemberEvals = members.filter(member => !evalsCompletedByLeader.has(member.id));
-
-          leaderStatus = {
-            isEvaluated: !!leaderEvaluation,
-            evaluation: leaderEvaluation || null,
-            pendingMemberEvals: pendingMemberEvals,
-            evalsOfLeaderByMembers: evalsOfLeaderByMembers
-          };
+          leaderStatus = { isEvaluated: !!leaderEvaluation, evaluation: leaderEvaluation || null, pendingMemberEvals, evalsOfLeaderByMembers };
         }
         
-        return {
-            positionId: teamMembersInPos[0]?.positionId,
-            positionTitle,
-            teamLeader,
-            leaderStatus,
-            completedMembers,
-            pendingMembers,
-        };
+        return { positionId: teamMembersInPos[0]?.positionId, positionTitle, teamLeader, leaderStatus, completedMembers, pendingMembers };
     }).filter(Boolean);
 
     const pendingCount = trackerData.reduce((sum, team) => {
@@ -182,27 +149,68 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
   }, [activeEvaluationPeriod, employees, evaluations, positionMap]);
 
   const filteredEvaluations = useMemo(() => {
-    let evals = [...evaluations];
+    if (periodFilter.value === 'all') {
+      const groupedByEmployee = evaluations.reduce((acc, ev) => {
+        if (!acc[ev.employeeId]) {
+          acc[ev.employeeId] = { employeeId: ev.employeeId, evals: [] };
+        }
+        acc[ev.employeeId].evals.push(ev);
+        return acc;
+      }, {});
+  
+      let aggregated = Object.values(groupedByEmployee).map(group => {
+        const latestEval = group.evals.sort((a,b) => new Date(b.evaluationDate) - new Date(a.evaluationDate))[0];
+        const avgScore = group.evals.reduce((sum, ev) => sum + ev.overallScore, 0) / group.evals.length;
+        return {
+          id: group.employeeId,
+          employeeId: group.employeeId,
+          averageScore: avgScore,
+          latestEvaluationDate: latestEval.evaluationDate,
+          history: group.evals,
+        };
+      });
 
-    if (periodFilter.value !== 'all') {
-      const selectedPeriod = evaluationPeriods.find(p => p.id === Number(periodFilter.value));
-      if (selectedPeriod) {
-        const start = startOfDay(parseISO(selectedPeriod.evaluationStart));
-        const end = endOfDay(parseISO(selectedPeriod.evaluationEnd));
-        evals = evals.filter(ev => {
-            const evalDate = parseISO(ev.periodEnd);
-            return evalDate >= start && evalDate <= end;
+      if (historySearchTerm) {
+        const lowerSearch = historySearchTerm.toLowerCase();
+        aggregated = aggregated.filter(agg => {
+          const emp = employeeMap.get(agg.employeeId);
+          return emp?.name.toLowerCase().includes(lowerSearch);
         });
       }
+
+      aggregated.sort((a, b) => {
+        const keyMap = { employeeName: 'employeeId', evaluationDate: 'latestEvaluationDate', overallScore: 'averageScore' };
+        const key = keyMap[historySortConfig.key] || historySortConfig.key;
+        const direction = historySortConfig.direction === 'ascending' ? 1 : -1;
+        let valA = a[key];
+        let valB = b[key];
+
+        if (key === 'employeeId') {
+          valA = employeeMap.get(a.employeeId)?.name || '';
+          valB = employeeMap.get(b.employeeId)?.name || '';
+        }
+
+        if (typeof valA === 'string') return valA.localeCompare(valB) * direction;
+        return (valA - valB) * direction;
+      });
+
+      return aggregated;
+    }
+
+    let evals = [...evaluations];
+    const selectedPeriod = evaluationPeriods.find(p => p.id === Number(periodFilter.value));
+    if (selectedPeriod) {
+      const start = startOfDay(parseISO(selectedPeriod.evaluationStart));
+      const end = endOfDay(parseISO(selectedPeriod.evaluationEnd));
+      evals = evals.filter(ev => {
+          const evalDate = parseISO(ev.periodEnd);
+          return evalDate >= start && evalDate <= end;
+      });
     }
     
     if (historySearchTerm) {
       const lowerSearch = historySearchTerm.toLowerCase();
-      evals = evals.filter(ev => {
-        const emp = employeeMap.get(ev.employeeId);
-        const evaluator = employeeMap.get(ev.evaluatorId);
-        return emp?.name.toLowerCase().includes(lowerSearch) || evaluator?.name.toLowerCase().includes(lowerSearch);
-      });
+      evals = evals.filter(ev => employeeMap.get(ev.employeeId)?.name.toLowerCase().includes(lowerSearch));
     }
 
     evals.sort((a, b) => {
@@ -212,27 +220,23 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
       if (key === 'employeeName') {
         valA = employeeMap.get(a.employeeId)?.name || '';
         valB = employeeMap.get(b.employeeId)?.name || '';
-      } else if (key === 'evaluatorName') {
-        valA = employeeMap.get(a.evaluatorId)?.name || '';
-        valB = employeeMap.get(b.evaluatorId)?.name || '';
-      } else {
-        valA = a[key]; valB = b[key];
-      }
+      } else { valA = a[key]; valB = b[key]; }
       if (typeof valA === 'string') return valA.localeCompare(valB) * direction;
       if (typeof valA === 'number') return (valA - valB) * direction;
       return (new Date(valB) - new Date(valA)) * direction;
     });
     return evals;
+
   }, [evaluations, periodFilter, evaluationPeriods, historySearchTerm, historySortConfig, employeeMap]);
 
   const getPeriodStatusValue = (period) => {
     const today = startOfDay(new Date());
     const start = startOfDay(parseISO(period.activationStart));
     const end = endOfDay(parseISO(period.activationEnd));
-    if (today >= start && today <= end) return 'active';
-    if (isFuture(start)) return 'upcoming';
-    if (isPast(end)) return 'closed';
-    return 'unknown';
+    if (today >= start && today <= end) return { text: 'Active', className: 'active', icon: 'bi-broadcast-pin' };
+    if (isFuture(start)) return { text: 'Upcoming', className: 'upcoming', icon: 'bi-calendar-event' };
+    if (isPast(end)) return { text: 'Closed', className: 'closed', icon: 'bi-archive-fill' };
+    return { text: 'Unknown', className: 'closed', icon: 'bi-question-circle' };
   };
 
   const filteredAndSortedPeriods = useMemo(() => {
@@ -250,19 +254,21 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
   const dashboardStats = useMemo(() => {
     const totalEvals = filteredEvaluations.length;
     if (totalEvals === 0) return { totalEvals, avgScore: 0 };
-    const avgScore = filteredEvaluations.reduce((sum, ev) => sum + ev.overallScore, 0) / totalEvals;
+    const scoreKey = periodFilter.value === 'all' ? 'averageScore' : 'overallScore';
+    const avgScore = filteredEvaluations.reduce((sum, ev) => sum + ev[scoreKey], 0) / totalEvals;
     return { totalEvals, avgScore };
-  }, [filteredEvaluations]);
+  }, [filteredEvaluations, periodFilter.value]);
 
   const performanceBrackets = useMemo(() => {
+    const scoreKey = periodFilter.value === 'all' ? 'averageScore' : 'overallScore';
     const brackets = { 'Needs Improvement': 0, 'Meets Expectations': 0, 'Outstanding': 0 };
     filteredEvaluations.forEach(ev => {
-      if (ev.overallScore < 70) brackets['Needs Improvement']++;
-      else if (ev.overallScore < 90) brackets['Meets Expectations']++;
+      if (ev[scoreKey] < 70) brackets['Needs Improvement']++;
+      else if (ev[scoreKey] < 90) brackets['Meets Expectations']++;
       else brackets['Outstanding']++;
     });
     return brackets;
-  }, [filteredEvaluations]);
+  }, [filteredEvaluations, periodFilter.value]);
 
   const chartTextColor = theme === 'dark' ? '#adb5bd' : '#6c757d';
   const gridColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
@@ -299,7 +305,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
     return historySortConfig.direction === 'ascending' ? <i className="bi bi-sort-up sort-icon active ms-1"></i> : <i className="bi bi-sort-down sort-icon active ms-1"></i>;
   };
 
-  const handleViewEvaluation = (evaluation) => setViewingEvaluation(evaluation);
+  const handleViewEvaluation = (evaluation) => setViewingEvaluationContext(evaluation);
   const handleGenerateReport = () => setShowReportConfigModal(true);
 
   const handleRunReport = (params) => {
@@ -339,12 +345,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
     setActiveTab('overview');
   };
 
-  const modalProps = useMemo(() => {
-    if (!viewingEvaluation) return null;
-    const employee = employeeMap.get(viewingEvaluation.employeeId);
-    const position = employee ? positions.find(p => p.id === employee.positionId) : null;
-    return { evaluation: viewingEvaluation, employee, position };
-  }, [viewingEvaluation, employeeMap, positions]);
+  const isAllTimeView = periodFilter.value === 'all';
 
   return (
     <div className="container-fluid p-0 page-module-container">
@@ -379,7 +380,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
                         <div className="stat-icon"><i className="bi bi-journal-check"></i></div>
                         <div className="stat-info">
                             <div className="stat-value">{dashboardStats.totalEvals}</div>
-                            <div className="stat-label">Evaluations in Period</div>
+                            <div className="stat-label">{isAllTimeView ? 'Total Employees Rated' : 'Evaluations in Period'}</div>
                         </div>
                     </div>
                     <div className="stat-card-revised">
@@ -406,7 +407,6 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
                             <i className="bi bi-file-earmark-pdf-fill me-1"></i>Generate Report
                           </button>
                           <div className="input-group flex-grow-1">
-                              <label className="input-group-text">Filter by Period</label>
                               <Select
                                 options={periodOptions}
                                 value={periodFilter}
@@ -426,8 +426,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
                         <thead>
                         <tr>
                             <th className="sortable" onClick={() => requestHistorySort('employeeName')}>Employee {getSortIcon('employeeName')}</th>
-                            <th className="sortable" onClick={() => requestHistorySort('evaluatorName')}>Evaluator {getSortIcon('evaluatorName')}</th>
-                            <th className="sortable" onClick={() => requestHistorySort('periodEnd')}>Period {getSortIcon('periodEnd')}</th>
+                            {!isAllTimeView && <th className="sortable" onClick={() => requestHistorySort('periodEnd')}>Period {getSortIcon('periodEnd')}</th>}
                             <th className="sortable" onClick={() => requestHistorySort('evaluationDate')}>Date Submitted {getSortIcon('evaluationDate')}</th>
                             <th className="sortable" onClick={() => requestHistorySort('overallScore')}>Score {getSortIcon('overallScore')}</th>
                             <th>Action</th>
@@ -436,7 +435,9 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
                         <tbody>
                         {filteredEvaluations.length > 0 ? filteredEvaluations.map(ev => {
                             const employee = employeeMap.get(ev.employeeId);
-                            const evaluator = employeeMap.get(ev.evaluatorId);
+                            const score = isAllTimeView ? ev.averageScore : ev.overallScore;
+                            const date = isAllTimeView ? ev.latestEvaluationDate : ev.evaluationDate;
+
                             return (
                             <tr key={ev.id}>
                                 <td>
@@ -448,15 +449,14 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
                                     </div>
                                 </div>
                                 </td>
-                                <td>{evaluator?.name || 'N/A'}</td>
-                                <td>{ev.periodStart} to {ev.periodEnd}</td>
-                                <td>{ev.evaluationDate}</td>
-                                <td><ScoreIndicator score={ev.overallScore} /></td>
+                                {!isAllTimeView && <td>{ev.periodStart} to {ev.periodEnd}</td>}
+                                <td>{date}</td>
+                                <td><ScoreIndicator score={score} /></td>
                                 <td><button className="btn btn-sm btn-outline-secondary" onClick={() => handleViewEvaluation(ev)}>View</button></td>
                             </tr>
                             )
                         }) : (
-                            <tr><td colSpan="6" className="text-center p-4">No evaluations found for the selected period.</td></tr>
+                            <tr><td colSpan={isAllTimeView ? "4" : "5"} className="text-center p-4">No evaluations found for the selected period.</td></tr>
                         )}
                         </tbody>
                     </table>
@@ -468,7 +468,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
           <EvaluationTracker 
             teams={evaluationTrackerData}
             activePeriod={activeEvaluationPeriod}
-            onViewEvaluation={handleViewEvaluation}
+            onViewEvaluation={(evalData) => setViewingEvaluationContext(evalData)}
           />
         )}
         {activeTab === 'periods' && (
@@ -536,13 +536,15 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
         <p className="text-danger">This action cannot be undone and may disassociate historical evaluations from this period.</p>
       </ConfirmationModal>
 
-      {modalProps && (
+      {viewingEvaluationContext && (
         <ViewEvaluationModal
-          show={!!viewingEvaluation}
-          onClose={() => setViewingEvaluation(null)}
-          evaluation={modalProps.evaluation}
-          employee={modalProps.employee}
-          position={modalProps.position}
+          show={!!viewingEvaluationContext}
+          onClose={() => setViewingEvaluationContext(null)}
+          evaluationContext={viewingEvaluationContext}
+          employeeHistoryContext={isAllTimeView ? viewingEvaluationContext : null}
+          employees={employees}
+          positions={positions}
+          evaluations={evaluations}
           evaluationFactors={evaluationFactors}
         />
       )}

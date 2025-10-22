@@ -672,6 +672,7 @@ function AppContent() {
             <Route path="contributions-management" element={<ContributionsManagementPage employees={employees} positions={positions} payrolls={payrolls} theme={theme} />} />
             <Route path="performance" element={<PerformanceManagementPage kras={kras} kpis={kpis} positions={positions} employees={employees} evaluations={evaluations} handlers={appLevelHandlers} evaluationFactors={evaluationFactors} theme={theme} evaluationPeriods={evaluationPeriods} />} />
             <Route path="predictive-analytics" element={<PredictiveAnalyticsPage evaluations={evaluations} employees={employees} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} handlers={appLevelHandlers} trainingPrograms={trainingPrograms} enrollments={enrollments} />} />
+
             <Route path="performance/evaluate" element={evaluationFormPageElement} />
             <Route path="training/*" element={<TrainingPage trainingPrograms={trainingPrograms} enrollments={enrollments} handlers={appLevelHandlers} />} >
               <Route path=":programId" element={<ProgramDetailPage employees={employees} trainingPrograms={trainingPrograms} enrollments={enrollments} handlers={appLevelHandlers} />} />
