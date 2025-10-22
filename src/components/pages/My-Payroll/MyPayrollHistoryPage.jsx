@@ -10,6 +10,7 @@ const formatCurrency = (value) => Number(value).toLocaleString('en-US', { minimu
 const MyPayrollHistoryPage = ({ currentUser, payrolls = [] }) => {
   const context = useOutletContext();
   const employees = context?.employees;
+  const positions = context?.positions;
   const theme = context?.theme;
   
   const [showPdfPreview, setShowPdfPreview] = useState(false);
@@ -33,11 +34,15 @@ const MyPayrollHistoryPage = ({ currentUser, payrolls = [] }) => {
   }, [payrolls, currentUser.id]);
 
   const employeeDetails = useMemo(() => {
-      if (!employees) {
+      if (!employees || !positions) {
           return null;
       }
-      return employees.find(emp => emp.id === currentUser.id);
-  }, [employees, currentUser.id]);
+      const emp = employees.find(e => e.id === currentUser.id);
+      if (!emp) return null;
+
+      const pos = positions.find(p => p.id === emp.positionId);
+      return { ...emp, positionTitle: pos ? pos.title : 'N/A' };
+  }, [employees, positions, currentUser.id]);
 
   const handleViewPayslip = async (record, run) => {
     if (!employeeDetails) {

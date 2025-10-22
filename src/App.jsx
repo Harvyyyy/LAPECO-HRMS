@@ -600,6 +600,8 @@ function AppContent() {
           theme={theme}
           toast={toast}
           clearToast={clearToast}
+          employees={employees}
+          positions={positions} // --- FIX: Pass positions to Layout ---
       />
   );
 
@@ -704,7 +706,6 @@ function AppContent() {
         {(userRole === USER_ROLES.TEAM_LEADER || userRole === USER_ROLES.REGULAR_EMPLOYEE) && (
           <>
             <Route path="my-attendance" element={<MyAttendancePage currentUser={currentUser} allSchedules={schedules} attendanceLogs={attendanceLogs} />} />
-            {/* --- FIX: Nest child routes inside the layout route --- */}
             <Route path="my-payroll" element={<MyPayrollLayout />}>
               <Route index element={<Navigate to="projection" replace />} />
               <Route path="projection" element={<MyPayrollProjectionPage currentUser={currentUser} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} holidays={holidays} />} />
