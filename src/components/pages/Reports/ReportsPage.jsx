@@ -11,8 +11,7 @@ const ReportsPage = (props) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [configModalState, setConfigModalState] = useState({ show: false, config: null });
   const [showPreview, setShowPreview] = useState(false);
-  
-  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator();
+  const { generateReport, pdfDataUri, isLoading, setPdfDataUri } = useReportGenerator(props.theme);
 
   const reportCounts = useMemo(() => {
     const counts = reportsConfig.reduce((acc, report) => {
@@ -48,8 +47,6 @@ const ReportsPage = (props) => {
   const handleRunReport = (reportId, params) => {
     let dataSources = { ...props };
     let finalParams = { ...params };
-    
-    // ... existing logic for predictive_analytics_summary
     
     if (reportId === 'thirteenth_month_pay') {
         const { employees = [], payrolls = [] } = props;
@@ -159,7 +156,8 @@ const ReportsPage = (props) => {
         reportConfig={configModalState.config}
         onRunReport={handleRunReport}
         trainingPrograms={props.trainingPrograms}
-        payrolls={props.payrolls} 
+        payrolls={props.payrolls}
+        evaluationPeriods={props.evaluationPeriods}
       />
 
       {isLoading && (

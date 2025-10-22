@@ -672,7 +672,6 @@ function AppContent() {
             <Route path="contributions-management" element={<ContributionsManagementPage employees={employees} positions={positions} payrolls={payrolls} theme={theme} />} />
             <Route path="performance" element={<PerformanceManagementPage kras={kras} kpis={kpis} positions={positions} employees={employees} evaluations={evaluations} handlers={appLevelHandlers} evaluationFactors={evaluationFactors} theme={theme} evaluationPeriods={evaluationPeriods} />} />
             <Route path="predictive-analytics" element={<PredictiveAnalyticsPage evaluations={evaluations} employees={employees} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} handlers={appLevelHandlers} trainingPrograms={trainingPrograms} enrollments={enrollments} />} />
-
             <Route path="performance/evaluate" element={evaluationFormPageElement} />
             <Route path="training/*" element={<TrainingPage trainingPrograms={trainingPrograms} enrollments={enrollments} handlers={appLevelHandlers} />} >
               <Route path=":programId" element={<ProgramDetailPage employees={employees} trainingPrograms={trainingPrograms} enrollments={enrollments} handlers={appLevelHandlers} />} />
@@ -681,7 +680,24 @@ function AppContent() {
             <Route path="resignation-management" element={<ResignationManagementPage resignations={resignations} terminations={terminations} employees={employees} positions={positions} handlers={appLevelHandlers} payrolls={payrolls} />} />
             <Route path="recruitment" element={<RecruitmentPage jobOpenings={jobOpenings} applicants={applicants} positions={positions} handlers={appLevelHandlers} />} />
             <Route path="accounts" element={<AccountsPage userAccounts={userAccounts} employees={employees} handlers={appLevelHandlers} />} />
-            <Route path="reports" element={<ReportsPage employees={employees} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} leaveRequests={leaveRequests} evaluations={evaluations} trainingPrograms={trainingPrograms} enrollments={enrollments} payrolls={payrolls} cases={disciplinaryCases} applicants={applicants} jobOpenings={jobOpenings} />} />
+            <Route 
+              path="reports" 
+              element={<ReportsPage 
+                employees={employees} 
+                positions={positions} 
+                schedules={schedules} 
+                attendanceLogs={attendanceLogs} 
+                leaveRequests={leaveRequests} 
+                evaluations={evaluations} 
+                trainingPrograms={trainingPrograms} 
+                enrollments={enrollments} 
+                payrolls={payrolls} 
+                cases={disciplinaryCases} 
+                applicants={applicants} 
+                jobOpenings={jobOpenings}
+                evaluationPeriods={evaluationPeriods}
+              />} 
+            />
           </>
         )}
         {/* TEAM LEADER ROUTES */}

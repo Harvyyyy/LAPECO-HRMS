@@ -9,13 +9,14 @@ import './PerformanceManagement.css';
 import AddEditPeriodModal from '../../modals/AddEditPeriodModal';
 import ViewEvaluationModal from '../../modals/ViewEvaluationModal';
 import ScoreIndicator from './ScoreIndicator';
-import PerformanceReportModal from '../../modals/PerformanceReportModal';
+import ReportConfigurationModal from '../../modals/ReportConfigurationModal';
 import ReportPreviewModal from '../../modals/ReportPreviewModal';
 import useReportGenerator from '../../../hooks/useReportGenerator';
 import Avatar from '../../common/Avatar';
 import ConfirmationModal from '../../modals/ConfirmationModal';
 import PeriodCard from './PeriodCard';
 import EvaluationTracker from './EvaluationTracker';
+import { reportsConfig } from '../../../config/reports.config';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -27,6 +28,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
 
   const [viewingEvaluationContext, setViewingEvaluationContext] = useState(null);
   const [showReportConfigModal, setShowReportConfigModal] = useState(false);
+  const [reportToGenerate, setReportToGenerate] = useState(null);
   const [showReportPreview, setShowReportPreview] = useState(false);
 
   // Filters for Overview Tab
@@ -306,10 +308,41 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
   };
 
   const handleViewEvaluation = (evaluation) => setViewingEvaluationContext(evaluation);
-  const handleGenerateReport = () => setShowReportConfigModal(true);
+  const handleGenerateReport = () => {
+    const reportConf = reportsConfig.find(r => r.id === 'performance_summary');
+    if (reportConf) {
+      setReportToGenerate(reportConf);
+      setShowReportConfigModal(true);
+    }
+  };
 
-  const handleRunReport = (params) => {
-    generateReport('performance_summary', { startDate: params.startDate, endDate: params.endDate }, { employees, positions, evaluations });
+  const handleRunReport = (reportId, params) => {
+    const { periodId } = params;
+    let reportDataSources = { employees, positions };
+    let finalParams = { startDate: null, endDate: null };
+  
+    if (periodId === 'all') {
+      reportDataSources.evaluations = evaluations;
+      finalParams.startDate = "All Time";
+      finalParams.endDate = "";
+    } else {
+      const selectedPeriod = evaluationPeriods.find(p => p.id === Number(periodId));
+      if (selectedPeriod) {
+        finalParams.startDate = selectedPeriod.evaluationStart;
+        finalParams.endDate = selectedPeriod.evaluationEnd;
+        const start = startOfDay(parseISO(selectedPeriod.evaluationStart));
+        const end = endOfDay(parseISO(selectedPeriod.evaluationEnd));
+        reportDataSources.evaluations = evaluations.filter(ev => {
+            const evalDate = parseISO(ev.periodEnd);
+            return evalDate >= start && evalDate <= end;
+        });
+      } else {
+        // Fallback for safety, though should not happen with dropdown
+        reportDataSources.evaluations = [];
+      }
+    }
+  
+    generateReport(reportId, finalParams, reportDataSources);
     setShowReportConfigModal(false);
     setShowReportPreview(true);
   };
@@ -540,7 +573,7 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
         <ViewEvaluationModal
           show={!!viewingEvaluationContext}
           onClose={() => setViewingEvaluationContext(null)}
-          evaluationContext={viewingEvaluationContext}
+          evaluationContext={!isAllTimeView ? viewingEvaluationContext : null}
           employeeHistoryContext={isAllTimeView ? viewingEvaluationContext : null}
           employees={employees}
           positions={positions}
@@ -549,7 +582,15 @@ const PerformanceManagementPage = ({ kras, kpis, positions, employees, evaluatio
         />
       )}
 
-      <PerformanceReportModal show={showReportConfigModal} onClose={() => setShowReportConfigModal(false)} onGenerate={handleRunReport} />
+      {showReportConfigModal && (
+        <ReportConfigurationModal
+            show={showReportConfigModal}
+            onClose={() => setShowReportConfigModal(false)}
+            onRunReport={handleRunReport}
+            reportConfig={reportToGenerate}
+            evaluationPeriods={evaluationPeriods}
+        />
+      )}
 
       {(isLoading || pdfDataUri) && (
         <ReportPreviewModal
