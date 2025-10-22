@@ -700,36 +700,27 @@ function AppContent() {
             />
           </>
         )}
-        {/* TEAM LEADER ROUTES */}
-        {userRole === USER_ROLES.TEAM_LEADER && (
+        {/* TEAM LEADER & REGULAR EMPLOYEE ROUTES */}
+        {(userRole === USER_ROLES.TEAM_LEADER || userRole === USER_ROLES.REGULAR_EMPLOYEE) && (
           <>
             <Route path="my-attendance" element={<MyAttendancePage currentUser={currentUser} allSchedules={schedules} attendanceLogs={attendanceLogs} />} />
-            <Route path="my-payroll/*" element={<MyPayrollLayout />}>
+            {/* --- FIX: Nest child routes inside the layout route --- */}
+            <Route path="my-payroll" element={<MyPayrollLayout />}>
               <Route index element={<Navigate to="projection" replace />} />
               <Route path="projection" element={<MyPayrollProjectionPage currentUser={currentUser} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} holidays={holidays} />} />
               <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />
             </Route>
             <Route path="team-employees" element={<MyTeamPage currentUser={currentUser} employees={employees} positions={positions} handlers={appLevelHandlers} />} />
-            <Route path="evaluate-team" element={<EvaluateTeamPage currentUser={currentUser} employees={employees} positions={positions} evaluations={evaluations} kras={kras} kpis={kpis} evaluationFactors={evaluationFactors} activeEvaluationPeriod={activeEvaluationPeriod} />} />
             <Route path="performance/evaluate" element={evaluationFormPageElement} />
             <Route path="my-leave" element={<MyLeavePage currentUser={currentUser} allLeaveRequests={leaveRequests} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} updateLeaveStatus={appLevelHandlers.updateLeaveStatus} handlers={appLevelHandlers} />} />
             <Route path="submit-report" element={<SubmitReportPage currentUser={currentUser} employees={employees} handlers={appLevelHandlers} userRole={userRole} />} />
-          </>
-        )}
-        {/* REGULAR EMPLOYEE ROUTES */}
-        {userRole === USER_ROLES.REGULAR_EMPLOYEE && (
-          <>
-            <Route path="my-attendance" element={<MyAttendancePage currentUser={currentUser} allSchedules={schedules} attendanceLogs={attendanceLogs} />} />
-            <Route path="my-payroll/*" element={<MyPayrollLayout />}>
-                <Route index element={<Navigate to="projection" replace />} />
-                <Route path="projection" element={<MyPayrollProjectionPage currentUser={currentUser} positions={positions} schedules={schedules} attendanceLogs={attendanceLogs} holidays={holidays} />} />
-                <Route path="history" element={<MyPayrollHistoryPage currentUser={currentUser} payrolls={payrolls} />} />
-            </Route>
-            <Route path="team-employees" element={<MyTeamPage currentUser={currentUser} employees={employees} positions={positions} />} />
-            <Route path="evaluate-leader" element={<EvaluateLeaderPage currentUser={currentUser} employees={employees} positions={positions} evaluations={evaluations} activeEvaluationPeriod={activeEvaluationPeriod} evaluationFactors={evaluationFactors} />} />
-            <Route path="performance/evaluate" element={evaluationFormPageElement} />
-             <Route path="my-leave" element={<MyLeavePage currentUser={currentUser} allLeaveRequests={leaveRequests} createLeaveRequest={(data) => appLevelHandlers.createLeaveRequest({...data, empId: currentUser.id, name: currentUser.name, position: positions.find(p => p.id === currentUser.positionId)?.title })} updateLeaveStatus={appLevelHandlers.updateLeaveStatus} handlers={appLevelHandlers} />} />
-             <Route path="submit-report" element={<SubmitReportPage currentUser={currentUser} employees={employees} handlers={appLevelHandlers} userRole={userRole} />} />
+            
+            {userRole === USER_ROLES.TEAM_LEADER && (
+              <Route path="evaluate-team" element={<EvaluateTeamPage currentUser={currentUser} employees={employees} positions={positions} evaluations={evaluations} kras={kras} kpis={kpis} evaluationFactors={evaluationFactors} activeEvaluationPeriod={activeEvaluationPeriod} />} />
+            )}
+            {userRole === USER_ROLES.REGULAR_EMPLOYEE && (
+              <Route path="evaluate-leader" element={<EvaluateLeaderPage currentUser={currentUser} employees={employees} positions={positions} evaluations={evaluations} activeEvaluationPeriod={activeEvaluationPeriod} evaluationFactors={evaluationFactors} />} />
+            )}
           </>
         )}
         
